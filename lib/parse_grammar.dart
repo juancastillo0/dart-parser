@@ -394,3 +394,276 @@ String toPestGrammarExpr(Expr expr) {
 String toPestGrammarRaw(ExprRaw raw) {
   return raw.value.replaceAll("\\'", "'").replaceAll('"', '\\"');
 }
+
+class Ctx {
+  final List<String> types = [];
+
+  String toRustTypes(List<Item> items) {
+    items.followedBy([
+      Item(
+        ExprId('COMMENT'),
+        ExprOr([
+          ExprId('SINGLE_LINE_COMMENT'),
+          ExprId('MULTI_LINE_COMMENT'),
+        ]),
+      )
+    ]).forEach((e) {
+      toRustStructGrammarExpr(e.expression, e.id.value);
+    });
+
+    return types.join('\n\n');
+  }
+
+  String toRustStructGrammarExpr(
+    Expr expr,
+    String? name, {
+    String? parentName,
+  }) {
+    name ??= exprNames[expr];
+    return expr.when(
+      and: (and) {
+        final allRaw = and.expressions.whereType<ExprRaw>().toList();
+
+        String? _name = name;
+        if (name == null && parentName != null && allRaw.isNotEmpty) {
+          if (allRaw.length == and.expressions.length) {
+            _name = '${parentName}Enum';
+          } else {
+            _name = '${parentName}${allRaw.first.value}';
+          }
+        }
+        if (allRaw.length == and.expressions.length) {
+          types.add(
+              'enum ${_name} {${allRaw.map((e) => '${rawTokenName(e)},').join('')}}');
+        } else {
+          types.add('struct ${_name} {${and.expressions.map((e) {
+            return toRustStructGrammarExpr(e, null, parentName: name);
+          }).join(',')}}');
+        }
+
+        return '${_name}: ${_name}';
+      },
+      or: (or) {
+        final allRaw = or.expressions.whereType<ExprRaw>().toList();
+        if (allRaw.length == or.expressions.length) {
+          types.add(
+              'enum ${name} {${allRaw.map((e) => '${rawTokenName(e)},').join('')}}');
+        } else {
+          int i = 0;
+          types.add('enum ${name} {${or.expressions.map((e) {
+            // if (e is ExprAnd) {
+            //   return 'v${i++}{${toRustStructGrammarExpr(e, '')}},';
+            // }
+            final variant = 'v${i++}';
+            return '$variant{${toRustStructGrammarExpr(
+              e,
+              null,
+              parentName: '${name}$variant',
+            )}},';
+          }).join('')}}');
+        }
+        return '${name}: ${name}';
+      },
+      simple: (simple) => simple.whenSimple(
+        any: (any) => 'ANY',
+        id: (id) =>
+            '${name ?? id.value}: ${id.value.toUpperCase() == id.value ? 'Token' : id.value}',
+        modified: (modified) {
+          final inner = toRustStructGrammarExpr(
+            modified.expression,
+            name,
+            parentName: parentName,
+          ).split(':').map((e) => e.trim()).toList();
+          switch (modified.modifier) {
+            case Modifier.optional:
+              return '${inner[0]}: Option<${inner[1]}>';
+            case Modifier.plus:
+            case Modifier.star:
+              return '${inner[0]}: Vec<${inner[1]}>';
+          }
+        },
+        negated: (v) => '${name}: Token',
+        raw: (v) => '${name ?? rawTokenName(v)}: Token',
+        rawRange: (v) =>
+            '${name ?? '${rawTokenName(v.start)}To${rawTokenName(v.end)}'}: Token',
+      )!,
+    )!;
+  }
+}
+
+String rawTokenName(ExprRaw raw) {
+  final value = tokenNames[raw.value] ?? raw.value;
+  return '${value}Token';
+}
+
+const tokenNames = {
+  "\\": "back",
+  "\'": "quote",
+  "\$": "dollar",
+  "\r": "",
+  "\n": "newline",
+  "\"": "doubleQuote",
+// "n"
+// "r"
+// "b"
+// "t"
+// "v"
+// "x"
+// "u"
+// "let"
+// "in"
+// "late"
+// "final"
+// "const"
+// "var"
+  "=": "equal",
+  ",": "comma",
+// "async"
+  ";": "semicolon",
+  "=>": "arrow",
+  "*": "asterisk",
+  // "sync",
+  "{": "openCurlyBracket",
+  "}": "closeCurlyBracket",
+  "(": "openParen",
+  ")": "closeParen",
+  "[": "openSquareBracket",
+  "]": "closeSquareBracket",
+  // "covariant",
+  "?": "question",
+  // "this",
+  ".": "period",
+  // "required",
+  ":": "colon",
+  // "abstract",
+  // "class",
+  // "static",
+  // "external",
+  // "operator",
+  "~": "tilde",
+  "[]": "squareBrackets",
+  "[]=": "quareBracketsEq",
+  "==": "doubleEqual",
+  // "get",
+  // "set",
+  // "super",
+  // "factory",
+  // "extends",
+  // "with",
+  // "implements",
+  // "mixin",
+  // "on",
+  // "extension",
+  // "enum",
+  "<": "less",
+  ">": "more",
+  "@": "at",
+  // "null",
+  "e": "exponent",
+  "E": "scientific",
+  "+": "plus",
+  "-": "minus",
+  "0x": "hex0x",
+  "0X": "hex0X",
+  // "a",
+  // "f",
+  // "A",
+  // "F",
+  // "true",
+  // "false",
+  "\${": "interpolationStart",
+  "'''": "tripleQuotes",
+  "\"\"\"": "tripleDoubleQuotes",
+  "''": "twoQuotes",
+  "\"\"": "tqoDoubleQuotes",
+  // TODO:
+  // "\f",
+  // "\b",
+  // "\t",
+  // "\v",
+  // "\r\n",
+  "#": "hash",
+  // "void",
+  "...": "pointsExpand",
+  "...?": "pointsExpandQuestion",
+  // "if",
+  // "else",
+  // "await",
+  // "for",
+  // "throw",
+  // "new",
+  "..": "pointsId",
+  "?..": "pointsIdQuestion",
+  "*=": "timesEqual",
+  "/=": "divEqual",
+  "~/=": "Equal",
+  "%=": "moduleEqual",
+  "+=": "plusEqual",
+  "-=": "minusEqual",
+  // TODO:
+  // "<<=": "",
+  // ">>>=": "",
+  // ">>=": "",
+  "&=": "bitAndEuqal",
+  "^=": "bitNegEqual",
+  "|=": "bitOrEqual",
+  "??=": "questionQuestionEqual",
+  "??": "questionQuestion",
+  "||": "or",
+  "&&": "and",
+  "!=": "notEqual",
+  ">=": "moreOrEqual",
+  "<=": "lessOrEqual",
+  "|": "bitOr",
+  "^": "bitNeg",
+  "&": "bitAnd",
+  // TODO:
+  "<<": "bitLeft",
+  ">>>": "bitRight0",
+  ">>": "bitRight",
+  "/": "divide",
+  "%": "modulus",
+  "~/": "tildeEqual",
+  "!": "exclamation",
+  "++": "plusPlus",
+  "--": "minusMinus",
+  "?.": "questionId",
+  // "dynamic",
+  // "as",
+  // "deferred",
+  // "export",
+  // "Function",
+  // "import",
+  // "interface",
+  // "library",
+  // "part",
+  // "typedef",
+  // "hide",
+  // "of",
+  // "show",
+  // "yield",
+  "_": "underscore",
+  // "z",
+  // "Z",
+  // "0",
+  // "9",
+  " ": "space",
+  // "is",
+  // "while",
+  // "do",
+  // "switch",
+  // "case",
+  // "default",
+  // "rethrow",
+  // "try",
+  // "catch",
+  // "finally",
+  // "return",
+  // "break",
+  // "continue",
+  // "assert",
+  "#!": "hashExclamation",
+  "//": "comment",
+  "/*": "commentMultilineStart",
+  "*/": "commentMultilineEnd",
+};
