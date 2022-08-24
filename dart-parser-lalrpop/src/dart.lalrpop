@@ -1,0 +1,22 @@
+use crate::ast::{FinalConstVarOrType};
+
+grammar;
+
+pub IDENTIFIER = r"[a-zA-Z0-9_$]+";
+
+pub typeIdentifier = {IDENTIFIER, "dynamic"};
+
+pub dartType = typeIdentifier;
+
+pub varOrType = {"var" , dartType};
+
+pub finalConstVarOrType: Box<FinalConstVarOrType> = {
+    <late:("late")?> "final" <t:(dartType)?> => Box::new(FinalConstVarOrType{
+        is_final: true, is_const: false, is_late: late.is_some(), dart_type: t.map(|p| p.to_string())}),
+    "const" <t:(dartType)?> => Box::new(FinalConstVarOrType{
+        is_final: true, is_const: true, is_late: false, dart_type: t.map(|p| p.to_string())}),
+    <late:("late")?> <t:varOrType> => Box::new(FinalConstVarOrType{
+        is_final: false, is_const: false, is_late: late.is_some(), dart_type: Some(t.to_string())}),
+};
+
+pub fieldFormalParameter = {(finalConstVarOrType)? "this" "." IDENTIFIER};
