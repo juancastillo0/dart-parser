@@ -295,3 +295,102 @@ Parser<List<Item>> document() => item()
 //
 // https://github.com/dart-lang/language/blob/master/specification/dartLangSpec.tex
 // commit a3b45ab2bc4e2442c909252858119ffd2e8c685a
+void main() async {
+  final content = await File('./lib/plaintext_grammar.txt').readAsString();
+
+  // var r = document().end().parse(
+  //     "letExpression ::= 'let' staticFinalDeclarationList 'in' expression");
+  // print(r);
+
+// RAW_SINGLE_LINE_STRING ::=
+//   'r' '\'' (\gtilde('\'' | '\r' | '\n'))* '\''
+//   | 'r' '"' (\gtilde('"' | '\r' | '\n'))* '"'
+
+  // r = trace(raw()).parse(r"'\''");
+  // print(r);
+  // r = trace(raw()).parse("'\"'");
+  // print(r);
+  final r = document().end().parse(
+//     r'''
+// STRING_CONTENT_COMMON ::= \gtilde('\' | '\'' | '"' | '$' | '\r' | '\n')''',
+    r"""
+STRING_CONTENT_COMMON ::= ~('\\' | '\'' | '$' | '\r' | '\n' | '"')
+  | ESCAPE_SEQUENCE
+  | '\\' ~('n' | 'r' | 'b' | 't' | 'v' | 'x' | 'u' | '\r' | '\n')
+  | SIMPLE_STRING_INTERPOLATION""",
+  );
+  print(r);
+
+  final result = document().end().parse(content);
+
+  if (result.isSuccess) {
+    final items = result.value;
+    // print(items.join('\n\n'));
+    print(Ctx().toRustTypes(items));
+    // print(ExprRaw.allRaw.map((e) => '"${e}"').join('\n'));
+
+    // await File('./dart-parser-pest/src/dart.pest')
+    //     .writeAsString(toPestGrammar(items));
+  } else {
+    print(result);
+  }
+}
+
+const pestExpressionMapper = {
+  // SINGLE_LINE_COMMENT = @{("//" ~ (!(NEWLINE) ~ ANY)*)}
+  'RESERVED_WORD':
+      '@{("assert" | "break" | "case" | "catch" | "class" | "const" | "continue" | "default" | "do" | "else" | "enum" | "extends" | "false" | "final" | "finally" | "for" | "if" | "in" | "is" | "new" | "null" | "rethrow" | "return" | "super" | "switch" | "this" | "throw" | "true" | "try" | "var" | "void" | "while" | "with") ~ !IDENTIFIER}',
+  // was '@{(IDENTIFIER_START ~ (IDENTIFIER_PART)*)}',
+  'IDENTIFIER': '@{!RESERVED_WORD ~ (IDENTIFIER_START ~ (IDENTIFIER_PART)*)}',
+  // TODO: was '{((cascade ~ ".." ~ cascadeSection) | (conditionalExpression ~ ("?.." | "..") ~ cascadeSection))}'
+  'cascade':
+      '{(".." ~ cascadeSection)+ | (conditionalExpression ~ ("?.." | "..") ~ cascadeSection)}',
+  // TODO: was '@{("\n" | "\r" | "\f" | "\b" | "\t" | "\v" | ("\x" ~ HEX_DIGIT ~ HEX_DIGIT) | ("\u" ~ HEX_DIGIT ~ HEX_DIGIT ~ HEX_DIGIT ~ HEX_DIGIT) | ("\u{" ~ HEX_DIGIT_SEQUENCE ~ "}"))}',
+  'ESCAPE_SEQUENCE':
+      r'@{("\n" | "\r" | "\\f" | "\\b" | "\t" | "\\v" | ("\\x" ~ HEX_DIGIT ~ HEX_DIGIT) | ("\\u" ~ HEX_DIGIT ~ HEX_DIGIT ~ HEX_DIGIT ~ HEX_DIGIT) | ("\\u{" ~ HEX_DIGIT_SEQUENCE ~ "}"))}',
+};
+
+String toPestGrammar(List<Item> items) {
+  return items.followedBy([
+    Item(
+      ExprId('COMMENT'),
+      ExprOr([
+        ExprId('SINGLE_LINE_COMMENT'),
+        ExprId('MULTI_LINE_COMMENT'),
+      ]),
+    )
+  ]).map((e) {
+    if (pestExpressionMapper.containsKey(e.id.value)) {
+      return '${toPestGrammarId(e.id)} = ${pestExpressionMapper[e.id.value]!}';
+    }
+    final mod = e.id.value.toUpperCase() == e.id.value ? '@' : '';
+    return '${toPestGrammarId(e.id)} = ${mod}{${toPestGrammarExpr(e.expression)}}';
+  }).join('\n\n');
+}
+
+const pestIdMapper = {'type': 'dartType', 'EOF': 'EOI'};
+String toPestGrammarId(ExprId id) {
+  return pestIdMapper[id.value] ?? id.value;
+}
+
+String toPestGrammarExpr(Expr expr) {
+  return expr.when(
+    and: (and) => '(${and.expressions.map(toPestGrammarExpr).join(' ~ ')})',
+    or: (or) => '(${or.expressions.map(toPestGrammarExpr).join(' | ')})',
+    simple: (simple) => simple.whenSimple(
+      any: (any) => 'ANY',
+      id: toPestGrammarId,
+      modified: (modified) =>
+          '(${toPestGrammarExpr(modified.expression)})${modified.modifier.value}',
+      negated: (negated) =>
+          '(!(${toPestGrammarExpr(negated.expression)}) ~ ANY)',
+      raw: (raw) => '"${toPestGrammarRaw(raw)}"',
+      rawRange: (rawRange) =>
+          "'${toPestGrammarRaw(rawRange.start)}'..'${toPestGrammarRaw(rawRange.end)}'",
+    )!,
+  )!;
+}
+
+String toPestGrammarRaw(ExprRaw raw) {
+  return raw.value.replaceAll("\\'", "'").replaceAll('"', '\\"');
+}
