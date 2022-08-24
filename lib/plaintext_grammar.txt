@@ -257,12 +257,12 @@ singleLineString ::= RAW_SINGLE_LINE_STRING
        SINGLE_LINE_STRING_DQ_MID_END
 
 RAW_SINGLE_LINE_STRING ::=
-  'r' '\'' (\gtilde('\'' | '\r' | '\n'))* '\''
-  | 'r' '"' (\gtilde('"' | '\r' | '\n'))* '"'
+  'r' '\'' (~('\'' | '\r' | '\n'))* '\''
+  | 'r' '"' (~('"' | '\r' | '\n'))* '"'
 
-STRING_CONTENT_COMMON ::= \gtilde('\' | '\'' | '"' | '$' | '\r' | '\n')
+STRING_CONTENT_COMMON ::= ~('\\' | '\'' | '"' | '$' | '\r' | '\n')
   | ESCAPE_SEQUENCE
-  | '\' \gtilde('n' | 'r' | 'b' | 't' | 'v' | 'x' | 'u' | '\r' | '\n')
+  | '\\' ~('n' | 'r' | 'b' | 't' | 'v' | 'x' | 'u' | '\r' | '\n')
   | SIMPLE_STRING_INTERPOLATION
 
 STRING_CONTENT_SQ ::= STRING_CONTENT_COMMON | '"'
@@ -306,36 +306,36 @@ multilineString ::= RAW_MULTI_LINE_STRING
 RAW_MULTI_LINE_STRING ::= 'r' '\'\'\'' .*? '\'\'\''
   | 'r' '"""' .*? '"""'
 
-QUOTES_SQ ::= | '\'' | '\'\''
+QUOTES_SQ ::= '\'' | '\'\''
 
 STRING_CONTENT_TSQ ::=
-  QUOTES_SQ (STRING_CONTENT_COMMON | '"' | '\r' | '\n')
+  QUOTES_SQ? (STRING_CONTENT_COMMON | '"' | '\r' | '\n')
 
 MULTI_LINE_STRING_SQ_BEGIN_END ::=
   '\'\'\'' STRING_CONTENT_TSQ* '\'\'\''
 
 MULTI_LINE_STRING_SQ_BEGIN_MID ::=
-  '\'\'\'' STRING_CONTENT_TSQ* QUOTES_SQ '${'
+  '\'\'\'' STRING_CONTENT_TSQ* QUOTES_SQ? '${'
 
 MULTI_LINE_STRING_SQ_MID_MID ::=
-  '}' STRING_CONTENT_TSQ* QUOTES_SQ '${'
+  '}' STRING_CONTENT_TSQ* QUOTES_SQ? '${'
 
 MULTI_LINE_STRING_SQ_MID_END ::=
   '}' STRING_CONTENT_TSQ* '\'\'\''
 
-QUOTES_DQ ::= | '"' | '""'
+QUOTES_DQ ::= '"' | '""'
 
 STRING_CONTENT_TDQ ::=
-  QUOTES_DQ (STRING_CONTENT_COMMON | '\'' | '\r' | '\n')
+  QUOTES_DQ? (STRING_CONTENT_COMMON | '\'' | '\r' | '\n')
 
 MULTI_LINE_STRING_DQ_BEGIN_END ::=
   '"""' STRING_CONTENT_TDQ* '"""'
 
 MULTI_LINE_STRING_DQ_BEGIN_MID ::=
-  '"""' STRING_CONTENT_TDQ* QUOTES_DQ '${'
+  '"""' STRING_CONTENT_TDQ* QUOTES_DQ? '${'
 
 MULTI_LINE_STRING_DQ_MID_MID ::=
-  '}' STRING_CONTENT_TDQ* QUOTES_DQ '${'
+  '}' STRING_CONTENT_TDQ* QUOTES_DQ? '${'
 
 MULTI_LINE_STRING_DQ_MID_END ::=
   '}' STRING_CONTENT_TDQ* '"""'
@@ -535,7 +535,7 @@ argumentPart ::=
   typeArguments? arguments
 
 incrementOperator ::= '++'
-  | '-\mbox-'
+  | '--'
 
 assignableExpression ::= primary assignableSelectorPart
   | 'super' unconditionalAssignableSelector
@@ -563,11 +563,11 @@ qualifiedName ::= typeIdentifier '.' identifier
   | typeIdentifier '.' typeIdentifier '.' identifier
 
 BUILT_IN_IDENTIFIER ::= 'abstract' | 'as' | 'covariant' | 'deferred'
-  |\hspace{-3mm} 'dynamic' | 'export' | 'external' | 'extension' |
+  | 'dynamic' | 'export' | 'external' | 'extension' |
     'factory' | 'Function' | 'get'
-  |\hspace{-3mm} 'implements' | 'import' | 'interface' | 'late' |
+  | 'implements' | 'import' | 'interface' | 'late' |
     'library' | 'mixin' | 'operator'
-  |\hspace{-3mm} 'part' | 'required' | 'set' | 'static' | 'typedef'
+  | 'part' | 'required' | 'set' | 'static' | 'typedef'
 
 OTHER_IDENTIFIER ::=
   'async' | 'hide' | 'of' | 'on' | 'show' | 'sync' |
@@ -676,7 +676,7 @@ yieldEachStatement ::= 'yield' '*' expression ';'
 
 assertStatement ::= assertion ';'
 
-assertion ::= 'assert' '(' expression (',' expression )? ','? ')'
+assertion ::= 'assert' '(' expression (',' expression)? ','? ')'
 
 topLevelDeclaration ::= classDeclaration
   | mixinDeclaration
@@ -697,7 +697,7 @@ libraryDeclaration ::=
   scriptTag? libraryName? importOrExport* partDirective*
   (metadata topLevelDeclaration)* EOF
 
-scriptTag ::= '#!' (\gtildeNEWLINE)* NEWLINE
+scriptTag ::= '#!' (~NEWLINE)* NEWLINE
 
 libraryName ::= metadata 'library' dottedIdentifierList ';'
 
@@ -796,13 +796,13 @@ functionPrefix ::= type? identifier
 
 RESERVED_WORD ::= 'assert' | 'break' | 'case' | 'catch' |
     'class' | 'const'
-  |\hspace{-3mm} 'continue' | 'default' | 'do' | 'else' | 'enum' |
+  | 'continue' | 'default' | 'do' | 'else' | 'enum' |
     'extends' | 'false' | 'final' | 'finally' | 'for'
-  |\hspace{-3mm} 'if' | 'in' | 'is' | 'new' | 'null' | 'rethrow' |
+  | 'if' | 'in' | 'is' | 'new' | 'null' | 'rethrow' |
     'return' | 'super' | 'switch' | 'this' | 'throw'
-  |\hspace{-3mm} 'true' | 'try' | 'var' | 'void' | 'while' | 'with'
+  | 'true' | 'try' | 'var' | 'void' | 'while' | 'with'
 
-SINGLE_LINE_COMMENT ::= '//' \gtilde(NEWLINE)* (NEWLINE)?
+SINGLE_LINE_COMMENT ::= '//' ~(NEWLINE)* (NEWLINE)?
 
 MULTI_LINE_COMMENT ::=
-  '/*' (MULTI_LINE_COMMENT | ~ '*/')* '*/'
+  '/*' (MULTI_LINE_COMMENT | ~'*/')* '*/'
