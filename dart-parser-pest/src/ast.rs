@@ -2743,3 +2743,9 @@ struct FunctionPrefix {
     dart_type: Option<Type>,
     identifier: Identifier,
 }
+
+/// Or( Id(SINGLE_LINE_COMMENT), Id(MULTI_LINE_COMMENT), )
+enum Comment {
+    SingleLineComment(Token),
+    MultiLineComment(Token),
+}

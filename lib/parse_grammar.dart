@@ -445,7 +445,7 @@ class Ctx {
   String toRustTypes(List<Item> items) {
     items.followedBy([
       Item(
-        ExprId('COMMENT'),
+        ExprId('comment'),
         ExprOr([
           ExprId('SINGLE_LINE_COMMENT'),
           ExprId('MULTI_LINE_COMMENT'),
