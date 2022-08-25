@@ -508,7 +508,9 @@ class Ctx {
             final field = toRustStructGrammarExpr(e, null, parentName: name);
             final fieldName = field.name;
             final count = addFieldName(fieldName ?? 'null');
-            return count == 1 ? field : '${fieldName}${count}: ${field.type}';
+            return count == 1
+                ? field
+                : '${('${fieldName}${count}').snakeCase}: ${field.type}';
           }).join(',')}}',
         );
 
@@ -628,7 +630,7 @@ String? pascalCase(String? value) =>
 
 String rawTokenName(ExprRaw raw) {
   final value = tokenNames[raw.value] ?? raw.value;
-  return '${value}Token';
+  return pascalCase('${value}Token')!;
 }
 
 bool isFlatExpression(Expr expr) =>

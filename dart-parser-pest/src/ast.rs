@@ -41,7 +41,7 @@ enum VarOrType {
 }
 
 /// And(Raw(=), Id(expression))
-struct Expressionequal {
+struct ExpressionEqual {
     equal_token: Token,
     expression: Expression,
 }
@@ -55,14 +55,14 @@ struct InitializedIdentifierItem {
 /// And(Id(declaredIdentifier), Modified(?,And(Raw(=), Id(expression))), Modified(*,And(Raw(,), Id(initializedIdentifier))))
 struct InitializedVariableDeclaration {
     declared_identifier: DeclaredIdentifier,
-    expressionequal: Option<Expressionequal>,
+    expression_equal: Option<ExpressionEqual>,
     initialized_identifier_item: Vec<InitializedIdentifierItem>,
 }
 
 /// And(Id(identifier), Modified(?,And(Raw(=), Id(expression))))
 struct InitializedIdentifier {
     identifier: Identifier,
-    expressionequal: Option<Expressionequal>,
+    expression_equal: Option<ExpressionEqual>,
 }
 
 /// And(Id(initializedIdentifier), Modified(*,And(Raw(,), Id(initializedIdentifier))))
@@ -274,7 +274,7 @@ struct FieldFormalParameter {
 /// And(Id(normalFormalParameter), Modified(?,And(Raw(=), Id(expression))))
 struct DefaultFormalParameter {
     normal_formal_parameter: NormalFormalParameter,
-    expressionequal: Option<Expressionequal>,
+    expression_equal: Option<ExpressionEqual>,
 }
 
 /// Or( Raw(=), Raw(:), )
@@ -1402,7 +1402,7 @@ struct ConditionalExpressionExpressionWithoutCascade {
     question_token: Token,
     expression_without_cascade: ExpressionWithoutCascade,
     colon_token: Token,
-    expressionWithoutCascade2: ExpressionWithoutCascade,
+    expression_without_cascade2: ExpressionWithoutCascade,
 }
 
 /// And(Id(ifNullExpression), Modified(?,And(Raw(?), Id(expressionWithoutCascade), Raw(:), Id(expressionWithoutCascade))))
@@ -1412,7 +1412,7 @@ struct ConditionalExpression {
 }
 
 /// And(Raw(??), Id(logicalOrExpression))
-struct LogicalOrExpressionquestionQuestion {
+struct LogicalOrExpressionQuestionQuestion {
     question_question_token: Token,
     logical_or_expression: LogicalOrExpression,
 }
@@ -1420,11 +1420,11 @@ struct LogicalOrExpressionquestionQuestion {
 /// And(Id(logicalOrExpression), Modified(*,And(Raw(??), Id(logicalOrExpression))))
 struct IfNullExpression {
     logical_or_expression: LogicalOrExpression,
-    logical_or_expressionquestion_question: Vec<LogicalOrExpressionquestionQuestion>,
+    logical_or_expression_question_question: Vec<LogicalOrExpressionQuestionQuestion>,
 }
 
 /// And(Raw(||), Id(logicalAndExpression))
-struct LogicalAndExpressionor {
+struct LogicalAndExpressionOr {
     or_token: Token,
     logical_and_expression: LogicalAndExpression,
 }
@@ -1432,11 +1432,11 @@ struct LogicalAndExpressionor {
 /// And(Id(logicalAndExpression), Modified(*,And(Raw(||), Id(logicalAndExpression))))
 struct LogicalOrExpression {
     logical_and_expression: LogicalAndExpression,
-    logical_and_expressionor: Vec<LogicalAndExpressionor>,
+    logical_and_expression_or: Vec<LogicalAndExpressionOr>,
 }
 
 /// And(Raw(&&), Id(equalityExpression))
-struct EqualityExpressionand {
+struct EqualityExpressionAnd {
     and_token: Token,
     equality_expression: EqualityExpression,
 }
@@ -1444,7 +1444,7 @@ struct EqualityExpressionand {
 /// And(Id(equalityExpression), Modified(*,And(Raw(&&), Id(equalityExpression))))
 struct LogicalAndExpression {
     equality_expression: EqualityExpression,
-    equality_expressionand: Vec<EqualityExpressionand>,
+    equality_expression_and: Vec<EqualityExpressionAnd>,
 }
 
 /// And(Id(equalityOperator), Id(relationalExpression))
@@ -1519,7 +1519,7 @@ enum RelationalOperator {
 }
 
 /// And(Raw(|), Id(bitwiseXorExpression))
-struct BitwiseXorExpressionbitXor {
+struct BitwiseXorExpressionBitXor {
     bit_xor_token: Token,
     bitwise_xor_expression: BitwiseXorExpression,
 }
@@ -1527,13 +1527,13 @@ struct BitwiseXorExpressionbitXor {
 /// And(Id(bitwiseXorExpression), Modified(*,And(Raw(|), Id(bitwiseXorExpression))))
 struct BitwiseOrExpressionBitwiseXorExpression {
     bitwise_xor_expression: BitwiseXorExpression,
-    bitwise_xor_expressionbit_xor: Vec<BitwiseXorExpressionbitXor>,
+    bitwise_xor_expression_bit_xor: Vec<BitwiseXorExpressionBitXor>,
 }
 
 /// And(Raw(super), Modified(+,And(Raw(|), Id(bitwiseXorExpression))))
 struct BitwiseOrExpressionSuperToken {
     super_token: Token,
-    bitwise_xor_expressionbit_xor: Vec<BitwiseXorExpressionbitXor>,
+    bitwise_xor_expression_bit_xor: Vec<BitwiseXorExpressionBitXor>,
 }
 
 /// Or( And(Id(bitwiseXorExpression), Modified(*,And(Raw(|), Id(bitwiseXorExpression)))), And(Raw(super), Modified(+,And(Raw(|), Id(bitwiseXorExpression)))), )
@@ -1543,7 +1543,7 @@ enum BitwiseOrExpression {
 }
 
 /// And(Raw(^), Id(bitwiseAndExpression))
-struct BitwiseAndExpressionbitNeg {
+struct BitwiseAndExpressionBitNeg {
     bit_neg_token: Token,
     bitwise_and_expression: BitwiseAndExpression,
 }
@@ -1551,13 +1551,13 @@ struct BitwiseAndExpressionbitNeg {
 /// And(Id(bitwiseAndExpression), Modified(*,And(Raw(^), Id(bitwiseAndExpression))))
 struct BitwiseXorExpressionBitwiseAndExpression {
     bitwise_and_expression: BitwiseAndExpression,
-    bitwise_and_expressionbit_neg: Vec<BitwiseAndExpressionbitNeg>,
+    bitwise_and_expression_bit_neg: Vec<BitwiseAndExpressionBitNeg>,
 }
 
 /// And(Raw(super), Modified(+,And(Raw(^), Id(bitwiseAndExpression))))
 struct BitwiseXorExpressionSuperToken {
     super_token: Token,
-    bitwise_and_expressionbit_neg: Vec<BitwiseAndExpressionbitNeg>,
+    bitwise_and_expression_bit_neg: Vec<BitwiseAndExpressionBitNeg>,
 }
 
 /// Or( And(Id(bitwiseAndExpression), Modified(*,And(Raw(^), Id(bitwiseAndExpression)))), And(Raw(super), Modified(+,And(Raw(^), Id(bitwiseAndExpression)))), )
@@ -1567,7 +1567,7 @@ enum BitwiseXorExpression {
 }
 
 /// And(Raw(&), Id(shiftExpression))
-struct ShiftExpressionbitAnd {
+struct ShiftExpressionBitAnd {
     bit_and_token: Token,
     shift_expression: ShiftExpression,
 }
@@ -1575,13 +1575,13 @@ struct ShiftExpressionbitAnd {
 /// And(Id(shiftExpression), Modified(*,And(Raw(&), Id(shiftExpression))))
 struct BitwiseAndExpressionShiftExpression {
     shift_expression: ShiftExpression,
-    shift_expressionbit_and: Vec<ShiftExpressionbitAnd>,
+    shift_expression_bit_and: Vec<ShiftExpressionBitAnd>,
 }
 
 /// And(Raw(super), Modified(+,And(Raw(&), Id(shiftExpression))))
 struct BitwiseAndExpressionSuperToken {
     super_token: Token,
-    shift_expressionbit_and: Vec<ShiftExpressionbitAnd>,
+    shift_expression_bit_and: Vec<ShiftExpressionBitAnd>,
 }
 
 /// Or( And(Id(shiftExpression), Modified(*,And(Raw(&), Id(shiftExpression)))), And(Raw(super), Modified(+,And(Raw(&), Id(shiftExpression)))), )
@@ -1884,8 +1884,8 @@ struct QualifiedNameSingle {
 struct QualifiedNameDouble {
     type_identifier: TypeIdentifier,
     period_token: Token,
-    typeIdentifier2: TypeIdentifier,
-    periodToken2: Token,
+    type_identifier2: TypeIdentifier,
+    period_token2: Token,
     identifier: Identifier,
 }
 
@@ -2448,7 +2448,7 @@ struct ConfigurationUri {
 }
 
 /// And(Raw(==), Id(stringLiteral))
-struct StringLiteraldoubleEqual {
+struct StringLiteralDoubleEqual {
     double_equal_token: Token,
     string_literal: StringLiteral,
 }
@@ -2456,7 +2456,7 @@ struct StringLiteraldoubleEqual {
 /// And(Id(dottedIdentifierList), Modified(?,And(Raw(==), Id(stringLiteral))))
 struct UriTest {
     dotted_identifier_list: DottedIdentifierList,
-    string_literaldouble_equal: Option<StringLiteraldoubleEqual>,
+    string_literal_double_equal: Option<StringLiteralDoubleEqual>,
 }
 
 /// And(Id(functionType), Modified(?,Raw(?)))
