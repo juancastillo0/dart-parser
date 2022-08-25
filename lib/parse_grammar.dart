@@ -547,11 +547,11 @@ class Ctx {
             final inner = toRustStructGrammarExpr(
               e,
               null,
-              parentName: '${name}$variant',
+              parentName: '${name}',
             );
             if (e is ExprAnd) {
               final innerName = (inner.name ?? 'null')
-                  .replaceFirst('${name}$variant', '')
+                  .replaceFirst('${name}', '')
                   .replaceFirst(RegExp('Token\$'), '');
 
               return '${innerName}(${inner.type}),';

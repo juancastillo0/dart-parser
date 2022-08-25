@@ -9,29 +9,29 @@ struct LetExpression {
 }
 
 /// And(Modified(?,Raw(late)), Raw(final), Modified(?,Id(type)))
-struct FinalConstVarOrTypeV0FinalToken {
+struct FinalConstVarOrTypeFinalToken {
     late_token: Option<Token>,
     final_token: Token,
     dart_type: Option<Type>,
 }
 
 /// And(Raw(const), Modified(?,Id(type)))
-struct FinalConstVarOrTypeV1ConstToken {
+struct FinalConstVarOrTypeConstToken {
     const_token: Token,
     dart_type: Option<Type>,
 }
 
 /// And(Modified(?,Raw(late)), Id(varOrType))
-struct FinalConstVarOrTypeV2VarOrType {
+struct FinalConstVarOrTypeVarOrType {
     late_token: Option<Token>,
     var_or_type: VarOrType,
 }
 
 /// Or( And(Modified(?,Raw(late)), Raw(final), Modified(?,Id(type))), And(Raw(const), Modified(?,Id(type))), And(Modified(?,Raw(late)), Id(varOrType)), )
 enum FinalConstVarOrType {
-    Final(FinalConstVarOrTypeV0FinalToken),
-    Const(FinalConstVarOrTypeV1ConstToken),
-    VarOrType(FinalConstVarOrTypeV2VarOrType),
+    Final(FinalConstVarOrTypeFinalToken),
+    Const(FinalConstVarOrTypeConstToken),
+    VarOrType(FinalConstVarOrTypeVarOrType),
 }
 
 /// Or( Raw(var), Id(type), )
@@ -85,7 +85,7 @@ struct FormalParameterPart {
 }
 
 /// And(Modified(?,Raw(async)), Raw(=>), Id(expression), Raw(;))
-struct FunctionBodyV0ArrowToken {
+struct FunctionBodyArrowToken {
     async_token: Option<Token>,
     arrow_token: Token,
     expression: Expression,
@@ -93,33 +93,33 @@ struct FunctionBodyV0ArrowToken {
 }
 
 /// And(Raw(async), Modified(?,Raw(*)))
-struct FunctionBodyGeneratorV0AsyncToken {
+struct FunctionBodyGeneratorAsyncToken {
     async_token: Token,
     asterisk_token: Option<Token>,
 }
 
 /// And(Raw(sync), Raw(*))
-struct FunctionBodyGeneratorV1SyncToken {
+struct FunctionBodyGeneratorSyncToken {
     sync_token: Token,
     asterisk_token: Token,
 }
 
 /// Or( And(Raw(async), Modified(?,Raw(*))), And(Raw(sync), Raw(*)), )
 enum FunctionBodyGenerator {
-    Async(FunctionBodyGeneratorV0AsyncToken),
-    Sync(FunctionBodyGeneratorV1SyncToken),
+    Async(FunctionBodyGeneratorAsyncToken),
+    Sync(FunctionBodyGeneratorSyncToken),
 }
 
 /// And(Modified(?,Or( And(Raw(async), Modified(?,Raw(*))), And(Raw(sync), Raw(*)), )), Id(block))
-struct FunctionBodyV1Block {
+struct FunctionBodyBlock {
     function_body_generator: Option<FunctionBodyGenerator>,
     block: Block,
 }
 
 /// Or( And(Modified(?,Raw(async)), Raw(=>), Id(expression), Raw(;)), And(Modified(?,Or( And(Raw(async), Modified(?,Raw(*))), And(Raw(sync), Raw(*)), )), Id(block)), )
 enum FunctionBody {
-    Arrow(FunctionBodyV0ArrowToken),
-    Block(FunctionBodyV1Block),
+    Arrow(FunctionBodyArrowToken),
+    Block(FunctionBodyBlock),
 }
 
 /// And(Raw({), Id(statements), Raw(}))
@@ -136,7 +136,7 @@ struct EmptyParameters {
 }
 
 /// And(Raw((), Id(normalFormalParameters), Modified(?,Raw(,)), Raw()))
-struct FormalParameterListV1NormalFormalParameters {
+struct FormalParameterListNormalFormalParameters {
     open_paren_token: Token,
     normal_formal_parameters: NormalFormalParameters,
     comma_token: Option<Token>,
@@ -153,7 +153,7 @@ struct NormalWithOptionalOrNamedParameters {
 }
 
 /// And(Raw((), Id(optionalOrNamedFormalParameters), Raw()))
-struct FormalParameterListV3OptionalOrNamedFormalParameters {
+struct FormalParameterListOptionalOrNamedFormalParameters {
     open_paren_token: Token,
     optional_or_named_formal_parameters: OptionalOrNamedFormalParameters,
     close_paren_token: Token,
@@ -162,9 +162,9 @@ struct FormalParameterListV3OptionalOrNamedFormalParameters {
 /// Or( And(Raw((), Raw())), And(Raw((), Id(normalFormalParameters), Modified(?,Raw(,)), Raw())), And(Raw((), Id(normalFormalParameters), Raw(,), Id(optionalOrNamedFormalParameters), Raw())), And(Raw((), Id(optionalOrNamedFormalParameters), Raw())), )
 enum FormalParameterList {
     EmptyParameters(EmptyParameters),
-    NormalFormalParameters(FormalParameterListV1NormalFormalParameters),
+    NormalFormalParameters(FormalParameterListNormalFormalParameters),
     NormalWithOptionalOrNamedParameters(NormalWithOptionalOrNamedParameters),
-    OptionalOrNamedFormalParameters(FormalParameterListV3OptionalOrNamedFormalParameters),
+    OptionalOrNamedFormalParameters(FormalParameterListOptionalOrNamedFormalParameters),
 }
 
 /// And(Raw(,), Id(normalFormalParameter))
@@ -238,7 +238,7 @@ struct FunctionFormalParameter {
 }
 
 /// And(Modified(?,Raw(covariant)), Id(identifier))
-struct SimpleFormalParameterV1Identifier {
+struct SimpleFormalParameterIdentifier {
     covariant_token: Option<Token>,
     identifier: Identifier,
 }
@@ -246,7 +246,7 @@ struct SimpleFormalParameterV1Identifier {
 /// Or( Id(declaredIdentifier), And(Modified(?,Raw(covariant)), Id(identifier)), )
 enum SimpleFormalParameter {
     DeclaredIdentifier(DeclaredIdentifier),
-    Identifier(SimpleFormalParameterV1Identifier),
+    Identifier(SimpleFormalParameterIdentifier),
 }
 
 /// And(Modified(?,Raw(covariant)), Id(finalConstVarOrType), Id(identifier))
@@ -304,7 +304,7 @@ struct ClassDeclarationMembers {
 }
 
 /// And(Modified(?,Raw(abstract)), Raw(class), Id(typeIdentifier), Modified(?,Id(typeParameters)), Modified(?,Id(superclass)), Modified(?,Id(interfaces)), Raw({), Modified(*,And(Id(metadata), Id(classMemberDeclaration))), Raw(}))
-struct ClassDeclarationV0ClassToken {
+struct ClassDeclarationClassToken {
     abstract_token: Option<Token>,
     class_token: Token,
     type_identifier: TypeIdentifier,
@@ -325,7 +325,7 @@ struct ClassDeclarationMixin {
 
 /// Or( And(Modified(?,Raw(abstract)), Raw(class), Id(typeIdentifier), Modified(?,Id(typeParameters)), Modified(?,Id(superclass)), Modified(?,Id(interfaces)), Raw({), Modified(*,And(Id(metadata), Id(classMemberDeclaration))), Raw(})), And(Modified(?,Raw(abstract)), Raw(class), Id(mixinApplicationClass)), )
 enum ClassDeclaration {
-    Class(ClassDeclarationV0ClassToken),
+    Class(ClassDeclarationClassToken),
     ClassDeclarationMixin(ClassDeclarationMixin),
 }
 
@@ -342,59 +342,59 @@ struct TypeNotVoidList {
 }
 
 /// And(Id(declaration), Raw(;))
-struct ClassMemberDeclarationV0SemicolonToken {
+struct ClassMemberDeclarationSemicolonToken {
     declaration: Declaration,
     semicolon_token: Token,
 }
 
 /// And(Id(methodSignature), Id(functionBody))
-struct ClassMemberDeclarationV1MethodSignature {
+struct ClassMemberDeclarationMethodSignature {
     method_signature: MethodSignature,
     function_body: FunctionBody,
 }
 
 /// Or( And(Id(declaration), Raw(;)), And(Id(methodSignature), Id(functionBody)), )
 enum ClassMemberDeclaration {
-    Semicolon(ClassMemberDeclarationV0SemicolonToken),
-    MethodSignature(ClassMemberDeclarationV1MethodSignature),
+    Semicolon(ClassMemberDeclarationSemicolonToken),
+    MethodSignature(ClassMemberDeclarationMethodSignature),
 }
 
 /// And(Id(constructorSignature), Modified(?,Id(initializers)))
-struct MethodSignatureV0ConstructorSignature {
+struct MethodSignatureConstructorSignature {
     constructor_signature: ConstructorSignature,
     initializers: Option<Initializers>,
 }
 
 /// And(Modified(?,Raw(static)), Id(functionSignature))
-struct MethodSignatureV2FunctionSignature {
+struct MethodSignatureFunctionSignature {
     static_token: Option<Token>,
     function_signature: FunctionSignature,
 }
 
 /// And(Modified(?,Raw(static)), Id(getterSignature))
-struct MethodSignatureV3GetterSignature {
+struct MethodSignatureGetterSignature {
     static_token: Option<Token>,
     getter_signature: GetterSignature,
 }
 
 /// And(Modified(?,Raw(static)), Id(setterSignature))
-struct MethodSignatureV4SetterSignature {
+struct MethodSignatureSetterSignature {
     static_token: Option<Token>,
     setter_signature: SetterSignature,
 }
 
 /// Or( And(Id(constructorSignature), Modified(?,Id(initializers))), Id(factoryConstructorSignature), And(Modified(?,Raw(static)), Id(functionSignature)), And(Modified(?,Raw(static)), Id(getterSignature)), And(Modified(?,Raw(static)), Id(setterSignature)), Id(operatorSignature), )
 enum MethodSignature {
-    ConstructorSignature(MethodSignatureV0ConstructorSignature),
+    ConstructorSignature(MethodSignatureConstructorSignature),
     FactoryConstructorSignature(FactoryConstructorSignature),
-    FunctionSignature(MethodSignatureV2FunctionSignature),
-    GetterSignature(MethodSignatureV3GetterSignature),
-    SetterSignature(MethodSignatureV4SetterSignature),
+    FunctionSignature(MethodSignatureFunctionSignature),
+    GetterSignature(MethodSignatureGetterSignature),
+    SetterSignature(MethodSignatureSetterSignature),
     OperatorSignature(OperatorSignature),
 }
 
 /// And(Raw(external), Id(factoryConstructorSignature))
-struct DeclarationV0FactoryConstructorSignature {
+struct DeclarationFactoryConstructorSignature {
     external_token: Token,
     factory_constructor_signature: FactoryConstructorSignature,
 }
@@ -418,25 +418,25 @@ struct ExternalMaybeStatic {
 }
 
 /// And(Modified(?,And(Raw(external), Modified(?,Raw(static)))), Id(getterSignature))
-struct DeclarationV3GetterSignature {
+struct DeclarationGetterSignature {
     external_maybe_static: Option<ExternalMaybeStatic>,
     getter_signature: GetterSignature,
 }
 
 /// And(Modified(?,And(Raw(external), Modified(?,Raw(static)))), Id(setterSignature))
-struct DeclarationV4SetterSignature {
+struct DeclarationSetterSignature {
     external_maybe_static: Option<ExternalMaybeStatic>,
     setter_signature: SetterSignature,
 }
 
 /// And(Modified(?,And(Raw(external), Modified(?,Raw(static)))), Id(functionSignature))
-struct DeclarationV5FunctionSignature {
+struct DeclarationFunctionSignature {
     external_maybe_static: Option<ExternalMaybeStatic>,
     function_signature: FunctionSignature,
 }
 
 /// And(Modified(?,Raw(external)), Id(operatorSignature))
-struct DeclarationV6OperatorSignature {
+struct DeclarationOperatorSignature {
     external_token: Option<Token>,
     operator_signature: OperatorSignature,
 }
@@ -492,7 +492,7 @@ struct CovariantVarOrType {
 }
 
 /// And(Modified(?,Raw(late)), Raw(final), Modified(?,Id(type)), Id(initializedIdentifierList))
-struct DeclarationV13FinalToken {
+struct DeclarationFinalToken {
     late_token: Option<Token>,
     final_token: Token,
     dart_type: Option<Type>,
@@ -500,7 +500,7 @@ struct DeclarationV13FinalToken {
 }
 
 /// And(Modified(?,Raw(late)), Id(varOrType), Id(initializedIdentifierList))
-struct DeclarationV14VarOrType {
+struct DeclarationVarOrType {
     late_token: Option<Token>,
     var_or_type: VarOrType,
     initialized_identifier_list: InitializedIdentifierList,
@@ -513,37 +513,37 @@ enum RedirectionOrInitializers {
 }
 
 /// And(Id(constantConstructorSignature), Modified(?,Or( Id(redirection), Id(initializers), )))
-struct DeclarationV16ConstantConstructorSignature {
+struct DeclarationConstantConstructorSignature {
     constant_constructor_signature: ConstantConstructorSignature,
     redirection_or_initializers: Option<RedirectionOrInitializers>,
 }
 
 /// And(Id(constructorSignature), Modified(?,Or( Id(redirection), Id(initializers), )))
-struct DeclarationV17ConstructorSignature {
+struct DeclarationConstructorSignature {
     constructor_signature: ConstructorSignature,
     redirection_or_initializers: Option<RedirectionOrInitializers>,
 }
 
 /// Or( And(Raw(external), Id(factoryConstructorSignature)), And(Raw(external), Id(constantConstructorSignature)), And(Raw(external), Id(constructorSignature)), And(Modified(?,And(Raw(external), Modified(?,Raw(static)))), Id(getterSignature)), And(Modified(?,And(Raw(external), Modified(?,Raw(static)))), Id(setterSignature)), And(Modified(?,And(Raw(external), Modified(?,Raw(static)))), Id(functionSignature)), And(Modified(?,Raw(external)), Id(operatorSignature)), And(Raw(static), Raw(const), Modified(?,Id(type)), Id(staticFinalDeclarationList)), And(Raw(static), Raw(final), Modified(?,Id(type)), Id(staticFinalDeclarationList)), And(Raw(static), Raw(late), Raw(final), Modified(?,Id(type)), Id(initializedIdentifierList)), And(Raw(static), Modified(?,Raw(late)), Id(varOrType), Id(initializedIdentifierList)), And(Raw(covariant), Raw(late), Raw(final), Modified(?,Id(type)), Id(identifierList)), And(Raw(covariant), Modified(?,Raw(late)), Id(varOrType), Id(initializedIdentifierList)), And(Modified(?,Raw(late)), Raw(final), Modified(?,Id(type)), Id(initializedIdentifierList)), And(Modified(?,Raw(late)), Id(varOrType), Id(initializedIdentifierList)), Id(redirectingFactoryConstructorSignature), And(Id(constantConstructorSignature), Modified(?,Or( Id(redirection), Id(initializers), ))), And(Id(constructorSignature), Modified(?,Or( Id(redirection), Id(initializers), ))), )
 enum Declaration {
-    FactoryConstructorSignature(DeclarationV0FactoryConstructorSignature),
+    FactoryConstructorSignature(DeclarationFactoryConstructorSignature),
     ExternalConstantConstructorSignature(ExternalConstantConstructorSignature),
     ExternalConstructorSignature(ExternalConstructorSignature),
-    GetterSignature(DeclarationV3GetterSignature),
-    SetterSignature(DeclarationV4SetterSignature),
-    FunctionSignature(DeclarationV5FunctionSignature),
-    OperatorSignature(DeclarationV6OperatorSignature),
+    GetterSignature(DeclarationGetterSignature),
+    SetterSignature(DeclarationSetterSignature),
+    FunctionSignature(DeclarationFunctionSignature),
+    OperatorSignature(DeclarationOperatorSignature),
     StaticConst(StaticConst),
     StaticFinal(StaticFinal),
     StaticLateFinal(StaticLateFinal),
     StaticVarOrType(StaticVarOrType),
     CovariantLateFinal(CovariantLateFinal),
     CovariantVarOrType(CovariantVarOrType),
-    Final(DeclarationV13FinalToken),
-    VarOrType(DeclarationV14VarOrType),
+    Final(DeclarationFinalToken),
+    VarOrType(DeclarationVarOrType),
     RedirectingFactoryConstructorSignature(RedirectingFactoryConstructorSignature),
-    ConstantConstructorSignature(DeclarationV16ConstantConstructorSignature),
-    ConstructorSignature(DeclarationV17ConstructorSignature),
+    ConstantConstructorSignature(DeclarationConstantConstructorSignature),
+    ConstructorSignature(DeclarationConstructorSignature),
 }
 
 /// And(Raw(,), Id(staticFinalDeclaration))
@@ -646,13 +646,13 @@ struct Initializers {
 }
 
 /// And(Raw(super), Id(arguments))
-struct InitializerListEntryV0Arguments {
+struct InitializerListEntryArguments {
     super_token: Token,
     arguments: Arguments,
 }
 
 /// And(Raw(super), Raw(.), Id(identifier), Id(arguments))
-struct InitializerListEntryV1SuperToken {
+struct InitializerListEntrySuperToken {
     super_token: Token,
     period_token: Token,
     identifier: Identifier,
@@ -661,8 +661,8 @@ struct InitializerListEntryV1SuperToken {
 
 /// Or( And(Raw(super), Id(arguments)), And(Raw(super), Raw(.), Id(identifier), Id(arguments)), Id(fieldInitializer), Id(assertion), )
 enum InitializerListEntry {
-    Arguments(InitializerListEntryV0Arguments),
-    Super(InitializerListEntryV1SuperToken),
+    Arguments(InitializerListEntryArguments),
+    Super(InitializerListEntrySuperToken),
     FieldInitializer(FieldInitializer),
     Assertion(Assertion),
 }
@@ -706,7 +706,7 @@ struct RedirectingFactoryConstructorSignature {
 }
 
 /// And(Id(typeName), Id(typeArguments), Modified(?,And(Raw(.), Id(identifier))))
-struct ConstructorDesignationV2TypeName {
+struct ConstructorDesignationTypeName {
     type_name: TypeName,
     type_arguments: TypeArguments,
     identifier_selector: Option<IdentifierSelector>,
@@ -716,7 +716,7 @@ struct ConstructorDesignationV2TypeName {
 enum ConstructorDesignation {
     TypeIdentifier(TypeIdentifier),
     QualifiedName(QualifiedName),
-    TypeName(ConstructorDesignationV2TypeName),
+    TypeName(ConstructorDesignationTypeName),
 }
 
 /// And(Raw(const), Id(constructorName), Id(formalParameterList))
@@ -727,7 +727,7 @@ struct ConstantConstructorSignature {
 }
 
 /// And(Raw(extends), Id(typeNotVoid), Modified(?,Id(mixins)))
-struct SuperclassV0TypeNotVoid {
+struct SuperclassTypeNotVoid {
     extends_token: Token,
     type_not_void: TypeNotVoid,
     mixins: Option<Mixins>,
@@ -735,7 +735,7 @@ struct SuperclassV0TypeNotVoid {
 
 /// Or( And(Raw(extends), Id(typeNotVoid), Modified(?,Id(mixins))), Id(mixins), )
 enum Superclass {
-    TypeNotVoid(SuperclassV0TypeNotVoid),
+    TypeNotVoid(SuperclassTypeNotVoid),
     Mixins(Mixins),
 }
 
@@ -869,7 +869,7 @@ struct MetadataItem {
 type Metadata = Vec<MetadataItem>;
 
 /// And(Id(constructorDesignation), Id(arguments))
-struct MetadatumV2ConstructorDesignation {
+struct MetadatumConstructorDesignation {
     constructor_designation: ConstructorDesignation,
     arguments: Arguments,
 }
@@ -878,11 +878,11 @@ struct MetadatumV2ConstructorDesignation {
 enum Metadatum {
     Identifier(Identifier),
     QualifiedName(QualifiedName),
-    ConstructorDesignation(MetadatumV2ConstructorDesignation),
+    ConstructorDesignation(MetadatumConstructorDesignation),
 }
 
 /// And(Id(assignableExpression), Id(assignmentOperator), Id(expression))
-struct ExpressionV0AssignableExpression {
+struct ExpressionAssignableExpression {
     assignable_expression: AssignableExpression,
     assignment_operator: AssignmentOperator,
     expression: Expression,
@@ -890,14 +890,14 @@ struct ExpressionV0AssignableExpression {
 
 /// Or( And(Id(assignableExpression), Id(assignmentOperator), Id(expression)), Id(conditionalExpression), Id(cascade), Id(throwExpression), )
 enum Expression {
-    AssignableExpression(ExpressionV0AssignableExpression),
+    AssignableExpression(ExpressionAssignableExpression),
     ConditionalExpression(ConditionalExpression),
     Cascade(Cascade),
     ThrowExpression(ThrowExpression),
 }
 
 /// And(Id(assignableExpression), Id(assignmentOperator), Id(expressionWithoutCascade))
-struct ExpressionWithoutCascadeV0AssignableExpression {
+struct ExpressionWithoutCascadeAssignableExpression {
     assignable_expression: AssignableExpression,
     assignment_operator: AssignmentOperator,
     expression_without_cascade: ExpressionWithoutCascade,
@@ -905,7 +905,7 @@ struct ExpressionWithoutCascadeV0AssignableExpression {
 
 /// Or( And(Id(assignableExpression), Id(assignmentOperator), Id(expressionWithoutCascade)), Id(conditionalExpression), Id(throwExpressionWithoutCascade), )
 enum ExpressionWithoutCascade {
-    AssignableExpression(ExpressionWithoutCascadeV0AssignableExpression),
+    AssignableExpression(ExpressionWithoutCascadeAssignableExpression),
     ConditionalExpression(ConditionalExpression),
     ThrowExpressionWithoutCascade(ThrowExpressionWithoutCascade),
 }
@@ -923,19 +923,19 @@ struct ExpressionList {
 }
 
 /// And(Raw(super), Id(unconditionalAssignableSelector))
-struct PrimaryV1UnconditionalAssignableSelector {
+struct PrimaryUnconditionalAssignableSelector {
     super_token: Token,
     unconditional_assignable_selector: UnconditionalAssignableSelector,
 }
 
 /// And(Raw(super), Id(argumentPart))
-struct PrimaryV2ArgumentPart {
+struct PrimaryArgumentPart {
     super_token: Token,
     argument_part: ArgumentPart,
 }
 
 /// And(Raw((), Id(expression), Raw()))
-struct PrimaryV9Expression {
+struct PrimaryExpression {
     open_paren_token: Token,
     expression: Expression,
     close_paren_token: Token,
@@ -944,15 +944,15 @@ struct PrimaryV9Expression {
 /// Or( Id(thisExpression), And(Raw(super), Id(unconditionalAssignableSelector)), And(Raw(super), Id(argumentPart)), Id(functionExpression), Id(literal), Id(identifier), Id(newExpression), Id(constObjectExpression), Id(constructorInvocation), And(Raw((), Id(expression), Raw())), )
 enum Primary {
     ThisExpression(ThisExpression),
-    UnconditionalAssignableSelector(PrimaryV1UnconditionalAssignableSelector),
-    ArgumentPart(PrimaryV2ArgumentPart),
+    UnconditionalAssignableSelector(PrimaryUnconditionalAssignableSelector),
+    ArgumentPart(PrimaryArgumentPart),
     FunctionExpression(FunctionExpression),
     Literal(Literal),
     Identifier(Identifier),
     NewExpression(NewExpression),
     ConstObjectExpression(ConstObjectExpression),
     ConstructorInvocation(ConstructorInvocation),
-    Expression(PrimaryV9Expression),
+    Expression(PrimaryExpression),
 }
 
 /// Or( Id(nullLiteral), Id(booleanLiteral), Id(numericLiteral), Id(stringLiteral), Id(symbolLiteral), Id(listLiteral), Id(setOrMapLiteral), )
@@ -997,7 +997,7 @@ struct ExpressionSingleLineStringSqMidMid {
 }
 
 /// And(Id(SINGLE_LINE_STRING_SQ_BEGIN_MID), Id(expression), Modified(*,And(Id(SINGLE_LINE_STRING_SQ_MID_MID), Id(expression))), Id(SINGLE_LINE_STRING_SQ_MID_END))
-struct SingleLineStringV2SingleLineStringSqBeginMid {
+struct SingleLineStringSingleLineStringSqBeginMid {
     single_line_string_sq_begin_mid: Token,
     expression: Expression,
     expression_single_line_string_sq_mid_mid: Vec<ExpressionSingleLineStringSqMidMid>,
@@ -1011,7 +1011,7 @@ struct ExpressionSingleLineStringDqMidMid {
 }
 
 /// And(Id(SINGLE_LINE_STRING_DQ_BEGIN_MID), Id(expression), Modified(*,And(Id(SINGLE_LINE_STRING_DQ_MID_MID), Id(expression))), Id(SINGLE_LINE_STRING_DQ_MID_END))
-struct SingleLineStringV4SingleLineStringDqBeginMid {
+struct SingleLineStringSingleLineStringDqBeginMid {
     single_line_string_dq_begin_mid: Token,
     expression: Expression,
     expression_single_line_string_dq_mid_mid: Vec<ExpressionSingleLineStringDqMidMid>,
@@ -1022,9 +1022,9 @@ struct SingleLineStringV4SingleLineStringDqBeginMid {
 enum SingleLineString {
     RawSingleLineString(Token),
     SingleLineStringSqBeginEnd(Token),
-    SingleLineStringSqBeginMid(SingleLineStringV2SingleLineStringSqBeginMid),
+    SingleLineStringSqBeginMid(SingleLineStringSingleLineStringSqBeginMid),
     SingleLineStringDqBeginEnd(Token),
-    SingleLineStringDqBeginMid(SingleLineStringV4SingleLineStringDqBeginMid),
+    SingleLineStringDqBeginMid(SingleLineStringSingleLineStringDqBeginMid),
 }
 
 /// And(Id(MULTI_LINE_STRING_SQ_MID_MID), Id(expression))
@@ -1034,7 +1034,7 @@ struct ExpressionMultiLineStringSqMidMid {
 }
 
 /// And(Id(MULTI_LINE_STRING_SQ_BEGIN_MID), Id(expression), Modified(*,And(Id(MULTI_LINE_STRING_SQ_MID_MID), Id(expression))), Id(MULTI_LINE_STRING_SQ_MID_END))
-struct MultilineStringV2MultiLineStringSqBeginMid {
+struct MultilineStringMultiLineStringSqBeginMid {
     multi_line_string_sq_begin_mid: Token,
     expression: Expression,
     expression_multi_line_string_sq_mid_mid: Vec<ExpressionMultiLineStringSqMidMid>,
@@ -1048,7 +1048,7 @@ struct ExpressionMultiLineStringDqMidMid {
 }
 
 /// And(Id(MULTI_LINE_STRING_DQ_BEGIN_MID), Id(expression), Modified(*,And(Id(MULTI_LINE_STRING_DQ_MID_MID), Id(expression))), Id(MULTI_LINE_STRING_DQ_MID_END))
-struct MultilineStringV4MultiLineStringDqBeginMid {
+struct MultilineStringMultiLineStringDqBeginMid {
     multi_line_string_dq_begin_mid: Token,
     expression: Expression,
     expression_multi_line_string_dq_mid_mid: Vec<ExpressionMultiLineStringDqMidMid>,
@@ -1059,13 +1059,13 @@ struct MultilineStringV4MultiLineStringDqBeginMid {
 enum MultilineString {
     RawMultiLineString(Token),
     MultiLineStringSqBeginEnd(Token),
-    MultiLineStringSqBeginMid(MultilineStringV2MultiLineStringSqBeginMid),
+    MultiLineStringSqBeginMid(MultilineStringMultiLineStringSqBeginMid),
     MultiLineStringDqBeginEnd(Token),
-    MultiLineStringDqBeginMid(MultilineStringV4MultiLineStringDqBeginMid),
+    MultiLineStringDqBeginMid(MultilineStringMultiLineStringDqBeginMid),
 }
 
 /// And(Raw(${), Id(expression), Raw(}))
-struct StringInterpolationV1Expression {
+struct StringInterpolationExpression {
     interpolation_start_token: Token,
     expression: Expression,
     close_curly_bracket_token: Token,
@@ -1074,7 +1074,7 @@ struct StringInterpolationV1Expression {
 /// Or( Id(SIMPLE_STRING_INTERPOLATION), And(Raw(${), Id(expression), Raw(})), )
 enum StringInterpolation {
     SimpleStringInterpolation(Token),
-    Expression(StringInterpolationV1Expression),
+    Expression(StringInterpolationExpression),
 }
 
 /// And(Raw(.), Id(identifier))
@@ -1084,14 +1084,14 @@ struct SymbolLiteralOtherIdentifiers {
 }
 
 /// And(Id(identifier), Modified(*,And(Raw(.), Id(identifier))))
-struct SymbolLiteralValueV0Identifier {
+struct SymbolLiteralValueIdentifier {
     identifier: Identifier,
     symbol_literal_other_identifiers: Vec<SymbolLiteralOtherIdentifiers>,
 }
 
 /// Or( And(Id(identifier), Modified(*,And(Raw(.), Id(identifier)))), Id(operator), Raw(void), )
 enum SymbolLiteralValue {
-    Identifier(SymbolLiteralValueV0Identifier),
+    Identifier(SymbolLiteralValueIdentifier),
     Operator(Operator),
     Void(Token),
 }
@@ -1209,40 +1209,40 @@ struct FunctionExpression {
 }
 
 /// And(Modified(?,Raw(async)), Raw(=>), Id(expression))
-struct FunctionExpressionBodyV0ArrowToken {
+struct FunctionExpressionBodyArrowToken {
     async_token: Option<Token>,
     arrow_token: Token,
     expression: Expression,
 }
 
 /// And(Raw(async), Modified(?,Raw(*)))
-struct FunctionExpressionGeneratorV0AsyncToken {
+struct FunctionExpressionGeneratorAsyncToken {
     async_token: Token,
     asterisk_token: Option<Token>,
 }
 
 /// And(Raw(sync), Raw(*))
-struct FunctionExpressionGeneratorV1SyncToken {
+struct FunctionExpressionGeneratorSyncToken {
     sync_token: Token,
     asterisk_token: Token,
 }
 
 /// Or( And(Raw(async), Modified(?,Raw(*))), And(Raw(sync), Raw(*)), )
 enum FunctionExpressionGenerator {
-    Async(FunctionExpressionGeneratorV0AsyncToken),
-    Sync(FunctionExpressionGeneratorV1SyncToken),
+    Async(FunctionExpressionGeneratorAsyncToken),
+    Sync(FunctionExpressionGeneratorSyncToken),
 }
 
 /// And(Modified(?,Or( And(Raw(async), Modified(?,Raw(*))), And(Raw(sync), Raw(*)), )), Id(block))
-struct FunctionExpressionBodyV1Block {
+struct FunctionExpressionBodyBlock {
     function_expression_generator: Option<FunctionExpressionGenerator>,
     block: Block,
 }
 
 /// Or( And(Modified(?,Raw(async)), Raw(=>), Id(expression)), And(Modified(?,Or( And(Raw(async), Modified(?,Raw(*))), And(Raw(sync), Raw(*)), )), Id(block)), )
 enum FunctionExpressionBody {
-    Arrow(FunctionExpressionBodyV0ArrowToken),
-    Block(FunctionExpressionBodyV1Block),
+    Arrow(FunctionExpressionBodyArrowToken),
+    Block(FunctionExpressionBodyBlock),
 }
 
 /// Raw(this)
@@ -1282,21 +1282,21 @@ struct NamedArgumentItem {
 }
 
 /// And(Id(namedArgument), Modified(*,And(Raw(,), Id(namedArgument))))
-struct ArgumentListV0NamedArgument {
+struct ArgumentListNamedArgument {
     named_argument: NamedArgument,
     named_argument_item: Vec<NamedArgumentItem>,
 }
 
 /// And(Id(expressionList), Modified(*,And(Raw(,), Id(namedArgument))))
-struct ArgumentListV1ExpressionList {
+struct ArgumentListExpressionList {
     expression_list: ExpressionList,
     named_argument_item: Vec<NamedArgumentItem>,
 }
 
 /// Or( And(Id(namedArgument), Modified(*,And(Raw(,), Id(namedArgument)))), And(Id(expressionList), Modified(*,And(Raw(,), Id(namedArgument)))), )
 enum ArgumentList {
-    NamedArgument(ArgumentListV0NamedArgument),
-    ExpressionList(ArgumentListV1ExpressionList),
+    NamedArgument(ArgumentListNamedArgument),
+    ExpressionList(ArgumentListExpressionList),
 }
 
 /// And(Id(label), Id(expression))
@@ -1306,7 +1306,7 @@ struct NamedArgument {
 }
 
 /// And(Id(cascade), Raw(..), Id(cascadeSection))
-struct CascadeV0PointsIdToken {
+struct CascadePointsIdToken {
     cascade: Cascade,
     points_id_token: Token,
     cascade_section: CascadeSection,
@@ -1319,7 +1319,7 @@ enum CascadePrefixType {
 }
 
 /// And(Id(conditionalExpression), Or( Raw(?..), Raw(..), ), Id(cascadeSection))
-struct CascadeV1ConditionalExpression {
+struct CascadeConditionalExpression {
     conditional_expression: ConditionalExpression,
     cascade_prefix_type: CascadePrefixType,
     cascade_section: CascadeSection,
@@ -1327,8 +1327,8 @@ struct CascadeV1ConditionalExpression {
 
 /// Or( And(Id(cascade), Raw(..), Id(cascadeSection)), And(Id(conditionalExpression), Or( Raw(?..), Raw(..), ), Id(cascadeSection)), )
 enum Cascade {
-    PointsId(CascadeV0PointsIdToken),
-    ConditionalExpression(CascadeV1ConditionalExpression),
+    PointsId(CascadePointsIdToken),
+    ConditionalExpression(CascadeConditionalExpression),
 }
 
 /// And(Id(cascadeSelector), Id(cascadeSectionTail))
@@ -1338,7 +1338,7 @@ struct CascadeSection {
 }
 
 /// And(Raw([), Id(expression), Raw(]))
-struct CascadeSelectorV0Expression {
+struct CascadeSelectorExpression {
     open_square_bracket_token: Token,
     expression: Expression,
     close_square_bracket_token: Token,
@@ -1346,7 +1346,7 @@ struct CascadeSelectorV0Expression {
 
 /// Or( And(Raw([), Id(expression), Raw(])), Id(identifier), )
 enum CascadeSelector {
-    Expression(CascadeSelectorV0Expression),
+    Expression(CascadeSelectorExpression),
     Identifier(Identifier),
 }
 
@@ -1454,13 +1454,13 @@ struct EqualityExpressionInner {
 }
 
 /// And(Id(relationalExpression), Modified(?,And(Id(equalityOperator), Id(relationalExpression))))
-struct EqualityExpressionV0RelationalExpression {
+struct EqualityExpressionRelationalExpression {
     relational_expression: RelationalExpression,
     equality_expression_inner: Option<EqualityExpressionInner>,
 }
 
 /// And(Raw(super), Id(equalityOperator), Id(relationalExpression))
-struct EqualityExpressionV1EqualityOperator {
+struct EqualityExpressionEqualityOperator {
     super_token: Token,
     equality_operator: EqualityOperator,
     relational_expression: RelationalExpression,
@@ -1468,8 +1468,8 @@ struct EqualityExpressionV1EqualityOperator {
 
 /// Or( And(Id(relationalExpression), Modified(?,And(Id(equalityOperator), Id(relationalExpression)))), And(Raw(super), Id(equalityOperator), Id(relationalExpression)), )
 enum EqualityExpression {
-    RelationalExpression(EqualityExpressionV0RelationalExpression),
-    EqualityOperator(EqualityExpressionV1EqualityOperator),
+    RelationalExpression(EqualityExpressionRelationalExpression),
+    EqualityOperator(EqualityExpressionEqualityOperator),
 }
 
 /// Or( Raw(==), Raw(!=), )
@@ -1479,7 +1479,7 @@ enum EqualityOperator {
 }
 
 /// And(Id(relationalOperator), Id(bitwiseOrExpression))
-struct BitwiseOrExpressionInterV2RelationalOperator {
+struct BitwiseOrExpressionInterRelationalOperator {
     relational_operator: RelationalOperator,
     bitwise_or_expression: BitwiseOrExpression,
 }
@@ -1488,17 +1488,17 @@ struct BitwiseOrExpressionInterV2RelationalOperator {
 enum BitwiseOrExpressionInter {
     TypeTest(TypeTest),
     TypeCast(TypeCast),
-    RelationalOperator(BitwiseOrExpressionInterV2RelationalOperator),
+    RelationalOperator(BitwiseOrExpressionInterRelationalOperator),
 }
 
 /// And(Id(bitwiseOrExpression), Modified(?,Or( Id(typeTest), Id(typeCast), And(Id(relationalOperator), Id(bitwiseOrExpression)), )))
-struct RelationalExpressionV0BitwiseOrExpression {
+struct RelationalExpressionBitwiseOrExpression {
     bitwise_or_expression: BitwiseOrExpression,
     bitwise_or_expression_inter: Option<BitwiseOrExpressionInter>,
 }
 
 /// And(Raw(super), Id(relationalOperator), Id(bitwiseOrExpression))
-struct RelationalExpressionV1RelationalOperator {
+struct RelationalExpressionRelationalOperator {
     super_token: Token,
     relational_operator: RelationalOperator,
     bitwise_or_expression: BitwiseOrExpression,
@@ -1506,8 +1506,8 @@ struct RelationalExpressionV1RelationalOperator {
 
 /// Or( And(Id(bitwiseOrExpression), Modified(?,Or( Id(typeTest), Id(typeCast), And(Id(relationalOperator), Id(bitwiseOrExpression)), ))), And(Raw(super), Id(relationalOperator), Id(bitwiseOrExpression)), )
 enum RelationalExpression {
-    BitwiseOrExpression(RelationalExpressionV0BitwiseOrExpression),
-    RelationalOperator(RelationalExpressionV1RelationalOperator),
+    BitwiseOrExpression(RelationalExpressionBitwiseOrExpression),
+    RelationalOperator(RelationalExpressionRelationalOperator),
 }
 
 /// Or( Raw(>=), Raw(>), Raw(<=), Raw(<), )
@@ -1525,21 +1525,21 @@ struct BitwiseXorExpressionbitXor {
 }
 
 /// And(Id(bitwiseXorExpression), Modified(*,And(Raw(|), Id(bitwiseXorExpression))))
-struct BitwiseOrExpressionV0BitwiseXorExpression {
+struct BitwiseOrExpressionBitwiseXorExpression {
     bitwise_xor_expression: BitwiseXorExpression,
     bitwise_xor_expressionbit_xor: Vec<BitwiseXorExpressionbitXor>,
 }
 
 /// And(Raw(super), Modified(+,And(Raw(|), Id(bitwiseXorExpression))))
-struct BitwiseOrExpressionV1SuperToken {
+struct BitwiseOrExpressionSuperToken {
     super_token: Token,
     bitwise_xor_expressionbit_xor: Vec<BitwiseXorExpressionbitXor>,
 }
 
 /// Or( And(Id(bitwiseXorExpression), Modified(*,And(Raw(|), Id(bitwiseXorExpression)))), And(Raw(super), Modified(+,And(Raw(|), Id(bitwiseXorExpression)))), )
 enum BitwiseOrExpression {
-    BitwiseXorExpression(BitwiseOrExpressionV0BitwiseXorExpression),
-    Super(BitwiseOrExpressionV1SuperToken),
+    BitwiseXorExpression(BitwiseOrExpressionBitwiseXorExpression),
+    Super(BitwiseOrExpressionSuperToken),
 }
 
 /// And(Raw(^), Id(bitwiseAndExpression))
@@ -1549,21 +1549,21 @@ struct BitwiseAndExpressionbitNeg {
 }
 
 /// And(Id(bitwiseAndExpression), Modified(*,And(Raw(^), Id(bitwiseAndExpression))))
-struct BitwiseXorExpressionV0BitwiseAndExpression {
+struct BitwiseXorExpressionBitwiseAndExpression {
     bitwise_and_expression: BitwiseAndExpression,
     bitwise_and_expressionbit_neg: Vec<BitwiseAndExpressionbitNeg>,
 }
 
 /// And(Raw(super), Modified(+,And(Raw(^), Id(bitwiseAndExpression))))
-struct BitwiseXorExpressionV1SuperToken {
+struct BitwiseXorExpressionSuperToken {
     super_token: Token,
     bitwise_and_expressionbit_neg: Vec<BitwiseAndExpressionbitNeg>,
 }
 
 /// Or( And(Id(bitwiseAndExpression), Modified(*,And(Raw(^), Id(bitwiseAndExpression)))), And(Raw(super), Modified(+,And(Raw(^), Id(bitwiseAndExpression)))), )
 enum BitwiseXorExpression {
-    BitwiseAndExpression(BitwiseXorExpressionV0BitwiseAndExpression),
-    Super(BitwiseXorExpressionV1SuperToken),
+    BitwiseAndExpression(BitwiseXorExpressionBitwiseAndExpression),
+    Super(BitwiseXorExpressionSuperToken),
 }
 
 /// And(Raw(&), Id(shiftExpression))
@@ -1573,21 +1573,21 @@ struct ShiftExpressionbitAnd {
 }
 
 /// And(Id(shiftExpression), Modified(*,And(Raw(&), Id(shiftExpression))))
-struct BitwiseAndExpressionV0ShiftExpression {
+struct BitwiseAndExpressionShiftExpression {
     shift_expression: ShiftExpression,
     shift_expressionbit_and: Vec<ShiftExpressionbitAnd>,
 }
 
 /// And(Raw(super), Modified(+,And(Raw(&), Id(shiftExpression))))
-struct BitwiseAndExpressionV1SuperToken {
+struct BitwiseAndExpressionSuperToken {
     super_token: Token,
     shift_expressionbit_and: Vec<ShiftExpressionbitAnd>,
 }
 
 /// Or( And(Id(shiftExpression), Modified(*,And(Raw(&), Id(shiftExpression)))), And(Raw(super), Modified(+,And(Raw(&), Id(shiftExpression)))), )
 enum BitwiseAndExpression {
-    ShiftExpression(BitwiseAndExpressionV0ShiftExpression),
-    Super(BitwiseAndExpressionV1SuperToken),
+    ShiftExpression(BitwiseAndExpressionShiftExpression),
+    Super(BitwiseAndExpressionSuperToken),
 }
 
 /// Or( Raw(&), Raw(^), Raw(|), )
@@ -1604,21 +1604,21 @@ struct ShiftExpressionInner {
 }
 
 /// And(Id(additiveExpression), Modified(*,And(Id(shiftOperator), Id(additiveExpression))))
-struct ShiftExpressionV0AdditiveExpression {
+struct ShiftExpressionAdditiveExpression {
     additive_expression: AdditiveExpression,
     shift_expression_inner: Vec<ShiftExpressionInner>,
 }
 
 /// And(Raw(super), Modified(+,And(Id(shiftOperator), Id(additiveExpression))))
-struct ShiftExpressionV1SuperToken {
+struct ShiftExpressionSuperToken {
     super_token: Token,
     shift_expression_inner: Vec<ShiftExpressionInner>,
 }
 
 /// Or( And(Id(additiveExpression), Modified(*,And(Id(shiftOperator), Id(additiveExpression)))), And(Raw(super), Modified(+,And(Id(shiftOperator), Id(additiveExpression)))), )
 enum ShiftExpression {
-    AdditiveExpression(ShiftExpressionV0AdditiveExpression),
-    Super(ShiftExpressionV1SuperToken),
+    AdditiveExpression(ShiftExpressionAdditiveExpression),
+    Super(ShiftExpressionSuperToken),
 }
 
 /// Or( Raw(<<), Raw(>>>), Raw(>>), )
@@ -1635,21 +1635,21 @@ struct AdditiveExpressionInner {
 }
 
 /// And(Id(multiplicativeExpression), Modified(*,And(Id(additiveOperator), Id(multiplicativeExpression))))
-struct AdditiveExpressionV0MultiplicativeExpression {
+struct AdditiveExpressionMultiplicativeExpression {
     multiplicative_expression: MultiplicativeExpression,
     additive_expression_inner: Vec<AdditiveExpressionInner>,
 }
 
 /// And(Raw(super), Modified(+,And(Id(additiveOperator), Id(multiplicativeExpression))))
-struct AdditiveExpressionV1SuperToken {
+struct AdditiveExpressionSuperToken {
     super_token: Token,
     additive_expression_inner: Vec<AdditiveExpressionInner>,
 }
 
 /// Or( And(Id(multiplicativeExpression), Modified(*,And(Id(additiveOperator), Id(multiplicativeExpression)))), And(Raw(super), Modified(+,And(Id(additiveOperator), Id(multiplicativeExpression)))), )
 enum AdditiveExpression {
-    MultiplicativeExpression(AdditiveExpressionV0MultiplicativeExpression),
-    Super(AdditiveExpressionV1SuperToken),
+    MultiplicativeExpression(AdditiveExpressionMultiplicativeExpression),
+    Super(AdditiveExpressionSuperToken),
 }
 
 /// Or( Raw(+), Raw(-), )
@@ -1665,21 +1665,21 @@ struct MultiplicativeExpressionInner {
 }
 
 /// And(Id(unaryExpression), Modified(*,And(Id(multiplicativeOperator), Id(unaryExpression))))
-struct MultiplicativeExpressionV0UnaryExpression {
+struct MultiplicativeExpressionUnaryExpression {
     unary_expression: UnaryExpression,
     multiplicative_expression_inner: Vec<MultiplicativeExpressionInner>,
 }
 
 /// And(Raw(super), Modified(+,And(Id(multiplicativeOperator), Id(unaryExpression))))
-struct MultiplicativeExpressionV1SuperToken {
+struct MultiplicativeExpressionSuperToken {
     super_token: Token,
     multiplicative_expression_inner: Vec<MultiplicativeExpressionInner>,
 }
 
 /// Or( And(Id(unaryExpression), Modified(*,And(Id(multiplicativeOperator), Id(unaryExpression)))), And(Raw(super), Modified(+,And(Id(multiplicativeOperator), Id(unaryExpression)))), )
 enum MultiplicativeExpression {
-    UnaryExpression(MultiplicativeExpressionV0UnaryExpression),
-    Super(MultiplicativeExpressionV1SuperToken),
+    UnaryExpression(MultiplicativeExpressionUnaryExpression),
+    Super(MultiplicativeExpressionSuperToken),
 }
 
 /// Or( Raw(*), Raw(/), Raw(%), Raw(~/), )
@@ -1691,7 +1691,7 @@ enum MultiplicativeOperator {
 }
 
 /// And(Id(prefixOperator), Id(unaryExpression))
-struct UnaryExpressionV0PrefixOperator {
+struct UnaryExpressionPrefixOperator {
     prefix_operator: PrefixOperator,
     unary_expression: UnaryExpression,
 }
@@ -1703,24 +1703,24 @@ enum UnaryOperator {
 }
 
 /// And(Or( Id(minusOperator), Id(tildeOperator), ), Raw(super))
-struct UnaryExpressionV3SuperToken {
+struct UnaryExpressionSuperToken {
     unary_operator: UnaryOperator,
     super_token: Token,
 }
 
 /// And(Id(incrementOperator), Id(assignableExpression))
-struct UnaryExpressionV4IncrementOperator {
+struct UnaryExpressionIncrementOperator {
     increment_operator: IncrementOperator,
     assignable_expression: AssignableExpression,
 }
 
 /// Or( And(Id(prefixOperator), Id(unaryExpression)), Id(awaitExpression), Id(postfixExpression), And(Or( Id(minusOperator), Id(tildeOperator), ), Raw(super)), And(Id(incrementOperator), Id(assignableExpression)), )
 enum UnaryExpression {
-    PrefixOperator(UnaryExpressionV0PrefixOperator),
+    PrefixOperator(UnaryExpressionPrefixOperator),
     AwaitExpression(AwaitExpression),
     PostfixExpression(PostfixExpression),
-    Super(UnaryExpressionV3SuperToken),
-    IncrementOperator(UnaryExpressionV4IncrementOperator),
+    Super(UnaryExpressionSuperToken),
+    IncrementOperator(UnaryExpressionIncrementOperator),
 }
 
 /// Or( Id(minusOperator), Id(negationOperator), Id(tildeOperator), )
@@ -1746,21 +1746,21 @@ struct AwaitExpression {
 }
 
 /// And(Id(assignableExpression), Id(postfixOperator))
-struct PostfixExpressionV0AssignableExpression {
+struct PostfixExpressionAssignableExpression {
     assignable_expression: AssignableExpression,
     postfix_operator: PostfixOperator,
 }
 
 /// And(Id(primary), Modified(*,Id(selector)))
-struct PostfixExpressionV1Primary {
+struct PostfixExpressionPrimary {
     primary: Primary,
     selector: Vec<Selector>,
 }
 
 /// Or( And(Id(assignableExpression), Id(postfixOperator)), And(Id(primary), Modified(*,Id(selector))), )
 enum PostfixExpression {
-    AssignableExpression(PostfixExpressionV0AssignableExpression),
-    Primary(PostfixExpressionV1Primary),
+    AssignableExpression(PostfixExpressionAssignableExpression),
+    Primary(PostfixExpressionPrimary),
 }
 
 /// Id(incrementOperator)
@@ -1795,21 +1795,21 @@ enum IncrementOperator {
 }
 
 /// And(Id(primary), Id(assignableSelectorPart))
-struct AssignableExpressionV0Primary {
+struct AssignableExpressionPrimary {
     primary: Primary,
     assignable_selector_part: AssignableSelectorPart,
 }
 
 /// And(Raw(super), Id(unconditionalAssignableSelector))
-struct AssignableExpressionV1UnconditionalAssignableSelector {
+struct AssignableExpressionUnconditionalAssignableSelector {
     super_token: Token,
     unconditional_assignable_selector: UnconditionalAssignableSelector,
 }
 
 /// Or( And(Id(primary), Id(assignableSelectorPart)), And(Raw(super), Id(unconditionalAssignableSelector)), Id(identifier), )
 enum AssignableExpression {
-    Primary(AssignableExpressionV0Primary),
-    UnconditionalAssignableSelector(AssignableExpressionV1UnconditionalAssignableSelector),
+    Primary(AssignableExpressionPrimary),
+    UnconditionalAssignableSelector(AssignableExpressionUnconditionalAssignableSelector),
     Identifier(Identifier),
 }
 
@@ -1820,32 +1820,32 @@ struct AssignableSelectorPart {
 }
 
 /// And(Raw([), Id(expression), Raw(]))
-struct UnconditionalAssignableSelectorV0Expression {
+struct UnconditionalAssignableSelectorExpression {
     open_square_bracket_token: Token,
     expression: Expression,
     close_square_bracket_token: Token,
 }
 
 /// And(Raw(.), Id(identifier))
-struct UnconditionalAssignableSelectorV1Identifier {
+struct UnconditionalAssignableSelectorIdentifier {
     period_token: Token,
     identifier: Identifier,
 }
 
 /// Or( And(Raw([), Id(expression), Raw(])), And(Raw(.), Id(identifier)), )
 enum UnconditionalAssignableSelector {
-    Expression(UnconditionalAssignableSelectorV0Expression),
-    Identifier(UnconditionalAssignableSelectorV1Identifier),
+    Expression(UnconditionalAssignableSelectorExpression),
+    Identifier(UnconditionalAssignableSelectorIdentifier),
 }
 
 /// And(Raw(?.), Id(identifier))
-struct AssignableSelectorV1Identifier {
+struct AssignableSelectorIdentifier {
     question_id_token: Token,
     identifier: Identifier,
 }
 
 /// And(Raw(?), Raw([), Id(expression), Raw(]))
-struct AssignableSelectorV2QuestionToken {
+struct AssignableSelectorQuestionToken {
     question_token: Token,
     open_square_bracket_token: Token,
     expression: Expression,
@@ -1855,8 +1855,8 @@ struct AssignableSelectorV2QuestionToken {
 /// Or( Id(unconditionalAssignableSelector), And(Raw(?.), Id(identifier)), And(Raw(?), Raw([), Id(expression), Raw(])), )
 enum AssignableSelector {
     UnconditionalAssignableSelector(UnconditionalAssignableSelector),
-    Identifier(AssignableSelectorV1Identifier),
-    Question(AssignableSelectorV2QuestionToken),
+    Identifier(AssignableSelectorIdentifier),
+    Question(AssignableSelectorQuestionToken),
 }
 
 /// Or( Id(IDENTIFIER), Id(BUILT_IN_IDENTIFIER), Id(OTHER_IDENTIFIER), )
@@ -1993,7 +1993,7 @@ struct ForStatement {
 }
 
 /// And(Id(forInitializerStatement), Modified(?,Id(expression)), Raw(;), Modified(?,Id(expressionList)))
-struct ForLoopPartsV0SemicolonToken {
+struct ForLoopPartsSemicolonToken {
     for_initializer_statement: ForInitializerStatement,
     expression: Option<Expression>,
     semicolon_token: Token,
@@ -2001,7 +2001,7 @@ struct ForLoopPartsV0SemicolonToken {
 }
 
 /// And(Id(metadata), Id(declaredIdentifier), Raw(in), Id(expression))
-struct ForLoopPartsV1Metadata {
+struct ForLoopPartsMetadata {
     metadata: Metadata,
     declared_identifier: DeclaredIdentifier,
     in_token: Token,
@@ -2009,7 +2009,7 @@ struct ForLoopPartsV1Metadata {
 }
 
 /// And(Id(identifier), Raw(in), Id(expression))
-struct ForLoopPartsV2InToken {
+struct ForLoopPartsInToken {
     identifier: Identifier,
     in_token: Token,
     expression: Expression,
@@ -2017,13 +2017,13 @@ struct ForLoopPartsV2InToken {
 
 /// Or( And(Id(forInitializerStatement), Modified(?,Id(expression)), Raw(;), Modified(?,Id(expressionList))), And(Id(metadata), Id(declaredIdentifier), Raw(in), Id(expression)), And(Id(identifier), Raw(in), Id(expression)), )
 enum ForLoopParts {
-    Semicolon(ForLoopPartsV0SemicolonToken),
-    Metadata(ForLoopPartsV1Metadata),
-    In(ForLoopPartsV2InToken),
+    Semicolon(ForLoopPartsSemicolonToken),
+    Metadata(ForLoopPartsMetadata),
+    In(ForLoopPartsInToken),
 }
 
 /// And(Modified(?,Id(expression)), Raw(;))
-struct ForInitializerStatementV1SemicolonToken {
+struct ForInitializerStatementSemicolonToken {
     expression: Option<Expression>,
     semicolon_token: Token,
 }
@@ -2031,7 +2031,7 @@ struct ForInitializerStatementV1SemicolonToken {
 /// Or( Id(localVariableDeclaration), And(Modified(?,Id(expression)), Raw(;)), )
 enum ForInitializerStatement {
     LocalVariableDeclaration(LocalVariableDeclaration),
-    Semicolon(ForInitializerStatementV1SemicolonToken),
+    Semicolon(ForInitializerStatementSemicolonToken),
 }
 
 /// And(Raw(while), Raw((), Id(expression), Raw()), Id(statement))
@@ -2109,13 +2109,13 @@ struct TryStatement {
 }
 
 /// And(Id(catchPart), Id(block))
-struct OnPartV0CatchPart {
+struct OnPartCatchPart {
     catch_part: CatchPart,
     block: Block,
 }
 
 /// And(Raw(on), Id(typeNotVoid), Modified(?,Id(catchPart)), Id(block))
-struct OnPartV1TypeNotVoid {
+struct OnPartTypeNotVoid {
     on_token: Token,
     type_not_void: TypeNotVoid,
     catch_part: Option<CatchPart>,
@@ -2124,8 +2124,8 @@ struct OnPartV1TypeNotVoid {
 
 /// Or( And(Id(catchPart), Id(block)), And(Raw(on), Id(typeNotVoid), Modified(?,Id(catchPart)), Id(block)), )
 enum OnPart {
-    CatchPart(OnPartV0CatchPart),
-    TypeNotVoid(OnPartV1TypeNotVoid),
+    CatchPart(OnPartCatchPart),
+    TypeNotVoid(OnPartTypeNotVoid),
 }
 
 /// And(Raw(,), Id(identifier))
@@ -2229,19 +2229,19 @@ struct ExternalSetterSignature {
 }
 
 /// And(Id(functionSignature), Id(functionBody))
-struct TopLevelDeclarationV8FunctionSignature {
+struct TopLevelDeclarationFunctionSignature {
     function_signature: FunctionSignature,
     function_body: FunctionBody,
 }
 
 /// And(Id(getterSignature), Id(functionBody))
-struct TopLevelDeclarationV9GetterSignature {
+struct TopLevelDeclarationGetterSignature {
     getter_signature: GetterSignature,
     function_body: FunctionBody,
 }
 
 /// And(Id(setterSignature), Id(functionBody))
-struct TopLevelDeclarationV10SetterSignature {
+struct TopLevelDeclarationSetterSignature {
     setter_signature: SetterSignature,
     function_body: FunctionBody,
 }
@@ -2253,7 +2253,7 @@ enum FinalOrConst {
 }
 
 /// And(Or( Raw(final), Raw(const), ), Modified(?,Id(type)), Id(staticFinalDeclarationList), Raw(;))
-struct TopLevelDeclarationV11SemicolonToken {
+struct TopLevelDeclarationSemicolonToken {
     final_or_const: FinalOrConst,
     dart_type: Option<Type>,
     static_final_declaration_list: StaticFinalDeclarationList,
@@ -2261,7 +2261,7 @@ struct TopLevelDeclarationV11SemicolonToken {
 }
 
 /// And(Raw(late), Raw(final), Modified(?,Id(type)), Id(initializedIdentifierList), Raw(;))
-struct TopLevelDeclarationV12LateToken {
+struct TopLevelDeclarationLateToken {
     late_token: Token,
     final_token: Token,
     dart_type: Option<Type>,
@@ -2270,7 +2270,7 @@ struct TopLevelDeclarationV12LateToken {
 }
 
 /// And(Modified(?,Raw(late)), Id(varOrType), Id(initializedIdentifierList), Raw(;))
-struct TopLevelDeclarationV13VarOrType {
+struct TopLevelDeclarationVarOrType {
     late_token: Option<Token>,
     var_or_type: VarOrType,
     initialized_identifier_list: InitializedIdentifierList,
@@ -2287,12 +2287,12 @@ enum TopLevelDeclaration {
     ExternalFunctionSignature(ExternalFunctionSignature),
     ExternalGetterSignature(ExternalGetterSignature),
     ExternalSetterSignature(ExternalSetterSignature),
-    FunctionSignature(TopLevelDeclarationV8FunctionSignature),
-    GetterSignature(TopLevelDeclarationV9GetterSignature),
-    SetterSignature(TopLevelDeclarationV10SetterSignature),
-    Semicolon(TopLevelDeclarationV11SemicolonToken),
-    Late(TopLevelDeclarationV12LateToken),
-    VarOrType(TopLevelDeclarationV13VarOrType),
+    FunctionSignature(TopLevelDeclarationFunctionSignature),
+    GetterSignature(TopLevelDeclarationGetterSignature),
+    SetterSignature(TopLevelDeclarationSetterSignature),
+    Semicolon(TopLevelDeclarationSemicolonToken),
+    Late(TopLevelDeclarationLateToken),
+    VarOrType(TopLevelDeclarationVarOrType),
 }
 
 /// And(Id(metadata), Id(topLevelDeclaration))
@@ -2460,26 +2460,26 @@ struct UriTest {
 }
 
 /// And(Id(functionType), Modified(?,Raw(?)))
-struct TypeV0FunctionType {
+struct TypeFunctionType {
     function_type: FunctionType,
     question_token: Option<Token>,
 }
 
 /// Or( And(Id(functionType), Modified(?,Raw(?))), Id(typeNotFunction), )
 enum Type {
-    FunctionType(TypeV0FunctionType),
+    FunctionType(TypeFunctionType),
     TypeNotFunction(TypeNotFunction),
 }
 
 /// And(Id(functionType), Modified(?,Raw(?)))
-struct TypeNotVoidV0FunctionType {
+struct TypeNotVoidFunctionType {
     function_type: FunctionType,
     question_token: Option<Token>,
 }
 
 /// Or( And(Id(functionType), Modified(?,Raw(?))), Id(typeNotVoidNotFunction), )
 enum TypeNotVoid {
-    FunctionType(TypeNotVoidV0FunctionType),
+    FunctionType(TypeNotVoidFunctionType),
     TypeNotVoidNotFunction(TypeNotVoidNotFunction),
 }
 
@@ -2490,22 +2490,22 @@ enum TypeNotFunction {
 }
 
 /// And(Id(typeName), Modified(?,Id(typeArguments)), Modified(?,Raw(?)))
-struct TypeNotVoidNotFunctionV0TypeName {
+struct TypeNotVoidNotFunctionTypeName {
     type_name: TypeName,
     type_arguments: Option<TypeArguments>,
     question_token: Option<Token>,
 }
 
 /// And(Raw(Function), Modified(?,Raw(?)))
-struct TypeNotVoidNotFunctionV1FunctionToken {
+struct TypeNotVoidNotFunctionFunctionToken {
     function_token: Token,
     question_token: Option<Token>,
 }
 
 /// Or( And(Id(typeName), Modified(?,Id(typeArguments)), Modified(?,Raw(?))), And(Raw(Function), Modified(?,Raw(?))), )
 enum TypeNotVoidNotFunction {
-    TypeName(TypeNotVoidNotFunctionV0TypeName),
-    Function(TypeNotVoidNotFunctionV1FunctionToken),
+    TypeName(TypeNotVoidNotFunctionTypeName),
+    Function(TypeNotVoidNotFunctionFunctionToken),
 }
 
 /// And(Raw(.), Id(typeIdentifier))
@@ -2552,7 +2552,7 @@ struct TypeNotVoidNotFunctionList {
 }
 
 /// And(Id(typeNotFunction), Id(functionTypeTails))
-struct FunctionTypeV1TypeNotFunction {
+struct FunctionTypeTypeNotFunction {
     type_not_function: TypeNotFunction,
     function_type_tails: FunctionTypeTails,
 }
@@ -2560,7 +2560,7 @@ struct FunctionTypeV1TypeNotFunction {
 /// Or( Id(functionTypeTails), And(Id(typeNotFunction), Id(functionTypeTails)), )
 enum FunctionType {
     FunctionTypeTails(FunctionTypeTails),
-    TypeNotFunction(FunctionTypeV1TypeNotFunction),
+    TypeNotFunction(FunctionTypeTypeNotFunction),
 }
 
 /// And(Id(functionTypeTail), Modified(?,Raw(?)), Id(functionTypeTails))
@@ -2583,12 +2583,6 @@ struct FunctionTypeTail {
     parameter_type_list: ParameterTypeList,
 }
 
-/// And(Raw((), Raw()))
-struct ParameterTypeListV0OpenParenToken {
-    open_paren_token: Token,
-    close_paren_token: Token,
-}
-
 /// And(Raw((), Id(normalParameterTypes), Raw(,), Id(optionalParameterTypes), Raw()))
 struct NormalWithOptionalParameters {
     open_paren_token: Token,
@@ -2599,7 +2593,7 @@ struct NormalWithOptionalParameters {
 }
 
 /// And(Raw((), Id(normalParameterTypes), Modified(?,Raw(,)), Raw()))
-struct ParameterTypeListV2NormalParameterTypes {
+struct ParameterTypeListNormalParameterTypes {
     open_paren_token: Token,
     normal_parameter_types: NormalParameterTypes,
     comma_token: Option<Token>,
@@ -2607,7 +2601,7 @@ struct ParameterTypeListV2NormalParameterTypes {
 }
 
 /// And(Raw((), Id(optionalParameterTypes), Raw()))
-struct ParameterTypeListV3OptionalParameterTypes {
+struct ParameterTypeListOptionalParameterTypes {
     open_paren_token: Token,
     optional_parameter_types: OptionalParameterTypes,
     close_paren_token: Token,
@@ -2615,10 +2609,10 @@ struct ParameterTypeListV3OptionalParameterTypes {
 
 /// Or( And(Raw((), Raw())), And(Raw((), Id(normalParameterTypes), Raw(,), Id(optionalParameterTypes), Raw())), And(Raw((), Id(normalParameterTypes), Modified(?,Raw(,)), Raw())), And(Raw((), Id(optionalParameterTypes), Raw())), )
 enum ParameterTypeList {
-    OpenParen(ParameterTypeListV0OpenParenToken),
+    EmptyParameters(EmptyParameters),
     NormalWithOptionalParameters(NormalWithOptionalParameters),
-    NormalParameterTypes(ParameterTypeListV2NormalParameterTypes),
-    OptionalParameterTypes(ParameterTypeListV3OptionalParameterTypes),
+    NormalParameterTypes(ParameterTypeListNormalParameterTypes),
+    OptionalParameterTypes(ParameterTypeListOptionalParameterTypes),
 }
 
 /// And(Raw(,), Id(normalParameterType))
@@ -2694,7 +2688,7 @@ struct TypedIdentifier {
 }
 
 /// And(Raw(typedef), Id(typeIdentifier), Modified(?,Id(typeParameters)), Raw(=), Id(type), Raw(;))
-struct TypeAliasV0TypeIdentifier {
+struct TypeAliasTypeIdentifier {
     typedef_token: Token,
     type_identifier: TypeIdentifier,
     type_parameters: Option<TypeParameters>,
@@ -2704,15 +2698,15 @@ struct TypeAliasV0TypeIdentifier {
 }
 
 /// And(Raw(typedef), Id(functionTypeAlias))
-struct TypeAliasV1FunctionTypeAlias {
+struct TypeAliasFunctionTypeAlias {
     typedef_token: Token,
     function_type_alias: FunctionTypeAlias,
 }
 
 /// Or( And(Raw(typedef), Id(typeIdentifier), Modified(?,Id(typeParameters)), Raw(=), Id(type), Raw(;)), And(Raw(typedef), Id(functionTypeAlias)), )
 enum TypeAlias {
-    TypeIdentifier(TypeAliasV0TypeIdentifier),
-    FunctionTypeAlias(TypeAliasV1FunctionTypeAlias),
+    TypeIdentifier(TypeAliasTypeIdentifier),
+    FunctionTypeAlias(TypeAliasFunctionTypeAlias),
 }
 
 /// And(Id(functionPrefix), Id(formalParameterPart), Raw(;))
