@@ -21,7 +21,7 @@ functionSignature ::=
 formalParameterPart ::= typeParameters? formalParameterList
 
 functionBody ::= 'async'? '=>' expression ';'
-  | ('async' '*'? | 'sync' '*')? block
+  | (<FunctionBodyGenerator>'async' '*'? | 'sync' '*')? block
 
 block ::= '{' statements '}'
 
@@ -64,13 +64,13 @@ defaultFormalParameter ::= normalFormalParameter ('=' expression)?
 
 defaultNamedParameter ::=
   metadata 'required'? normalFormalParameterNoMetadata
-  (('=' | ':') expression)?
+  (<DefaultNamedParameterAssignment>('=' | ':') expression)?
 
 classDeclaration ::=
   'abstract'? 'class' typeIdentifier typeParameters?
   superclass? interfaces?
-  '{' (metadata classMemberDeclaration)* '}'
-  | 'abstract'? 'class' mixinApplicationClass
+  '{' (<ClassDeclarationMembers>metadata classMemberDeclaration)* '}'
+  | (<ClassDeclarationMixin>'abstract'? 'class' mixinApplicationClass)
 
 typeNotVoidList ::= typeNotVoid (',' typeNotVoid)*
 
@@ -87,9 +87,9 @@ methodSignature ::= constructorSignature initializers?
 declaration ::= 'external' factoryConstructorSignature
   | 'external' constantConstructorSignature
   | 'external' constructorSignature
-  | ('external' 'static'?)? getterSignature
-  | ('external' 'static'?)? setterSignature
-  | ('external' 'static'?)? functionSignature
+  | (<ExternalMaybeStatic>'external' 'static'?)? getterSignature
+  | (<ExternalMaybeStatic>'external' 'static'?)? setterSignature
+  | (<ExternalMaybeStatic>'external' 'static'?)? functionSignature
   | 'external'? operatorSignature
   | 'static' 'const' type? staticFinalDeclarationList
   | 'static' 'final' type? staticFinalDeclarationList
@@ -360,7 +360,7 @@ SIMPLE_STRING_INTERPOLATION ::=
   '$' (IDENTIFIER_NO_DOLLAR | BUILT_IN_IDENTIFIER | 'this')
 
 symbolLiteral ::=
-  '#' (identifier ('.' identifier)* | operator | 'void')
+  '#' (<SymbolLiteralValue>identifier (<SymbolLiteralOtherIdentifiers>'.' identifier)* | operator | 'void')
 
 listLiteral ::= 'const'? typeArguments? '[' elements? ']'
 
@@ -378,7 +378,7 @@ expressionElement ::= expression
 
 mapElement ::= expression ':' expression
 
-spreadElement ::= ('...' | '...?') expression
+spreadElement ::= (<SpreadElementType>'...' | '...?') expression
 
 ifElement ::= 'if' '(' expression ')' element ('else' element)?
 
@@ -391,7 +391,7 @@ throwExpressionWithoutCascade ::= 'throw' expressionWithoutCascade
 functionExpression ::= formalParameterPart functionExpressionBody
 
 functionExpressionBody ::= 'async'? '=>' expression
-  | ('async' '*'? | 'sync' '*')? block
+  | (<FunctionExpressionGenerator>'async' '*'? | 'sync' '*')? block
 
 thisExpression ::= 'this'
 
@@ -407,7 +407,7 @@ argumentList ::= namedArgument (',' namedArgument)*
 namedArgument ::= label expression
 
 cascade ::= cascade '..' cascadeSection
-  | conditionalExpression ('?..' | '..') cascadeSection
+  | conditionalExpression (<CascadePrefixType>'?..' | '..') cascadeSection
 
 cascadeSection ::= cascadeSelector cascadeSectionTail
 
@@ -415,7 +415,7 @@ cascadeSelector ::= '[' expression ']'
   | identifier
 
 cascadeSectionTail ::= cascadeAssignment
-  | selector* (assignableSelector cascadeAssignment)?
+  | (<SelectedCascade>selector* (<SelectedCascadeAssignment>assignableSelector cascadeAssignment)?)
 
 cascadeAssignment ::= assignmentOperator expressionWithoutCascade
 
@@ -447,14 +447,14 @@ logicalOrExpression ::=
 logicalAndExpression ::= equalityExpression ('&&' equalityExpression)*
 
 equalityExpression ::=
-  relationalExpression (equalityOperator relationalExpression)?
+  relationalExpression (<EqualityExpressionInner>equalityOperator relationalExpression)?
   | 'super' equalityOperator relationalExpression
 
 equalityOperator ::= '=='
   | '!='
 
 relationalExpression ::= bitwiseOrExpression
-  (typeTest | typeCast | relationalOperator bitwiseOrExpression)?
+  (<BitwiseOrExpressionInter>typeTest | typeCast | relationalOperator bitwiseOrExpression)?
   | 'super' relationalOperator bitwiseOrExpression
 
 relationalOperator ::= '>='
@@ -478,23 +478,23 @@ bitwiseOperator ::= '&'
   | '|'
 
 shiftExpression ::=
-  additiveExpression (shiftOperator additiveExpression)*
-  | 'super' (shiftOperator additiveExpression)+
+  additiveExpression (<ShiftExpressionInner>shiftOperator additiveExpression)*
+  | 'super' (<ShiftExpressionInner>shiftOperator additiveExpression)+
 
 shiftOperator ::= '<<'
   | '>>>'
   | '>>'
 
 additiveExpression ::= multiplicativeExpression
-  (additiveOperator multiplicativeExpression)*
-  | 'super' (additiveOperator multiplicativeExpression)+
+  (<AdditiveExpressionInner>additiveOperator multiplicativeExpression)*
+  | 'super' (<AdditiveExpressionInner>additiveOperator multiplicativeExpression)+
 
 additiveOperator ::= '+'
   | '-'
 
 multiplicativeExpression ::=
-  unaryExpression (multiplicativeOperator unaryExpression)*
-  | 'super' (multiplicativeOperator unaryExpression)+
+  unaryExpression (<MultiplicativeExpressionInner>multiplicativeOperator unaryExpression)*
+  | 'super' (<MultiplicativeExpressionInner>multiplicativeOperator unaryExpression)+
 
 multiplicativeOperator ::= '*'
   | '/'
@@ -504,7 +504,7 @@ multiplicativeOperator ::= '*'
 unaryExpression ::= prefixOperator unaryExpression
   | awaitExpression
   | postfixExpression
-  | (minusOperator | tildeOperator) 'super'
+  | (<UnaryOperator>minusOperator | tildeOperator) 'super'
   | incrementOperator assignableExpression
 
 prefixOperator ::= minusOperator
@@ -653,7 +653,7 @@ defaultCase ::= label* 'default' ':' statements
 
 rethrowStatement ::= 'rethrow' ';'
 
-tryStatement ::= 'try' block (onPart+ finallyPart? | finallyPart)
+tryStatement ::= 'try' block (<TryStatementCatchFinally>(<TryStatementOnPart>onPart+ finallyPart?) | finallyPart)
 
 onPart ::= catchPart block
   | 'on' typeNotVoid catchPart? block
@@ -689,7 +689,7 @@ topLevelDeclaration ::= classDeclaration
   | functionSignature functionBody
   | getterSignature functionBody
   | setterSignature functionBody
-  | ('final' | 'const') type? staticFinalDeclarationList ';'
+  | (<FinalOrConst>'final' | 'const') type? staticFinalDeclarationList ';'
   | 'late' 'final' type? initializedIdentifierList ';'
   | 'late'? varOrType initializedIdentifierList ';'
 
