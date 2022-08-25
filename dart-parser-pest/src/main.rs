@@ -73,3 +73,8 @@ fn parse<'a>(rule: Rule, input: &'a str) -> Pair<Rule> {
 fn test_comment() {
     parse(Rule::SINGLE_LINE_COMMENT, "// dawionodw");
 }
+
+pub struct Token {
+    pub span: pest::Span,
+    pub rule: Rule,
+}

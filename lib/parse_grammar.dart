@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:petitparser/debug.dart';
 import 'package:petitparser/petitparser.dart';
+import 'package:recase/recase.dart';
 
 Parser<ExprId> id() =>
     pattern('a-zA-Z_').plus().flatten().map((value) => ExprId(value));
@@ -121,6 +122,15 @@ class ExprId extends ExprSimple {
   final String value;
 
   const ExprId(this.value);
+
+  @override
+  bool operator ==(covariant ExprId other) {
+    if (identical(this, other)) return true;
+    return other.value == value;
+  }
+
+  @override
+  int get hashCode => value.hashCode;
 }
 
 class Expr {
@@ -326,9 +336,10 @@ STRING_CONTENT_COMMON ::= ~('\\' | '\'' | '$' | '\r' | '\n' | '"')
   if (result.isSuccess) {
     final items = result.value;
     // print(items.join('\n\n'));
-    print(Ctx().toRustTypes(items));
+    final types = Ctx().toRustTypes(items);
     // print(ExprRaw.allRaw.map((e) => '"${e}"').join('\n'));
 
+    await File('./dart-parser-pest/src/ast.rs').writeAsString(types);
     // await File('./dart-parser-pest/src/dart.pest')
     //     .writeAsString(toPestGrammar(items));
   } else {
@@ -396,7 +407,16 @@ String toPestGrammarRaw(ExprRaw raw) {
 }
 
 class Ctx {
-  final List<String> types = [];
+  final List<String> _types = [];
+  final Set<String> _added = {};
+
+  void addType(Expr expr, String rustType) {
+    final toAdd =
+        '/// ${expr.toString().replaceAll(RegExp('\n *'), ' ')}\n${rustType}';
+    if (_added.add(toAdd)) {
+      _types.add(toAdd);
+    }
+  }
 
   String toRustTypes(List<Item> items) {
     items.followedBy([
@@ -411,85 +431,209 @@ class Ctx {
       toRustStructGrammarExpr(e.expression, e.id.value);
     });
 
-    return types.join('\n\n');
+    return ['use crate::Token;'].followedBy(_types).join('\n\n');
   }
 
-  String toRustStructGrammarExpr(
+  Expr? previousExpr;
+
+  RustField toRustStructGrammarExpr(
     Expr expr,
     String? name, {
     String? parentName,
   }) {
+    final previousExpr = this.previousExpr;
     name ??= exprNames[expr];
-    return expr.when(
+    this.previousExpr = expr;
+
+    final Map<String, int> fieldsName = {};
+    int addFieldName(String fieldName) => fieldsName.update(
+          fieldName,
+          (value) => value + 1,
+          ifAbsent: () => 1,
+        );
+
+    final result = expr.when<RustField>(
       and: (and) {
-        final allRaw = and.expressions.whereType<ExprRaw>().toList();
-
+        final exprs = and.expressions;
+        final allRaw = exprs.whereType<ExprRaw>().toList();
         String? _name = name;
-        if (name == null && parentName != null && allRaw.isNotEmpty) {
-          if (allRaw.length == and.expressions.length) {
-            _name = '${parentName}Enum';
-          } else {
-            _name = '${parentName}${allRaw.first.value}';
+        // "bitwiseXorExpression ('|' bitwiseXorExpression)*";
+        // if (exprs.length == 2 &&
+        //     exprs[1] is ExprModified &&
+        //     exprs[0] is ExprId) {
+        //   final modified = exprs[1] as ExprModified;
+        //   final inner = modified.expression;
+        //   if (inner is ExprAnd &&
+        //       inner.expressions.length == 2 &&
+        //       inner.expressions.first is ExprRaw &&
+        //       inner.expressions.last == exprs[0]) {
+        //   addType(
+        //     expr,
+        //     'struct ${pascalCase(_name)} {${allRaw.map((e) => '${rawTokenName(e)}: Token,').join('')}}',
+        //   );
+        //   }
+        // }
+        if (_name == null &&
+            exprs.length == 2 &&
+            previousExpr is ExprModified &&
+            exprs.first is ExprRaw &&
+            exprs.last is ExprId) {
+          final raw = (exprs.first as ExprRaw).value;
+          String suffix = raw == ','
+              ? 'Item'
+              : raw == '.'
+                  ? 'Selector'
+                  : pascalCase(raw)!;
+          if (!RegExp('^[a-zA-Z]\$').hasMatch(suffix)) {
+            suffix = rawTokenName(exprs.first as ExprRaw);
+            suffix = suffix.substring(0, suffix.length - 5);
           }
+          _name = '${pascalCase((exprs.last as ExprId).value)}$suffix';
         }
-        if (allRaw.length == and.expressions.length) {
-          types.add(
-              'enum ${_name} {${allRaw.map((e) => '${rawTokenName(e)},').join('')}}');
-        } else {
-          types.add('struct ${_name} {${and.expressions.map((e) {
-            return toRustStructGrammarExpr(e, null, parentName: name);
-          }).join(',')}}');
+        if (_name == null && parentName != null) {
+          // if (allRaw.length == exprs.length) {
+          //   _name = '${parentName}Enum';
+          // } else {
+          final identifiers = exprs.whereType<ExprId>().toList();
+          if (allRaw.isNotEmpty && (exprs.length < 2 || exprs[1] is! ExprId)) {
+            _name = '${parentName}${pascalCase(rawTokenName(allRaw.first))}';
+          } else if (identifiers.isNotEmpty) {
+            _name = '${parentName}${pascalCase(identifiers.first.value)}';
+          }
+          // }
         }
 
-        return '${_name}: ${_name}';
+        if (allRaw.length == exprs.length) {
+          addType(
+            expr,
+            'struct ${pascalCase(_name)} {${allRaw.map((e) => '${rawTokenName(e)}: Token,').join('')}}',
+          );
+        } else {
+          addType(
+            expr,
+            'struct ${pascalCase(_name)} {${exprs.map((e) {
+              final field = toRustStructGrammarExpr(e, null, parentName: name);
+              final fieldName = field.name;
+              final count = addFieldName(fieldName ?? 'null');
+              return count == 1 ? field : '${fieldName}${count}: ${field.type}';
+            }).join(',')}}',
+          );
+        }
+
+        return RustField(
+          name: _name != null &&
+                  parentName != null &&
+                  _name.startsWith(parentName)
+              ? _name.substring(parentName.length)
+              : _name,
+          type: pascalCase(_name),
+        );
       },
       or: (or) {
+        final allExprId = or.expressions.whereType<ExprId>().toList();
         final allRaw = or.expressions.whereType<ExprRaw>().toList();
-        if (allRaw.length == or.expressions.length) {
-          types.add(
-              'enum ${name} {${allRaw.map((e) => '${rawTokenName(e)},').join('')}}');
-        } else {
-          int i = 0;
-          types.add('enum ${name} {${or.expressions.map((e) {
+        // if (allRaw.length == or.expressions.length) {
+        //   addType(
+        //     expr,
+        //     'enum ${pascalCase(name)} {${allRaw.map((e) => '${rawTokenName(e)}(Token),').join('')}}',
+        //   );
+        // } else {
+        if (name == null && allExprId.length == or.expressions.length) {
+          name = allExprId.map((e) => pascalCase(e.value)).join('Or');
+        } else if (name == null && allRaw.length == or.expressions.length) {
+          name = allRaw.map((e) => pascalCase(rawTokenName(e))).join('Or');
+        }
+        int i = 0;
+        addType(
+          expr,
+          'enum ${pascalCase(name)} {${or.expressions.map((e) {
             // if (e is ExprAnd) {
             //   return 'v${i++}{${toRustStructGrammarExpr(e, '')}},';
             // }
-            final variant = 'v${i++}';
-            return '$variant{${toRustStructGrammarExpr(
+            final variant = 'V${i++}';
+
+            if (e is ExprId) {
+              return '${pascalCase(e.value)}(${pascalCase(e.value)}),';
+            } else if (e is ExprRaw) {
+              final variantName = pascalCase(rawTokenName(e))!;
+              return '${variantName.substring(0, variantName.length - 5)}(Token),';
+            }
+            final inner = toRustStructGrammarExpr(
               e,
               null,
               parentName: '${name}$variant',
-            )}},';
-          }).join('')}}');
-        }
-        return '${name}: ${name}';
+            );
+            if (e is ExprAnd) {
+              final innerName = (inner.name ?? 'null')
+                  .replaceFirst('${name}$variant', '')
+                  .replaceFirst(RegExp('Token\$'), '');
+
+              return '${innerName}(${inner.type}),';
+            }
+            return '$variant{${inner}},';
+          }).join('')}}',
+        );
+
+        return RustField(
+          name: name,
+          type: pascalCase(name),
+        );
       },
       simple: (simple) => simple.whenSimple(
-        any: (any) => 'ANY',
-        id: (id) =>
-            '${name ?? id.value}: ${id.value.toUpperCase() == id.value ? 'Token' : id.value}',
+        any: (any) => RustField(name: name, type: 'Token'),
+        id: (id) {
+          final _name = name ?? id.value;
+          final value = id.value.toUpperCase() == id.value
+              ? 'Token'
+              : pascalCase(id.value);
+          return RustField(name: _name, type: value);
+        },
         modified: (modified) {
           final inner = toRustStructGrammarExpr(
             modified.expression,
             name,
             parentName: parentName,
-          ).split(':').map((e) => e.trim()).toList();
+          );
           switch (modified.modifier) {
             case Modifier.optional:
-              return '${inner[0]}: Option<${inner[1]}>';
+              return RustField(name: inner.name, type: 'Option<${inner.type}>');
             case Modifier.plus:
             case Modifier.star:
-              return '${inner[0]}: Vec<${inner[1]}>';
+              return RustField(name: inner.name, type: 'Vec<${inner.type}>');
           }
         },
-        negated: (v) => '${name}: Token',
-        raw: (v) => '${name ?? rawTokenName(v)}: Token',
-        rawRange: (v) =>
-            '${name ?? '${rawTokenName(v.start)}To${rawTokenName(v.end)}'}: Token',
+        negated: (v) => RustField(name: name, type: 'Token'),
+        raw: (v) => RustField(name: name ?? rawTokenName(v), type: 'Token'),
+        rawRange: (v) => RustField(
+          name: name ?? '${rawTokenName(v.start)}To${rawTokenName(v.end)}',
+          type: 'Token',
+        ),
       )!,
     )!;
+    this.previousExpr = previousExpr;
+
+    return result;
   }
 }
+
+class RustField {
+  final String? name;
+  final String? type;
+
+  RustField({
+    required String? name,
+    required String? type,
+  })  : name = name == 'type' ? 'dartType' : name,
+        type = pascalCase(type);
+
+  @override
+  String toString() {
+    return '${ReCase(name ?? 'null').snakeCase}: ${type}';
+  }
+}
+
+String? pascalCase(String? value) =>
+    value == null || value.isEmpty ? value : ReCase(value).pascalCase;
 
 String rawTokenName(ExprRaw raw) {
   final value = tokenNames[raw.value] ?? raw.value;
@@ -498,10 +642,13 @@ String rawTokenName(ExprRaw raw) {
 
 const tokenNames = {
   "\\": "back",
+  "\\\\": "back",
   "\'": "quote",
+  "\\'": "quote",
   "\$": "dollar",
-  "\r": "",
-  "\n": "newline",
+  // TODO:
+  r"\r": "rEscape",
+  r"\n": "newline",
   "\"": "doubleQuote",
 // "n"
 // "r"
@@ -573,15 +720,20 @@ const tokenNames = {
   // "false",
   "\${": "interpolationStart",
   "'''": "tripleQuotes",
+  "\\'\\'\\'": "tripleQuotes",
   "\"\"\"": "tripleDoubleQuotes",
   "''": "twoQuotes",
-  "\"\"": "tqoDoubleQuotes",
+  "\\'\\'": "twoQuotes",
+  "\"\"": "twoDoubleQuotes",
   // TODO:
-  // "\f",
-  // "\b",
-  // "\t",
-  // "\v",
-  // "\r\n",
+  r"\f": "fEscape",
+  r"\b": "bEscape",
+  r"\t": "tEscape",
+  r"\v": "vEscape",
+  r"\r\n": "rnEscape",
+  r"\u{": "uBracketEscape",
+  r"\u": "uEscape",
+  r"\x": "fEscape",
   "#": "hash",
   // "void",
   "...": "pointsExpand",
@@ -596,17 +748,17 @@ const tokenNames = {
   "?..": "pointsIdQuestion",
   "*=": "timesEqual",
   "/=": "divEqual",
-  "~/=": "Equal",
+  "~/=": "integerDivEqual",
   "%=": "moduleEqual",
   "+=": "plusEqual",
   "-=": "minusEqual",
   // TODO:
-  // "<<=": "",
-  // ">>>=": "",
-  // ">>=": "",
+  "<<=": "bitLeftEqual",
+  ">>>=": "bitRight0Equal",
+  ">>=": "bitRightEqual",
   "&=": "bitAndEuqal",
   "^=": "bitNegEqual",
-  "|=": "bitOrEqual",
+  "|=": "bitXorEqual",
   "??=": "questionQuestionEqual",
   "??": "questionQuestion",
   "||": "or",
@@ -614,7 +766,7 @@ const tokenNames = {
   "!=": "notEqual",
   ">=": "moreOrEqual",
   "<=": "lessOrEqual",
-  "|": "bitOr",
+  "|": "bitXor",
   "^": "bitNeg",
   "&": "bitAnd",
   // TODO:
@@ -623,7 +775,7 @@ const tokenNames = {
   ">>": "bitRight",
   "/": "divide",
   "%": "modulus",
-  "~/": "tildeEqual",
+  "~/": "integerDiv",
   "!": "exclamation",
   "++": "plusPlus",
   "--": "minusMinus",
