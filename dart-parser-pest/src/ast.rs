@@ -160,12 +160,14 @@ struct FormalParameterListOptionalOrNamedFormalParameters {
 }
 
 /// Or( And(Raw((), Raw())), And(Raw((), Id(normalFormalParameters), Modified(?,Raw(,)), Raw())), And(Raw((), Id(normalFormalParameters), Raw(,), Id(optionalOrNamedFormalParameters), Raw())), And(Raw((), Id(optionalOrNamedFormalParameters), Raw())), )
-enum FormalParameterList {
+enum FormalParameterListInner {
     EmptyParameters(EmptyParameters),
     NormalFormalParameters(FormalParameterListNormalFormalParameters),
     NormalWithOptionalOrNamedParameters(NormalWithOptionalOrNamedParameters),
     OptionalOrNamedFormalParameters(FormalParameterListOptionalOrNamedFormalParameters),
 }
+
+type FormalParameterList = Box<FormalParameterListInner>;
 
 /// And(Raw(,), Id(normalFormalParameter))
 struct NormalFormalParameterItem {
@@ -839,11 +841,13 @@ struct TypeNotVoidExtends {
 }
 
 /// And(Id(metadata), Id(identifier), Modified(?,And(Raw(extends), Id(typeNotVoid))))
-struct TypeParameter {
+struct TypeParameterInner {
     metadata: Metadata,
     identifier: Identifier,
     type_not_void_extends: Option<TypeNotVoidExtends>,
 }
+
+type TypeParameter = Box<TypeParameterInner>;
 
 /// And(Raw(,), Id(typeParameter))
 struct TypeParameterItem {
@@ -889,12 +893,14 @@ struct ExpressionAssignableExpression {
 }
 
 /// Or( And(Id(assignableExpression), Id(assignmentOperator), Id(expression)), Id(conditionalExpression), Id(cascade), Id(throwExpression), )
-enum Expression {
+enum ExpressionInner {
     AssignableExpression(ExpressionAssignableExpression),
     ConditionalExpression(ConditionalExpression),
     Cascade(Cascade),
     ThrowExpression(ThrowExpression),
 }
+
+type Expression = Box<ExpressionInner>;
 
 /// And(Id(assignableExpression), Id(assignmentOperator), Id(expressionWithoutCascade))
 struct ExpressionWithoutCascadeAssignableExpression {
@@ -904,11 +910,13 @@ struct ExpressionWithoutCascadeAssignableExpression {
 }
 
 /// Or( And(Id(assignableExpression), Id(assignmentOperator), Id(expressionWithoutCascade)), Id(conditionalExpression), Id(throwExpressionWithoutCascade), )
-enum ExpressionWithoutCascade {
+enum ExpressionWithoutCascadeInner {
     AssignableExpression(ExpressionWithoutCascadeAssignableExpression),
     ConditionalExpression(ConditionalExpression),
     ThrowExpressionWithoutCascade(ThrowExpressionWithoutCascade),
 }
+
+type ExpressionWithoutCascade = Box<ExpressionWithoutCascadeInner>;
 
 /// And(Raw(,), Id(expression))
 struct ExpressionItem {
@@ -1134,13 +1142,15 @@ struct Elements {
 }
 
 /// Or( Id(expressionElement), Id(mapElement), Id(spreadElement), Id(ifElement), Id(forElement), )
-enum Element {
+enum ElementInner {
     ExpressionElement(ExpressionElement),
     MapElement(MapElement),
     SpreadElement(SpreadElement),
     IfElement(IfElement),
     ForElement(ForElement),
 }
+
+type Element = Box<ElementInner>;
 
 /// Id(expression)
 type ExpressionElement = Expression;
@@ -1326,10 +1336,12 @@ struct CascadeConditionalExpression {
 }
 
 /// Or( And(Id(cascade), Raw(..), Id(cascadeSection)), And(Id(conditionalExpression), Or( Raw(?..), Raw(..), ), Id(cascadeSection)), )
-enum Cascade {
+enum CascadeInner {
     PointsId(CascadePointsIdToken),
     ConditionalExpression(CascadeConditionalExpression),
 }
+
+type Cascade = Box<CascadeInner>;
 
 /// And(Id(cascadeSelector), Id(cascadeSectionTail))
 struct CascadeSection {
@@ -1715,13 +1727,15 @@ struct UnaryExpressionIncrementOperator {
 }
 
 /// Or( And(Id(prefixOperator), Id(unaryExpression)), Id(awaitExpression), Id(postfixExpression), And(Or( Id(minusOperator), Id(tildeOperator), ), Raw(super)), And(Id(incrementOperator), Id(assignableExpression)), )
-enum UnaryExpression {
+enum UnaryExpressionInner {
     PrefixOperator(UnaryExpressionPrefixOperator),
     AwaitExpression(AwaitExpression),
     PostfixExpression(PostfixExpression),
     Super(UnaryExpressionSuperToken),
     IncrementOperator(UnaryExpressionIncrementOperator),
 }
+
+type UnaryExpression = Box<UnaryExpressionInner>;
 
 /// Or( Id(minusOperator), Id(negationOperator), Id(tildeOperator), )
 enum PrefixOperator {
@@ -1920,10 +1934,12 @@ type AsOperator = Token;
 type Statements = Vec<Statement>;
 
 /// And(Modified(*,Id(label)), Id(nonLabelledStatement))
-struct Statement {
+struct StatementInner {
     label: Vec<Label>,
     non_labelled_statement: NonLabelledStatement,
 }
+
+type Statement = Box<StatementInner>;
 
 /// Or( Id(block), Id(localVariableDeclaration), Id(forStatement), Id(whileStatement), Id(doStatement), Id(switchStatement), Id(ifStatement), Id(rethrowStatement), Id(tryStatement), Id(breakStatement), Id(continueStatement), Id(returnStatement), Id(yieldStatement), Id(yieldEachStatement), Id(expressionStatement), Id(assertStatement), Id(localFunctionDeclaration), )
 enum NonLabelledStatement {
@@ -2521,11 +2537,13 @@ struct TypeName {
 }
 
 /// And(Raw(<), Id(typeList), Raw(>))
-struct TypeArguments {
+struct TypeArgumentsInner {
     less_token: Token,
     type_list: TypeList,
     more_token: Token,
 }
+
+type TypeArguments = Box<TypeArgumentsInner>;
 
 /// And(Raw(,), Id(type))
 struct TypeItem {
@@ -2571,10 +2589,12 @@ struct FunctionTypeTailsMany {
 }
 
 /// Or( And(Id(functionTypeTail), Modified(?,Raw(?)), Id(functionTypeTails)), Id(functionTypeTail), )
-enum FunctionTypeTails {
+enum FunctionTypeTailsInner {
     FunctionTypeTailsMany(FunctionTypeTailsMany),
     FunctionTypeTail(FunctionTypeTail),
 }
+
+type FunctionTypeTails = Box<FunctionTypeTailsInner>;
 
 /// And(Raw(Function), Modified(?,Id(typeParameters)), Id(parameterTypeList))
 struct FunctionTypeTail {
@@ -2608,12 +2628,14 @@ struct ParameterTypeListOptionalParameterTypes {
 }
 
 /// Or( And(Raw((), Raw())), And(Raw((), Id(normalParameterTypes), Raw(,), Id(optionalParameterTypes), Raw())), And(Raw((), Id(normalParameterTypes), Modified(?,Raw(,)), Raw())), And(Raw((), Id(optionalParameterTypes), Raw())), )
-enum ParameterTypeList {
+enum ParameterTypeListInner {
     EmptyParameters(EmptyParameters),
     NormalWithOptionalParameters(NormalWithOptionalParameters),
     NormalParameterTypes(ParameterTypeListNormalParameterTypes),
     OptionalParameterTypes(ParameterTypeListOptionalParameterTypes),
 }
+
+type ParameterTypeList = Box<ParameterTypeListInner>;
 
 /// And(Raw(,), Id(normalParameterType))
 struct NormalParameterTypeItem {

@@ -410,9 +410,33 @@ class Ctx {
   final List<String> _types = [];
   final Set<String> _added = {};
 
+  static const boxedTypeNames = {
+    'FormalParameterList',
+    'TypeParameter',
+    'Expression',
+    'ExpressionWithoutCascade',
+    'Element',
+    'Cascade',
+    'UnaryExpression',
+    'Statement',
+    'TypeArguments',
+    'FunctionTypeTails',
+    'ParameterTypeList',
+  };
+
+  static final boxedTypeNamesRegExp =
+      RegExp('^(enum|struct|type) (${boxedTypeNames.join('|')}) ');
+
   void addType(Expr expr, String rustType) {
+    String boxed = '';
+    rustType = rustType.replaceFirstMapped(boxedTypeNamesRegExp, (match) {
+      final typeName = match.group(2)!;
+      boxed = '\n\ntype ${typeName} = Box<${typeName}Inner>;';
+      return '${match.group(1)} ${typeName}Inner ';
+    });
     final toAdd =
-        '/// ${expr.toString().replaceAll(RegExp('\n *'), ' ')}\n${rustType}';
+        '/// ${expr.toString().replaceAll(RegExp('\n *'), ' ')}\n${rustType}${boxed}';
+
     if (_added.add(toAdd)) {
       _types.add(toAdd);
     }

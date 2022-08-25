@@ -75,6 +75,20 @@ fn test_comment() {
 }
 
 pub struct Token {
-    pub span: pest::Span,
+    pub span: Span,
     pub rule: Rule,
+}
+
+pub struct Span {
+    pub start: usize,
+    pub end: usize,
+}
+
+impl Span {
+    pub fn from_pest_span(span: pest::Span) -> Self {
+        Self {
+            start: span.start(),
+            end: span.end(),
+        }
+    }
 }
