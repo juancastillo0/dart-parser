@@ -85,18 +85,18 @@ methodSignature ::= constructorSignature initializers?
   | operatorSignature
 
 declaration ::= 'external' factoryConstructorSignature
-  | 'external' constantConstructorSignature
-  | 'external' constructorSignature
+  | (<ExternalConstantConstructorSignature>'external' constantConstructorSignature)
+  | (<ExternalConstructorSignature>'external' constructorSignature)
   | (<ExternalMaybeStatic>'external' 'static'?)? getterSignature
   | (<ExternalMaybeStatic>'external' 'static'?)? setterSignature
   | (<ExternalMaybeStatic>'external' 'static'?)? functionSignature
   | 'external'? operatorSignature
-  | 'static' 'const' type? staticFinalDeclarationList
-  | 'static' 'final' type? staticFinalDeclarationList
-  | 'static' 'late' 'final' type? initializedIdentifierList
-  | 'static' 'late'? varOrType initializedIdentifierList
-  | 'covariant' 'late' 'final' type? identifierList
-  | 'covariant' 'late'? varOrType initializedIdentifierList
+  | (<StaticConst>'static' 'const' type? staticFinalDeclarationList)
+  | (<StaticFinal>'static' 'final' type? staticFinalDeclarationList)
+  | (<StaticLateFinal>'static' 'late' 'final' type? initializedIdentifierList)
+  | (<StaticVarOrType>'static' 'late'? varOrType initializedIdentifierList)
+  | (<CovariantLateFinal>'covariant' 'late' 'final' type? identifierList)
+  | (<CovariantVarOrType>'covariant' 'late'? varOrType initializedIdentifierList)
   | 'late'? 'final' type? initializedIdentifierList
   | 'late'? varOrType initializedIdentifierList
   | redirectingFactoryConstructorSignature
@@ -683,9 +683,9 @@ topLevelDeclaration ::= classDeclaration
   | extensionDeclaration
   | enumType
   | typeAlias
-  | 'external' functionSignature ';'
-  | 'external' getterSignature ';'
-  | 'external' setterSignature ';'
+  | (<ExternalFunctionSignature>'external' functionSignature ';')
+  | (<ExternalGetterSignature>'external' getterSignature ';')
+  | (<ExternalSetterSignature>'external' setterSignature ';')
   | functionSignature functionBody
   | getterSignature functionBody
   | setterSignature functionBody
@@ -713,7 +713,7 @@ importSpecification ::=
 
 libraryExport ::= metadata 'export' configurableUri combinator* ';'
 
-combinator ::= 'show' identifierList | 'hide' identifierList
+combinator ::= (<ShowCombinator>'show' identifierList) | (<HideCombinator>'hide' identifierList)
 
 identifierList ::= identifier (',' identifier)*
 
@@ -762,16 +762,16 @@ functionTypeTails ::= (<FunctionTypeTailsMany>functionTypeTail '?'? functionType
 
 functionTypeTail ::= 'Function' typeParameters? parameterTypeList
 
-parameterTypeList ::= '(' ')'
-  | '(' normalParameterTypes ',' optionalParameterTypes ')'
+parameterTypeList ::= (<EmptyParameters>'(' ')')
+  | (<NormalWithOptionalParameters>'(' normalParameterTypes ',' optionalParameterTypes ')')
   | '(' normalParameterTypes ','? ')'
   | '(' optionalParameterTypes ')'
 
 normalParameterTypes ::=
   normalParameterType (',' normalParameterType)*
 
-normalParameterType ::= metadata typedIdentifier
-  | metadata type
+normalParameterType ::= (<IdentifierParameterType>metadata typedIdentifier)
+  | (<TypeParameterType>metadata type)
 
 optionalParameterTypes ::= optionalPositionalParameterTypes
   | namedParameterTypes

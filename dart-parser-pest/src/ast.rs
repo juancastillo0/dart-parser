@@ -400,13 +400,13 @@ struct DeclarationV0FactoryConstructorSignature {
 }
 
 /// And(Raw(external), Id(constantConstructorSignature))
-struct DeclarationV1ConstantConstructorSignature {
+struct ExternalConstantConstructorSignature {
     external_token: Token,
     constant_constructor_signature: ConstantConstructorSignature,
 }
 
 /// And(Raw(external), Id(constructorSignature))
-struct DeclarationV2ConstructorSignature {
+struct ExternalConstructorSignature {
     external_token: Token,
     constructor_signature: ConstructorSignature,
 }
@@ -442,7 +442,7 @@ struct DeclarationV6OperatorSignature {
 }
 
 /// And(Raw(static), Raw(const), Modified(?,Id(type)), Id(staticFinalDeclarationList))
-struct DeclarationV7StaticToken {
+struct StaticConst {
     static_token: Token,
     const_token: Token,
     dart_type: Option<Type>,
@@ -450,7 +450,7 @@ struct DeclarationV7StaticToken {
 }
 
 /// And(Raw(static), Raw(final), Modified(?,Id(type)), Id(staticFinalDeclarationList))
-struct DeclarationV8StaticToken {
+struct StaticFinal {
     static_token: Token,
     final_token: Token,
     dart_type: Option<Type>,
@@ -458,7 +458,7 @@ struct DeclarationV8StaticToken {
 }
 
 /// And(Raw(static), Raw(late), Raw(final), Modified(?,Id(type)), Id(initializedIdentifierList))
-struct DeclarationV9StaticToken {
+struct StaticLateFinal {
     static_token: Token,
     late_token: Token,
     final_token: Token,
@@ -467,7 +467,7 @@ struct DeclarationV9StaticToken {
 }
 
 /// And(Raw(static), Modified(?,Raw(late)), Id(varOrType), Id(initializedIdentifierList))
-struct DeclarationV10StaticToken {
+struct StaticVarOrType {
     static_token: Token,
     late_token: Option<Token>,
     var_or_type: VarOrType,
@@ -475,7 +475,7 @@ struct DeclarationV10StaticToken {
 }
 
 /// And(Raw(covariant), Raw(late), Raw(final), Modified(?,Id(type)), Id(identifierList))
-struct DeclarationV11CovariantToken {
+struct CovariantLateFinal {
     covariant_token: Token,
     late_token: Token,
     final_token: Token,
@@ -484,7 +484,7 @@ struct DeclarationV11CovariantToken {
 }
 
 /// And(Raw(covariant), Modified(?,Raw(late)), Id(varOrType), Id(initializedIdentifierList))
-struct DeclarationV12CovariantToken {
+struct CovariantVarOrType {
     covariant_token: Token,
     late_token: Option<Token>,
     var_or_type: VarOrType,
@@ -527,18 +527,18 @@ struct DeclarationV17ConstructorSignature {
 /// Or( And(Raw(external), Id(factoryConstructorSignature)), And(Raw(external), Id(constantConstructorSignature)), And(Raw(external), Id(constructorSignature)), And(Modified(?,And(Raw(external), Modified(?,Raw(static)))), Id(getterSignature)), And(Modified(?,And(Raw(external), Modified(?,Raw(static)))), Id(setterSignature)), And(Modified(?,And(Raw(external), Modified(?,Raw(static)))), Id(functionSignature)), And(Modified(?,Raw(external)), Id(operatorSignature)), And(Raw(static), Raw(const), Modified(?,Id(type)), Id(staticFinalDeclarationList)), And(Raw(static), Raw(final), Modified(?,Id(type)), Id(staticFinalDeclarationList)), And(Raw(static), Raw(late), Raw(final), Modified(?,Id(type)), Id(initializedIdentifierList)), And(Raw(static), Modified(?,Raw(late)), Id(varOrType), Id(initializedIdentifierList)), And(Raw(covariant), Raw(late), Raw(final), Modified(?,Id(type)), Id(identifierList)), And(Raw(covariant), Modified(?,Raw(late)), Id(varOrType), Id(initializedIdentifierList)), And(Modified(?,Raw(late)), Raw(final), Modified(?,Id(type)), Id(initializedIdentifierList)), And(Modified(?,Raw(late)), Id(varOrType), Id(initializedIdentifierList)), Id(redirectingFactoryConstructorSignature), And(Id(constantConstructorSignature), Modified(?,Or( Id(redirection), Id(initializers), ))), And(Id(constructorSignature), Modified(?,Or( Id(redirection), Id(initializers), ))), )
 enum Declaration {
     FactoryConstructorSignature(DeclarationV0FactoryConstructorSignature),
-    ConstantConstructorSignature(DeclarationV1ConstantConstructorSignature),
-    ConstructorSignature(DeclarationV2ConstructorSignature),
+    ExternalConstantConstructorSignature(ExternalConstantConstructorSignature),
+    ExternalConstructorSignature(ExternalConstructorSignature),
     GetterSignature(DeclarationV3GetterSignature),
     SetterSignature(DeclarationV4SetterSignature),
     FunctionSignature(DeclarationV5FunctionSignature),
     OperatorSignature(DeclarationV6OperatorSignature),
-    Static(DeclarationV7StaticToken),
-    Static(DeclarationV8StaticToken),
-    Static(DeclarationV9StaticToken),
-    Static(DeclarationV10StaticToken),
-    Covariant(DeclarationV11CovariantToken),
-    Covariant(DeclarationV12CovariantToken),
+    StaticConst(StaticConst),
+    StaticFinal(StaticFinal),
+    StaticLateFinal(StaticLateFinal),
+    StaticVarOrType(StaticVarOrType),
+    CovariantLateFinal(CovariantLateFinal),
+    CovariantVarOrType(CovariantVarOrType),
     Final(DeclarationV13FinalToken),
     VarOrType(DeclarationV14VarOrType),
     RedirectingFactoryConstructorSignature(RedirectingFactoryConstructorSignature),
@@ -2208,21 +2208,21 @@ struct Assertion {
 }
 
 /// And(Raw(external), Id(functionSignature), Raw(;))
-struct TopLevelDeclarationV5FunctionSignature {
+struct ExternalFunctionSignature {
     external_token: Token,
     function_signature: FunctionSignature,
     semicolon_token: Token,
 }
 
 /// And(Raw(external), Id(getterSignature), Raw(;))
-struct TopLevelDeclarationV6GetterSignature {
+struct ExternalGetterSignature {
     external_token: Token,
     getter_signature: GetterSignature,
     semicolon_token: Token,
 }
 
 /// And(Raw(external), Id(setterSignature), Raw(;))
-struct TopLevelDeclarationV7SetterSignature {
+struct ExternalSetterSignature {
     external_token: Token,
     setter_signature: SetterSignature,
     semicolon_token: Token,
@@ -2284,9 +2284,9 @@ enum TopLevelDeclaration {
     ExtensionDeclaration(ExtensionDeclaration),
     EnumType(EnumType),
     TypeAlias(TypeAlias),
-    FunctionSignature(TopLevelDeclarationV5FunctionSignature),
-    GetterSignature(TopLevelDeclarationV6GetterSignature),
-    SetterSignature(TopLevelDeclarationV7SetterSignature),
+    ExternalFunctionSignature(ExternalFunctionSignature),
+    ExternalGetterSignature(ExternalGetterSignature),
+    ExternalSetterSignature(ExternalSetterSignature),
     FunctionSignature(TopLevelDeclarationV8FunctionSignature),
     GetterSignature(TopLevelDeclarationV9GetterSignature),
     SetterSignature(TopLevelDeclarationV10SetterSignature),
@@ -2370,21 +2370,21 @@ struct LibraryExport {
 }
 
 /// And(Raw(show), Id(identifierList))
-struct CombinatorV0IdentifierList {
+struct ShowCombinator {
     show_token: Token,
     identifier_list: IdentifierList,
 }
 
 /// And(Raw(hide), Id(identifierList))
-struct CombinatorV1IdentifierList {
+struct HideCombinator {
     hide_token: Token,
     identifier_list: IdentifierList,
 }
 
 /// Or( And(Raw(show), Id(identifierList)), And(Raw(hide), Id(identifierList)), )
 enum Combinator {
-    IdentifierList(CombinatorV0IdentifierList),
-    IdentifierList(CombinatorV1IdentifierList),
+    ShowCombinator(ShowCombinator),
+    HideCombinator(HideCombinator),
 }
 
 /// And(Id(identifier), Modified(*,And(Raw(,), Id(identifier))))
@@ -2590,7 +2590,7 @@ struct ParameterTypeListV0OpenParenToken {
 }
 
 /// And(Raw((), Id(normalParameterTypes), Raw(,), Id(optionalParameterTypes), Raw()))
-struct ParameterTypeListV1NormalParameterTypes {
+struct NormalWithOptionalParameters {
     open_paren_token: Token,
     normal_parameter_types: NormalParameterTypes,
     comma_token: Token,
@@ -2616,7 +2616,7 @@ struct ParameterTypeListV3OptionalParameterTypes {
 /// Or( And(Raw((), Raw())), And(Raw((), Id(normalParameterTypes), Raw(,), Id(optionalParameterTypes), Raw())), And(Raw((), Id(normalParameterTypes), Modified(?,Raw(,)), Raw())), And(Raw((), Id(optionalParameterTypes), Raw())), )
 enum ParameterTypeList {
     OpenParen(ParameterTypeListV0OpenParenToken),
-    NormalParameterTypes(ParameterTypeListV1NormalParameterTypes),
+    NormalWithOptionalParameters(NormalWithOptionalParameters),
     NormalParameterTypes(ParameterTypeListV2NormalParameterTypes),
     OptionalParameterTypes(ParameterTypeListV3OptionalParameterTypes),
 }
@@ -2634,21 +2634,21 @@ struct NormalParameterTypes {
 }
 
 /// And(Id(metadata), Id(typedIdentifier))
-struct NormalParameterTypeV0Metadata {
+struct IdentifierParameterType {
     metadata: Metadata,
     typed_identifier: TypedIdentifier,
 }
 
 /// And(Id(metadata), Id(type))
-struct NormalParameterTypeV1Metadata {
+struct TypeParameterType {
     metadata: Metadata,
     dart_type: Type,
 }
 
 /// Or( And(Id(metadata), Id(typedIdentifier)), And(Id(metadata), Id(type)), )
 enum NormalParameterType {
-    Metadata(NormalParameterTypeV0Metadata),
-    Metadata(NormalParameterTypeV1Metadata),
+    IdentifierParameterType(IdentifierParameterType),
+    TypeParameterType(TypeParameterType),
 }
 
 /// Or( Id(optionalPositionalParameterTypes), Id(namedParameterTypes), )
