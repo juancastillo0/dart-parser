@@ -47,7 +47,7 @@ struct Expressionequal {
 }
 
 /// And(Raw(,), Id(initializedIdentifier))
-struct InitializedIdentifiercomma {
+struct InitializedIdentifierItem {
     comma_token: Token,
     initialized_identifier: InitializedIdentifier,
 }
@@ -56,7 +56,7 @@ struct InitializedIdentifiercomma {
 struct InitializedVariableDeclaration {
     declared_identifier: DeclaredIdentifier,
     expressionequal: Option<Expressionequal>,
-    initialized_identifiercomma: Vec<InitializedIdentifiercomma>,
+    initialized_identifier_item: Vec<InitializedIdentifierItem>,
 }
 
 /// And(Id(identifier), Modified(?,And(Raw(=), Id(expression))))
@@ -68,7 +68,7 @@ struct InitializedIdentifier {
 /// And(Id(initializedIdentifier), Modified(*,And(Raw(,), Id(initializedIdentifier))))
 struct InitializedIdentifierList {
     initialized_identifier: InitializedIdentifier,
-    initialized_identifiercomma: Vec<InitializedIdentifiercomma>,
+    initialized_identifier_item: Vec<InitializedIdentifierItem>,
 }
 
 /// And(Modified(?,Id(type)), Id(identifier), Id(formalParameterPart))
@@ -100,8 +100,8 @@ struct FunctionBodyGeneratorV0AsyncToken {
 
 /// And(Raw(sync), Raw(*))
 struct FunctionBodyGeneratorV1SyncToken {
-    syncToken: Token,
-    asteriskToken: Token,
+    sync_token: Token,
+    asterisk_token: Token,
 }
 
 /// Or( And(Raw(async), Modified(?,Raw(*))), And(Raw(sync), Raw(*)), )
@@ -130,9 +130,9 @@ struct Block {
 }
 
 /// And(Raw((), Raw()))
-struct FormalParameterListV0OpenParenToken {
-    openParenToken: Token,
-    closeParenToken: Token,
+struct EmptyParameters {
+    open_paren_token: Token,
+    close_paren_token: Token,
 }
 
 /// And(Raw((), Id(normalFormalParameters), Modified(?,Raw(,)), Raw()))
@@ -144,7 +144,7 @@ struct FormalParameterListV1NormalFormalParameters {
 }
 
 /// And(Raw((), Id(normalFormalParameters), Raw(,), Id(optionalOrNamedFormalParameters), Raw()))
-struct FormalParameterListV2NormalFormalParameters {
+struct NormalWithOptionalOrNamedParameters {
     open_paren_token: Token,
     normal_formal_parameters: NormalFormalParameters,
     comma_token: Token,
@@ -161,14 +161,14 @@ struct FormalParameterListV3OptionalOrNamedFormalParameters {
 
 /// Or( And(Raw((), Raw())), And(Raw((), Id(normalFormalParameters), Modified(?,Raw(,)), Raw())), And(Raw((), Id(normalFormalParameters), Raw(,), Id(optionalOrNamedFormalParameters), Raw())), And(Raw((), Id(optionalOrNamedFormalParameters), Raw())), )
 enum FormalParameterList {
-    OpenParen(FormalParameterListV0OpenParenToken),
+    EmptyParameters(EmptyParameters),
     NormalFormalParameters(FormalParameterListV1NormalFormalParameters),
-    NormalFormalParameters(FormalParameterListV2NormalFormalParameters),
+    NormalWithOptionalOrNamedParameters(NormalWithOptionalOrNamedParameters),
     OptionalOrNamedFormalParameters(FormalParameterListV3OptionalOrNamedFormalParameters),
 }
 
 /// And(Raw(,), Id(normalFormalParameter))
-struct NormalFormalParametercomma {
+struct NormalFormalParameterItem {
     comma_token: Token,
     normal_formal_parameter: NormalFormalParameter,
 }
@@ -176,7 +176,7 @@ struct NormalFormalParametercomma {
 /// And(Id(normalFormalParameter), Modified(*,And(Raw(,), Id(normalFormalParameter))))
 struct NormalFormalParameters {
     normal_formal_parameter: NormalFormalParameter,
-    normal_formal_parametercomma: Vec<NormalFormalParametercomma>,
+    normal_formal_parameter_item: Vec<NormalFormalParameterItem>,
 }
 
 /// Or( Id(optionalPositionalFormalParameters), Id(namedFormalParameters), )
@@ -186,7 +186,7 @@ enum OptionalOrNamedFormalParameters {
 }
 
 /// And(Raw(,), Id(defaultFormalParameter))
-struct DefaultFormalParametercomma {
+struct DefaultFormalParameterItem {
     comma_token: Token,
     default_formal_parameter: DefaultFormalParameter,
 }
@@ -195,13 +195,13 @@ struct DefaultFormalParametercomma {
 struct OptionalPositionalFormalParameters {
     open_square_bracket_token: Token,
     default_formal_parameter: DefaultFormalParameter,
-    default_formal_parametercomma: Vec<DefaultFormalParametercomma>,
+    default_formal_parameter_item: Vec<DefaultFormalParameterItem>,
     comma_token: Option<Token>,
     close_square_bracket_token: Token,
 }
 
 /// And(Raw(,), Id(defaultNamedParameter))
-struct DefaultNamedParametercomma {
+struct DefaultNamedParameterItem {
     comma_token: Token,
     default_named_parameter: DefaultNamedParameter,
 }
@@ -210,7 +210,7 @@ struct DefaultNamedParametercomma {
 struct NamedFormalParameters {
     open_curly_bracket_token: Token,
     default_named_parameter: DefaultNamedParameter,
-    default_named_parametercomma: Vec<DefaultNamedParametercomma>,
+    default_named_parameter_item: Vec<DefaultNamedParameterItem>,
     comma_token: Option<Token>,
     close_curly_bracket_token: Token,
 }
@@ -330,7 +330,7 @@ enum ClassDeclaration {
 }
 
 /// And(Raw(,), Id(typeNotVoid))
-struct TypeNotVoidcomma {
+struct TypeNotVoidItem {
     comma_token: Token,
     type_not_void: TypeNotVoid,
 }
@@ -338,7 +338,7 @@ struct TypeNotVoidcomma {
 /// And(Id(typeNotVoid), Modified(*,And(Raw(,), Id(typeNotVoid))))
 struct TypeNotVoidList {
     type_not_void: TypeNotVoid,
-    type_not_voidcomma: Vec<TypeNotVoidcomma>,
+    type_not_void_item: Vec<TypeNotVoidItem>,
 }
 
 /// And(Id(declaration), Raw(;))
@@ -547,7 +547,7 @@ enum Declaration {
 }
 
 /// And(Raw(,), Id(staticFinalDeclaration))
-struct StaticFinalDeclarationcomma {
+struct StaticFinalDeclarationItem {
     comma_token: Token,
     static_final_declaration: StaticFinalDeclaration,
 }
@@ -555,7 +555,7 @@ struct StaticFinalDeclarationcomma {
 /// And(Id(staticFinalDeclaration), Modified(*,And(Raw(,), Id(staticFinalDeclaration))))
 struct StaticFinalDeclarationList {
     static_final_declaration: StaticFinalDeclaration,
-    static_final_declarationcomma: Vec<StaticFinalDeclarationcomma>,
+    static_final_declaration_item: Vec<StaticFinalDeclarationItem>,
 }
 
 /// And(Id(identifier), Raw(=), Id(expression))
@@ -613,7 +613,7 @@ struct ConstructorSignature {
 }
 
 /// And(Raw(.), Id(identifier))
-struct Identifierperiod {
+struct IdentifierSelector {
     period_token: Token,
     identifier: Identifier,
 }
@@ -621,19 +621,19 @@ struct Identifierperiod {
 /// And(Id(typeIdentifier), Modified(?,And(Raw(.), Id(identifier))))
 struct ConstructorName {
     type_identifier: TypeIdentifier,
-    identifierperiod: Option<Identifierperiod>,
+    identifier_selector: Option<IdentifierSelector>,
 }
 
 /// And(Raw(:), Raw(this), Modified(?,And(Raw(.), Id(identifier))), Id(arguments))
 struct Redirection {
     colon_token: Token,
     this_token: Token,
-    identifierperiod: Option<Identifierperiod>,
+    identifier_selector: Option<IdentifierSelector>,
     arguments: Arguments,
 }
 
 /// And(Raw(,), Id(initializerListEntry))
-struct InitializerListEntrycomma {
+struct InitializerListEntryItem {
     comma_token: Token,
     initializer_list_entry: InitializerListEntry,
 }
@@ -642,7 +642,7 @@ struct InitializerListEntrycomma {
 struct Initializers {
     colon_token: Token,
     initializer_list_entry: InitializerListEntry,
-    initializer_list_entrycomma: Vec<InitializerListEntrycomma>,
+    initializer_list_entry_item: Vec<InitializerListEntryItem>,
 }
 
 /// And(Raw(super), Id(arguments))
@@ -669,8 +669,8 @@ enum InitializerListEntry {
 
 /// And(Raw(this), Raw(.))
 struct FieldInitializerThisToken {
-    thisToken: Token,
-    periodToken: Token,
+    this_token: Token,
+    period_token: Token,
 }
 
 /// And(Modified(?,And(Raw(this), Raw(.))), Id(identifier), Raw(=), Id(initializerExpression))
@@ -709,7 +709,7 @@ struct RedirectingFactoryConstructorSignature {
 struct ConstructorDesignationV2TypeName {
     type_name: TypeName,
     type_arguments: TypeArguments,
-    identifierperiod: Option<Identifierperiod>,
+    identifier_selector: Option<IdentifierSelector>,
 }
 
 /// Or( Id(typeIdentifier), Id(qualifiedName), And(Id(typeName), Id(typeArguments), Modified(?,And(Raw(.), Id(identifier)))), )
@@ -768,7 +768,7 @@ struct MixinApplication {
 }
 
 /// And(Raw(on), Id(typeNotVoidList))
-struct TypeNotVoidListon {
+struct TypeNotVoidListOn {
     on_token: Token,
     type_not_void_list: TypeNotVoidList,
 }
@@ -784,7 +784,7 @@ struct MixinDeclaration {
     mixin_token: Token,
     type_identifier: TypeIdentifier,
     type_parameters: Option<TypeParameters>,
-    type_not_void_liston: Option<TypeNotVoidListon>,
+    type_not_void_list_on: Option<TypeNotVoidListOn>,
     interfaces: Option<Interfaces>,
     open_curly_bracket_token: Token,
     metadata: Vec<MixinDeclarationMetadata>,
@@ -810,7 +810,7 @@ struct ExtensionDeclaration {
 }
 
 /// And(Raw(,), Id(enumEntry))
-struct EnumEntrycomma {
+struct EnumEntryItem {
     comma_token: Token,
     enum_entry: EnumEntry,
 }
@@ -821,7 +821,7 @@ struct EnumType {
     identifier: Identifier,
     open_curly_bracket_token: Token,
     enum_entry: EnumEntry,
-    enum_entrycomma: Vec<EnumEntrycomma>,
+    enum_entry_item: Vec<EnumEntryItem>,
     comma_token: Option<Token>,
     close_curly_bracket_token: Token,
 }
@@ -833,7 +833,7 @@ struct EnumEntry {
 }
 
 /// And(Raw(extends), Id(typeNotVoid))
-struct TypeNotVoidextends {
+struct TypeNotVoidExtends {
     extends_token: Token,
     type_not_void: TypeNotVoid,
 }
@@ -842,11 +842,11 @@ struct TypeNotVoidextends {
 struct TypeParameter {
     metadata: Metadata,
     identifier: Identifier,
-    type_not_voidextends: Option<TypeNotVoidextends>,
+    type_not_void_extends: Option<TypeNotVoidExtends>,
 }
 
 /// And(Raw(,), Id(typeParameter))
-struct TypeParametercomma {
+struct TypeParameterItem {
     comma_token: Token,
     type_parameter: TypeParameter,
 }
@@ -855,15 +855,18 @@ struct TypeParametercomma {
 struct TypeParameters {
     less_token: Token,
     type_parameter: TypeParameter,
-    type_parametercomma: Vec<TypeParametercomma>,
+    type_parameter_item: Vec<TypeParameterItem>,
     more_token: Token,
 }
 
 /// And(Raw(@), Id(metadatum))
-struct Metadata {
+struct MetadataItem {
     at_token: Token,
     metadatum: Metadatum,
 }
+
+/// Modified(*,And(Raw(@), Id(metadatum)))
+type Metadata = Vec<MetadataItem>;
 
 /// And(Id(constructorDesignation), Id(arguments))
 struct MetadatumV2ConstructorDesignation {
@@ -908,7 +911,7 @@ enum ExpressionWithoutCascade {
 }
 
 /// And(Raw(,), Id(expression))
-struct Expressioncomma {
+struct ExpressionItem {
     comma_token: Token,
     expression: Expression,
 }
@@ -916,7 +919,7 @@ struct Expressioncomma {
 /// And(Id(expression), Modified(*,And(Raw(,), Id(expression))))
 struct ExpressionList {
     expression: Expression,
-    expressioncomma: Vec<Expressioncomma>,
+    expression_item: Vec<ExpressionItem>,
 }
 
 /// And(Raw(super), Id(unconditionalAssignableSelector))
@@ -963,80 +966,13 @@ enum Literal {
     SetOrMapLiteral(SetOrMapLiteral),
 }
 
+/// Raw(null)
+type NullLiteral = Token;
+
 /// Or( Id(NUMBER), Id(HEX_NUMBER), )
 enum NumericLiteral {
-    Number(Number),
-    HexNumber(HexNumber),
-}
-
-/// And(Raw(.), Modified(+,Id(DIGIT)))
-struct null {
-    period_token: Token,
-    digit: Vec<Token>,
-}
-
-/// And(Modified(+,Id(DIGIT)), Modified(?,And(Raw(.), Modified(+,Id(DIGIT)))), Modified(?,Id(EXPONENT)))
-struct null {
-    digit: Vec<Token>,
-    null: Option<null>,
-    exponent: Option<Token>,
-}
-
-/// And(Raw(.), Modified(+,Id(DIGIT)), Modified(?,Id(EXPONENT)))
-struct NUMBERV1PeriodToken {
-    period_token: Token,
-    digit: Vec<Token>,
-    exponent: Option<Token>,
-}
-
-/// Or( And(Modified(+,Id(DIGIT)), Modified(?,And(Raw(.), Modified(+,Id(DIGIT)))), Modified(?,Id(EXPONENT))), And(Raw(.), Modified(+,Id(DIGIT)), Modified(?,Id(EXPONENT))), )
-enum Number {
-    null(null),
-    Period(NUMBERV1PeriodToken),
-}
-
-/// Or( Raw(e), Raw(E), )
-enum ExponentTokenOrScientificToken {
-    Exponent(Token),
-    Scientific(Token),
-}
-
-/// Or( Raw(+), Raw(-), )
-enum PlusTokenOrMinusToken {
-    Plus(Token),
-    Minus(Token),
-}
-
-/// And(Or( Raw(e), Raw(E), ), Modified(?,Or( Raw(+), Raw(-), )), Modified(+,Id(DIGIT)))
-struct Exponent {
-    exponent_token_or_scientific_token: ExponentTokenOrScientificToken,
-    plus_token_or_minus_token: Option<PlusTokenOrMinusToken>,
-    digit: Vec<Token>,
-}
-
-/// And(Raw(0x), Modified(+,Id(HEX_DIGIT)))
-struct HEXNUMBERV0Hex0xToken {
-    hex0x_token: Token,
-    hex_digit: Vec<Token>,
-}
-
-/// And(Raw(0X), Modified(+,Id(HEX_DIGIT)))
-struct HEXNUMBERV1Hex0XToken {
-    hex0_x_token: Token,
-    hex_digit: Vec<Token>,
-}
-
-/// Or( And(Raw(0x), Modified(+,Id(HEX_DIGIT))), And(Raw(0X), Modified(+,Id(HEX_DIGIT))), )
-enum HexNumber {
-    Hex0x(HEXNUMBERV0Hex0xToken),
-    Hex0X(HEXNUMBERV1Hex0XToken),
-}
-
-/// Or( RawRange(Raw(a),Raw(f)), RawRange(Raw(A),Raw(F)), Id(DIGIT), )
-enum HexDigit {
-    V0 { a_token_tof_token: Token },
-    V1 { a_token_to_f_token: Token },
-    Digit(Digit),
+    Number(Token),
+    HexNumber(Token),
 }
 
 /// Or( Raw(true), Raw(false), )
@@ -1046,13 +982,16 @@ enum BooleanLiteral {
 }
 
 /// Or( Id(multilineString), Id(singleLineString), )
-enum StringLiteral {
+enum StringLiteralItem {
     MultilineString(MultilineString),
     SingleLineString(SingleLineString),
 }
 
+/// Modified(+,Or( Id(multilineString), Id(singleLineString), ))
+type StringLiteral = Vec<StringLiteralItem>;
+
 /// And(Id(SINGLE_LINE_STRING_SQ_MID_MID), Id(expression))
-struct null {
+struct ExpressionSingleLineStringSqMidMid {
     single_line_string_sq_mid_mid: Token,
     expression: Expression,
 }
@@ -1061,12 +1000,12 @@ struct null {
 struct SingleLineStringV2SingleLineStringSqBeginMid {
     single_line_string_sq_begin_mid: Token,
     expression: Expression,
-    null: Vec<null>,
+    expression_single_line_string_sq_mid_mid: Vec<ExpressionSingleLineStringSqMidMid>,
     single_line_string_sq_mid_end: Token,
 }
 
 /// And(Id(SINGLE_LINE_STRING_DQ_MID_MID), Id(expression))
-struct null {
+struct ExpressionSingleLineStringDqMidMid {
     single_line_string_dq_mid_mid: Token,
     expression: Expression,
 }
@@ -1075,125 +1014,21 @@ struct null {
 struct SingleLineStringV4SingleLineStringDqBeginMid {
     single_line_string_dq_begin_mid: Token,
     expression: Expression,
-    null: Vec<null>,
+    expression_single_line_string_dq_mid_mid: Vec<ExpressionSingleLineStringDqMidMid>,
     single_line_string_dq_mid_end: Token,
 }
 
 /// Or( Id(RAW_SINGLE_LINE_STRING), Id(SINGLE_LINE_STRING_SQ_BEGIN_END), And(Id(SINGLE_LINE_STRING_SQ_BEGIN_MID), Id(expression), Modified(*,And(Id(SINGLE_LINE_STRING_SQ_MID_MID), Id(expression))), Id(SINGLE_LINE_STRING_SQ_MID_END)), Id(SINGLE_LINE_STRING_DQ_BEGIN_END), And(Id(SINGLE_LINE_STRING_DQ_BEGIN_MID), Id(expression), Modified(*,And(Id(SINGLE_LINE_STRING_DQ_MID_MID), Id(expression))), Id(SINGLE_LINE_STRING_DQ_MID_END)), )
 enum SingleLineString {
-    RawSingleLineString(RawSingleLineString),
-    SingleLineStringSqBeginEnd(SingleLineStringSqBeginEnd),
+    RawSingleLineString(Token),
+    SingleLineStringSqBeginEnd(Token),
     SingleLineStringSqBeginMid(SingleLineStringV2SingleLineStringSqBeginMid),
-    SingleLineStringDqBeginEnd(SingleLineStringDqBeginEnd),
+    SingleLineStringDqBeginEnd(Token),
     SingleLineStringDqBeginMid(SingleLineStringV4SingleLineStringDqBeginMid),
 }
 
-/// And(Raw(r), Raw(\'), Modified(*,Negated(Or( Raw(\'), Raw(\r), Raw(\n), ))), Raw(\'))
-struct RAWSINGLELINESTRINGV0RToken {
-    r_token: Token,
-    quote_token: Token,
-    null: Vec<Token>,
-    quoteToken2: Token,
-}
-
-/// And(Raw(r), Raw("), Modified(*,Negated(Or( Raw("), Raw(\r), Raw(\n), ))), Raw("))
-struct RAWSINGLELINESTRINGV1RToken {
-    r_token: Token,
-    double_quote_token: Token,
-    null: Vec<Token>,
-    doubleQuoteToken2: Token,
-}
-
-/// Or( And(Raw(r), Raw(\'), Modified(*,Negated(Or( Raw(\'), Raw(\r), Raw(\n), ))), Raw(\')), And(Raw(r), Raw("), Modified(*,Negated(Or( Raw("), Raw(\r), Raw(\n), ))), Raw(")), )
-enum RawSingleLineString {
-    R(RAWSINGLELINESTRINGV0RToken),
-    R(RAWSINGLELINESTRINGV1RToken),
-}
-
-/// And(Raw(\\), Negated(Or( Raw(n), Raw(r), Raw(b), Raw(t), Raw(v), Raw(x), Raw(u), Raw(\r), Raw(\n), )))
-struct STRINGCONTENTCOMMONV2BackToken {
-    back_token: Token,
-    null: Token,
-}
-
-/// Or( Negated(Or( Raw(\\), Raw(\'), Raw("), Raw($), Raw(\r), Raw(\n), )), Id(ESCAPE_SEQUENCE), And(Raw(\\), Negated(Or( Raw(n), Raw(r), Raw(b), Raw(t), Raw(v), Raw(x), Raw(u), Raw(\r), Raw(\n), ))), Id(SIMPLE_STRING_INTERPOLATION), )
-enum StringContentCommon {
-    V0 { null: Token },
-    EscapeSequence(EscapeSequence),
-    Back(STRINGCONTENTCOMMONV2BackToken),
-    SimpleStringInterpolation(SimpleStringInterpolation),
-}
-
-/// Or( Id(STRING_CONTENT_COMMON), Raw("), )
-enum StringContentSq {
-    StringContentCommon(StringContentCommon),
-    DoubleQuote(Token),
-}
-
-/// And(Raw(\'), Modified(*,Id(STRING_CONTENT_SQ)), Raw(\'))
-struct SingleLineStringSqBeginEnd {
-    quote_token: Token,
-    string_content_sq: Vec<Token>,
-    quoteToken2: Token,
-}
-
-/// And(Raw(\'), Modified(*,Id(STRING_CONTENT_SQ)), Raw(${))
-struct SingleLineStringSqBeginMid {
-    quote_token: Token,
-    string_content_sq: Vec<Token>,
-    interpolation_start_token: Token,
-}
-
-/// And(Raw(}), Modified(*,Id(STRING_CONTENT_SQ)), Raw(${))
-struct SingleLineStringSqMidMid {
-    close_curly_bracket_token: Token,
-    string_content_sq: Vec<Token>,
-    interpolation_start_token: Token,
-}
-
-/// And(Raw(}), Modified(*,Id(STRING_CONTENT_SQ)), Raw(\'))
-struct SingleLineStringSqMidEnd {
-    close_curly_bracket_token: Token,
-    string_content_sq: Vec<Token>,
-    quote_token: Token,
-}
-
-/// Or( Id(STRING_CONTENT_COMMON), Raw(\'), )
-enum StringContentDq {
-    StringContentCommon(StringContentCommon),
-    Quote(Token),
-}
-
-/// And(Raw("), Modified(*,Id(STRING_CONTENT_DQ)), Raw("))
-struct SingleLineStringDqBeginEnd {
-    double_quote_token: Token,
-    string_content_dq: Vec<Token>,
-    doubleQuoteToken2: Token,
-}
-
-/// And(Raw("), Modified(*,Id(STRING_CONTENT_DQ)), Raw(${))
-struct SingleLineStringDqBeginMid {
-    double_quote_token: Token,
-    string_content_dq: Vec<Token>,
-    interpolation_start_token: Token,
-}
-
-/// And(Raw(}), Modified(*,Id(STRING_CONTENT_DQ)), Raw(${))
-struct SingleLineStringDqMidMid {
-    close_curly_bracket_token: Token,
-    string_content_dq: Vec<Token>,
-    interpolation_start_token: Token,
-}
-
-/// And(Raw(}), Modified(*,Id(STRING_CONTENT_DQ)), Raw("))
-struct SingleLineStringDqMidEnd {
-    close_curly_bracket_token: Token,
-    string_content_dq: Vec<Token>,
-    double_quote_token: Token,
-}
-
 /// And(Id(MULTI_LINE_STRING_SQ_MID_MID), Id(expression))
-struct null {
+struct ExpressionMultiLineStringSqMidMid {
     multi_line_string_sq_mid_mid: Token,
     expression: Expression,
 }
@@ -1202,12 +1037,12 @@ struct null {
 struct MultilineStringV2MultiLineStringSqBeginMid {
     multi_line_string_sq_begin_mid: Token,
     expression: Expression,
-    null: Vec<null>,
+    expression_multi_line_string_sq_mid_mid: Vec<ExpressionMultiLineStringSqMidMid>,
     multi_line_string_sq_mid_end: Token,
 }
 
 /// And(Id(MULTI_LINE_STRING_DQ_MID_MID), Id(expression))
-struct null {
+struct ExpressionMultiLineStringDqMidMid {
     multi_line_string_dq_mid_mid: Token,
     expression: Expression,
 }
@@ -1216,192 +1051,17 @@ struct null {
 struct MultilineStringV4MultiLineStringDqBeginMid {
     multi_line_string_dq_begin_mid: Token,
     expression: Expression,
-    null: Vec<null>,
+    expression_multi_line_string_dq_mid_mid: Vec<ExpressionMultiLineStringDqMidMid>,
     multi_line_string_dq_mid_end: Token,
 }
 
 /// Or( Id(RAW_MULTI_LINE_STRING), Id(MULTI_LINE_STRING_SQ_BEGIN_END), And(Id(MULTI_LINE_STRING_SQ_BEGIN_MID), Id(expression), Modified(*,And(Id(MULTI_LINE_STRING_SQ_MID_MID), Id(expression))), Id(MULTI_LINE_STRING_SQ_MID_END)), Id(MULTI_LINE_STRING_DQ_BEGIN_END), And(Id(MULTI_LINE_STRING_DQ_BEGIN_MID), Id(expression), Modified(*,And(Id(MULTI_LINE_STRING_DQ_MID_MID), Id(expression))), Id(MULTI_LINE_STRING_DQ_MID_END)), )
 enum MultilineString {
-    RawMultiLineString(RawMultiLineString),
-    MultiLineStringSqBeginEnd(MultiLineStringSqBeginEnd),
+    RawMultiLineString(Token),
+    MultiLineStringSqBeginEnd(Token),
     MultiLineStringSqBeginMid(MultilineStringV2MultiLineStringSqBeginMid),
-    MultiLineStringDqBeginEnd(MultiLineStringDqBeginEnd),
+    MultiLineStringDqBeginEnd(Token),
     MultiLineStringDqBeginMid(MultilineStringV4MultiLineStringDqBeginMid),
-}
-
-/// And(Raw(r), Raw(\'\'\'), Any, Raw(\'\'\'))
-struct RAWMULTILINESTRINGV0RToken {
-    r_token: Token,
-    triple_quotes_token: Token,
-    null: Token,
-    tripleQuotesToken2: Token,
-}
-
-/// And(Raw(r), Raw("""), Any, Raw("""))
-struct RAWMULTILINESTRINGV1RToken {
-    r_token: Token,
-    triple_double_quotes_token: Token,
-    null: Token,
-    tripleDoubleQuotesToken2: Token,
-}
-
-/// Or( And(Raw(r), Raw(\'\'\'), Any, Raw(\'\'\')), And(Raw(r), Raw("""), Any, Raw(""")), )
-enum RawMultiLineString {
-    R(RAWMULTILINESTRINGV0RToken),
-    R(RAWMULTILINESTRINGV1RToken),
-}
-
-/// Or( Raw(\'), Raw(\'\'), )
-enum QuotesSq {
-    Quote(Token),
-    TwoQuotes(Token),
-}
-
-/// Or( Id(STRING_CONTENT_COMMON), Raw("), Raw(\r), Raw(\n), )
-enum null {
-    StringContentCommon(StringContentCommon),
-    DoubleQuote(Token),
-    REscape(Token),
-    Newline(Token),
-}
-
-/// And(Modified(?,Id(QUOTES_SQ)), Or( Id(STRING_CONTENT_COMMON), Raw("), Raw(\r), Raw(\n), ))
-struct StringContentTsq {
-    quotes_sq: Option<Token>,
-    null: null,
-}
-
-/// And(Raw(\'\'\'), Modified(*,Id(STRING_CONTENT_TSQ)), Raw(\'\'\'))
-struct MultiLineStringSqBeginEnd {
-    triple_quotes_token: Token,
-    string_content_tsq: Vec<Token>,
-    tripleQuotesToken2: Token,
-}
-
-/// And(Raw(\'\'\'), Modified(*,Id(STRING_CONTENT_TSQ)), Modified(?,Id(QUOTES_SQ)), Raw(${))
-struct MultiLineStringSqBeginMid {
-    triple_quotes_token: Token,
-    string_content_tsq: Vec<Token>,
-    quotes_sq: Option<Token>,
-    interpolation_start_token: Token,
-}
-
-/// And(Raw(}), Modified(*,Id(STRING_CONTENT_TSQ)), Modified(?,Id(QUOTES_SQ)), Raw(${))
-struct MultiLineStringSqMidMid {
-    close_curly_bracket_token: Token,
-    string_content_tsq: Vec<Token>,
-    quotes_sq: Option<Token>,
-    interpolation_start_token: Token,
-}
-
-/// And(Raw(}), Modified(*,Id(STRING_CONTENT_TSQ)), Raw(\'\'\'))
-struct MultiLineStringSqMidEnd {
-    close_curly_bracket_token: Token,
-    string_content_tsq: Vec<Token>,
-    triple_quotes_token: Token,
-}
-
-/// Or( Raw("), Raw(""), )
-enum QuotesDq {
-    DoubleQuote(Token),
-    TwoDoubleQuotes(Token),
-}
-
-/// Or( Id(STRING_CONTENT_COMMON), Raw(\'), Raw(\r), Raw(\n), )
-enum null {
-    StringContentCommon(StringContentCommon),
-    Quote(Token),
-    REscape(Token),
-    Newline(Token),
-}
-
-/// And(Modified(?,Id(QUOTES_DQ)), Or( Id(STRING_CONTENT_COMMON), Raw(\'), Raw(\r), Raw(\n), ))
-struct StringContentTdq {
-    quotes_dq: Option<Token>,
-    null: null,
-}
-
-/// And(Raw("""), Modified(*,Id(STRING_CONTENT_TDQ)), Raw("""))
-struct MultiLineStringDqBeginEnd {
-    triple_double_quotes_token: Token,
-    string_content_tdq: Vec<Token>,
-    tripleDoubleQuotesToken2: Token,
-}
-
-/// And(Raw("""), Modified(*,Id(STRING_CONTENT_TDQ)), Modified(?,Id(QUOTES_DQ)), Raw(${))
-struct MultiLineStringDqBeginMid {
-    triple_double_quotes_token: Token,
-    string_content_tdq: Vec<Token>,
-    quotes_dq: Option<Token>,
-    interpolation_start_token: Token,
-}
-
-/// And(Raw(}), Modified(*,Id(STRING_CONTENT_TDQ)), Modified(?,Id(QUOTES_DQ)), Raw(${))
-struct MultiLineStringDqMidMid {
-    close_curly_bracket_token: Token,
-    string_content_tdq: Vec<Token>,
-    quotes_dq: Option<Token>,
-    interpolation_start_token: Token,
-}
-
-/// And(Raw(}), Modified(*,Id(STRING_CONTENT_TDQ)), Raw("""))
-struct MultiLineStringDqMidEnd {
-    close_curly_bracket_token: Token,
-    string_content_tdq: Vec<Token>,
-    triple_double_quotes_token: Token,
-}
-
-/// And(Raw(\x), Id(HEX_DIGIT), Id(HEX_DIGIT))
-struct ESCAPESEQUENCEV6HexDigit {
-    f_escape_token: Token,
-    hex_digit: Token,
-    HEX_DIGIT2: Token,
-}
-
-/// And(Raw(\u), Id(HEX_DIGIT), Id(HEX_DIGIT), Id(HEX_DIGIT), Id(HEX_DIGIT))
-struct ESCAPESEQUENCEV7HexDigit {
-    u_escape_token: Token,
-    hex_digit: Token,
-    HEX_DIGIT2: Token,
-    HEX_DIGIT3: Token,
-    HEX_DIGIT4: Token,
-}
-
-/// And(Raw(\u{), Id(HEX_DIGIT_SEQUENCE), Raw(}))
-struct ESCAPESEQUENCEV8HexDigitSequence {
-    u_bracket_escape_token: Token,
-    hex_digit_sequence: Token,
-    close_curly_bracket_token: Token,
-}
-
-/// Or( Raw(\n), Raw(\r), Raw(\f), Raw(\b), Raw(\t), Raw(\v), And(Raw(\x), Id(HEX_DIGIT), Id(HEX_DIGIT)), And(Raw(\u), Id(HEX_DIGIT), Id(HEX_DIGIT), Id(HEX_DIGIT), Id(HEX_DIGIT)), And(Raw(\u{), Id(HEX_DIGIT_SEQUENCE), Raw(})), )
-enum EscapeSequence {
-    Newline(Token),
-    REscape(Token),
-    FEscape(Token),
-    BEscape(Token),
-    TEscape(Token),
-    VEscape(Token),
-    HexDigit(ESCAPESEQUENCEV6HexDigit),
-    HexDigit(ESCAPESEQUENCEV7HexDigit),
-    HexDigitSequence(ESCAPESEQUENCEV8HexDigitSequence),
-}
-
-/// And(Id(HEX_DIGIT), Modified(?,Id(HEX_DIGIT)), Modified(?,Id(HEX_DIGIT)), Modified(?,Id(HEX_DIGIT)), Modified(?,Id(HEX_DIGIT)), Modified(?,Id(HEX_DIGIT)))
-struct HexDigitSequence {
-    hex_digit: Token,
-    HEX_DIGIT2: Option<Token>,
-    HEX_DIGIT3: Option<Token>,
-    HEX_DIGIT4: Option<Token>,
-    HEX_DIGIT5: Option<Token>,
-    HEX_DIGIT6: Option<Token>,
-}
-
-/// Or( Raw(\n), Raw(\r), Raw(\r\n), )
-enum Newline {
-    Newline(Token),
-    REscape(Token),
-    RnEscape(Token),
 }
 
 /// And(Raw(${), Id(expression), Raw(}))
@@ -1413,21 +1073,8 @@ struct StringInterpolationV1Expression {
 
 /// Or( Id(SIMPLE_STRING_INTERPOLATION), And(Raw(${), Id(expression), Raw(})), )
 enum StringInterpolation {
-    SimpleStringInterpolation(SimpleStringInterpolation),
+    SimpleStringInterpolation(Token),
     Expression(StringInterpolationV1Expression),
-}
-
-/// Or( Id(IDENTIFIER_NO_DOLLAR), Id(BUILT_IN_IDENTIFIER), Raw(this), )
-enum null {
-    IdentifierNoDollar(IdentifierNoDollar),
-    BuiltInIdentifier(BuiltInIdentifier),
-    This(Token),
-}
-
-/// And(Raw($), Or( Id(IDENTIFIER_NO_DOLLAR), Id(BUILT_IN_IDENTIFIER), Raw(this), ))
-struct SimpleStringInterpolation {
-    dollar_token: Token,
-    null: null,
 }
 
 /// And(Raw(.), Id(identifier))
@@ -1474,7 +1121,7 @@ struct SetOrMapLiteral {
 }
 
 /// And(Raw(,), Id(element))
-struct Elementcomma {
+struct ElementItem {
     comma_token: Token,
     element: Element,
 }
@@ -1482,7 +1129,7 @@ struct Elementcomma {
 /// And(Id(element), Modified(*,And(Raw(,), Id(element))), Modified(?,Raw(,)))
 struct Elements {
     element: Element,
-    elementcomma: Vec<Elementcomma>,
+    element_item: Vec<ElementItem>,
     comma_token: Option<Token>,
 }
 
@@ -1494,6 +1141,9 @@ enum Element {
     IfElement(IfElement),
     ForElement(ForElement),
 }
+
+/// Id(expression)
+type ExpressionElement = Expression;
 
 /// And(Id(expression), Raw(:), Id(expression))
 struct MapElement {
@@ -1515,7 +1165,7 @@ struct SpreadElement {
 }
 
 /// And(Raw(else), Id(element))
-struct Elementelse {
+struct ElementElse {
     else_token: Token,
     element: Element,
 }
@@ -1527,7 +1177,7 @@ struct IfElement {
     expression: Expression,
     close_paren_token: Token,
     element: Element,
-    elementelse: Option<Elementelse>,
+    element_else: Option<ElementElse>,
 }
 
 /// And(Modified(?,Raw(await)), Raw(for), Raw((), Id(forLoopParts), Raw()), Id(element))
@@ -1573,8 +1223,8 @@ struct FunctionExpressionGeneratorV0AsyncToken {
 
 /// And(Raw(sync), Raw(*))
 struct FunctionExpressionGeneratorV1SyncToken {
-    syncToken: Token,
-    asteriskToken: Token,
+    sync_token: Token,
+    asterisk_token: Token,
 }
 
 /// Or( And(Raw(async), Modified(?,Raw(*))), And(Raw(sync), Raw(*)), )
@@ -1594,6 +1244,9 @@ enum FunctionExpressionBody {
     Arrow(FunctionExpressionBodyV0ArrowToken),
     Block(FunctionExpressionBodyV1Block),
 }
+
+/// Raw(this)
+type ThisExpression = Token;
 
 /// And(Raw(new), Id(constructorDesignation), Id(arguments))
 struct NewExpression {
@@ -1623,7 +1276,7 @@ struct Arguments {
 }
 
 /// And(Raw(,), Id(namedArgument))
-struct NamedArgumentcomma {
+struct NamedArgumentItem {
     comma_token: Token,
     named_argument: NamedArgument,
 }
@@ -1631,13 +1284,13 @@ struct NamedArgumentcomma {
 /// And(Id(namedArgument), Modified(*,And(Raw(,), Id(namedArgument))))
 struct ArgumentListV0NamedArgument {
     named_argument: NamedArgument,
-    named_argumentcomma: Vec<NamedArgumentcomma>,
+    named_argument_item: Vec<NamedArgumentItem>,
 }
 
 /// And(Id(expressionList), Modified(*,And(Raw(,), Id(namedArgument))))
 struct ArgumentListV1ExpressionList {
     expression_list: ExpressionList,
-    named_argumentcomma: Vec<NamedArgumentcomma>,
+    named_argument_item: Vec<NamedArgumentItem>,
 }
 
 /// Or( And(Id(namedArgument), Modified(*,And(Raw(,), Id(namedArgument)))), And(Id(expressionList), Modified(*,And(Raw(,), Id(namedArgument)))), )
@@ -2077,6 +1730,15 @@ enum PrefixOperator {
     TildeOperator(TildeOperator),
 }
 
+/// Raw(-)
+type MinusOperator = Token;
+
+/// Raw(!)
+type NegationOperator = Token;
+
+/// Raw(~)
+type TildeOperator = Token;
+
 /// And(Raw(await), Id(unaryExpression))
 struct AwaitExpression {
     await_token: Token,
@@ -2100,6 +1762,9 @@ enum PostfixExpression {
     AssignableExpression(PostfixExpressionV0AssignableExpression),
     Primary(PostfixExpressionV1Primary),
 }
+
+/// Id(incrementOperator)
+type PostfixOperator = IncrementOperator;
 
 /// And(Id(typeName), Id(typeArguments), Raw(.), Id(identifier), Id(arguments))
 struct ConstructorInvocation {
@@ -2196,27 +1861,27 @@ enum AssignableSelector {
 
 /// Or( Id(IDENTIFIER), Id(BUILT_IN_IDENTIFIER), Id(OTHER_IDENTIFIER), )
 enum Identifier {
-    Identifier(Identifier),
-    BuiltInIdentifier(BuiltInIdentifier),
-    OtherIdentifier(OtherIdentifier),
+    Identifier(Token),
+    BuiltInIdentifier(Token),
+    OtherIdentifier(Token),
 }
 
 /// Or( Id(IDENTIFIER), Id(OTHER_IDENTIFIER), Raw(dynamic), )
 enum TypeIdentifier {
-    Identifier(Identifier),
-    OtherIdentifier(OtherIdentifier),
+    Identifier(Token),
+    OtherIdentifier(Token),
     Dynamic(Token),
 }
 
 /// And(Id(typeIdentifier), Raw(.), Id(identifier))
-struct QualifiedNameV0PeriodToken {
+struct QualifiedNameSingle {
     type_identifier: TypeIdentifier,
     period_token: Token,
     identifier: Identifier,
 }
 
 /// And(Id(typeIdentifier), Raw(.), Id(typeIdentifier), Raw(.), Id(identifier))
-struct QualifiedNameV1PeriodToken {
+struct QualifiedNameDouble {
     type_identifier: TypeIdentifier,
     period_token: Token,
     typeIdentifier2: TypeIdentifier,
@@ -2226,96 +1891,8 @@ struct QualifiedNameV1PeriodToken {
 
 /// Or( And(Id(typeIdentifier), Raw(.), Id(identifier)), And(Id(typeIdentifier), Raw(.), Id(typeIdentifier), Raw(.), Id(identifier)), )
 enum QualifiedName {
-    Period(QualifiedNameV0PeriodToken),
-    Period(QualifiedNameV1PeriodToken),
-}
-
-/// Or( Raw(abstract), Raw(as), Raw(covariant), Raw(deferred), Raw(dynamic), Raw(export), Raw(external), Raw(extension), Raw(factory), Raw(Function), Raw(get), Raw(implements), Raw(import), Raw(interface), Raw(late), Raw(library), Raw(mixin), Raw(operator), Raw(part), Raw(required), Raw(set), Raw(static), Raw(typedef), )
-enum BuiltInIdentifier {
-    Abstract(Token),
-    As(Token),
-    Covariant(Token),
-    Deferred(Token),
-    Dynamic(Token),
-    Export(Token),
-    External(Token),
-    Extension(Token),
-    Factory(Token),
-    Function(Token),
-    Get(Token),
-    Implements(Token),
-    Import(Token),
-    Interface(Token),
-    Late(Token),
-    Library(Token),
-    Mixin(Token),
-    Operator(Token),
-    Part(Token),
-    Required(Token),
-    Set(Token),
-    Static(Token),
-    Typedef(Token),
-}
-
-/// Or( Raw(async), Raw(hide), Raw(of), Raw(on), Raw(show), Raw(sync), Raw(await), Raw(yield), )
-enum OtherIdentifier {
-    Async(Token),
-    Hide(Token),
-    Of(Token),
-    On(Token),
-    Show(Token),
-    Sync(Token),
-    Await(Token),
-    Yield(Token),
-}
-
-/// And(Id(IDENTIFIER_START_NO_DOLLAR), Modified(*,Id(IDENTIFIER_PART_NO_DOLLAR)))
-struct IdentifierNoDollar {
-    identifier_start_no_dollar: Token,
-    identifier_part_no_dollar: Vec<Token>,
-}
-
-/// Or( Id(LETTER), Raw(_), )
-enum IdentifierStartNoDollar {
-    Letter(Letter),
-    Underscore(Token),
-}
-
-/// Or( Id(IDENTIFIER_START_NO_DOLLAR), Id(DIGIT), )
-enum IdentifierPartNoDollar {
-    IdentifierStartNoDollar(IdentifierStartNoDollar),
-    Digit(Digit),
-}
-
-/// And(Id(IDENTIFIER_START), Modified(*,Id(IDENTIFIER_PART)))
-struct Identifier {
-    identifier_start: Token,
-    identifier_part: Vec<Token>,
-}
-
-/// Or( Id(IDENTIFIER_START_NO_DOLLAR), Raw($), )
-enum IdentifierStart {
-    IdentifierStartNoDollar(IdentifierStartNoDollar),
-    Dollar(Token),
-}
-
-/// Or( Id(IDENTIFIER_START), Id(DIGIT), )
-enum IdentifierPart {
-    IdentifierStart(IdentifierStart),
-    Digit(Digit),
-}
-
-/// Or( RawRange(Raw(a),Raw(z)), RawRange(Raw(A),Raw(Z)), )
-enum Letter {
-    V0 { a_token_toz_token: Token },
-    V1 { a_token_to_z_token: Token },
-}
-
-/// Or( Raw(\t), Raw( ), Id(NEWLINE), )
-enum Whitespace {
-    TEscape(Token),
-    Space(Token),
-    Newline(Newline),
+    QualifiedNameSingle(QualifiedNameSingle),
+    QualifiedNameDouble(QualifiedNameDouble),
 }
 
 /// And(Id(isOperator), Id(typeNotVoid))
@@ -2335,6 +1912,12 @@ struct TypeCast {
     as_operator: AsOperator,
     type_not_void: TypeNotVoid,
 }
+
+/// Raw(as)
+type AsOperator = Token;
+
+/// Modified(*,Id(statement))
+type Statements = Vec<Statement>;
 
 /// And(Modified(*,Id(label)), Id(nonLabelledStatement))
 struct Statement {
@@ -2384,7 +1967,7 @@ struct LocalFunctionDeclaration {
 }
 
 /// And(Raw(else), Id(statement))
-struct Statementelse {
+struct StatementElse {
     else_token: Token,
     statement: Statement,
 }
@@ -2396,7 +1979,7 @@ struct IfStatement {
     expression: Expression,
     close_paren_token: Token,
     statement: Statement,
-    statementelse: Option<Statementelse>,
+    statement_else: Option<StatementElse>,
 }
 
 /// And(Modified(?,Raw(await)), Raw(for), Raw((), Id(forLoopParts), Raw()), Id(statement))
@@ -2502,8 +2085,8 @@ struct DefaultCase {
 
 /// And(Raw(rethrow), Raw(;))
 struct RethrowStatement {
-    rethrowToken: Token,
-    semicolonToken: Token,
+    rethrow_token: Token,
+    semicolon_token: Token,
 }
 
 /// And(Modified(+,Id(onPart)), Modified(?,Id(finallyPart)))
@@ -2546,7 +2129,7 @@ enum OnPart {
 }
 
 /// And(Raw(,), Id(identifier))
-struct Identifiercomma {
+struct IdentifierItem {
     comma_token: Token,
     identifier: Identifier,
 }
@@ -2556,7 +2139,7 @@ struct CatchPart {
     catch_token: Token,
     open_paren_token: Token,
     identifier: Identifier,
-    identifiercomma: Option<Identifiercomma>,
+    identifier_item: Option<IdentifierItem>,
     close_paren_token: Token,
 }
 
@@ -2619,7 +2202,7 @@ struct Assertion {
     assert_token: Token,
     open_paren_token: Token,
     expression: Expression,
-    expressioncomma: Option<Expressioncomma>,
+    expression_item: Option<ExpressionItem>,
     comma_token: Option<Token>,
     close_paren_token: Token,
 }
@@ -2752,7 +2335,7 @@ enum ImportOrExport {
 /// And(Id(identifier), Modified(*,And(Raw(.), Id(identifier))))
 struct DottedIdentifierList {
     identifier: Identifier,
-    identifierperiod: Vec<Identifierperiod>,
+    identifier_selector: Vec<IdentifierSelector>,
 }
 
 /// And(Id(metadata), Id(importSpecification))
@@ -2807,7 +2390,7 @@ enum Combinator {
 /// And(Id(identifier), Modified(*,And(Raw(,), Id(identifier))))
 struct IdentifierList {
     identifier: Identifier,
-    identifiercomma: Vec<Identifiercomma>,
+    identifier_item: Vec<IdentifierItem>,
 }
 
 /// And(Id(metadata), Raw(part), Id(uri), Raw(;))
@@ -2845,6 +2428,9 @@ struct PartDeclaration {
     metadata: Vec<PartDeclarationMetadata>,
     eof: Token,
 }
+
+/// Id(stringLiteral)
+type Uri = StringLiteral;
 
 /// And(Id(uri), Modified(*,Id(configurationUri)))
 struct ConfigurableUri {
@@ -2923,7 +2509,7 @@ enum TypeNotVoidNotFunction {
 }
 
 /// And(Raw(.), Id(typeIdentifier))
-struct TypeIdentifierperiod {
+struct TypeIdentifierSelector {
     period_token: Token,
     type_identifier: TypeIdentifier,
 }
@@ -2931,7 +2517,7 @@ struct TypeIdentifierperiod {
 /// And(Id(typeIdentifier), Modified(?,And(Raw(.), Id(typeIdentifier))))
 struct TypeName {
     type_identifier: TypeIdentifier,
-    type_identifierperiod: Option<TypeIdentifierperiod>,
+    type_identifier_selector: Option<TypeIdentifierSelector>,
 }
 
 /// And(Raw(<), Id(typeList), Raw(>))
@@ -2942,7 +2528,7 @@ struct TypeArguments {
 }
 
 /// And(Raw(,), Id(type))
-struct Typecomma {
+struct TypeItem {
     comma_token: Token,
     dart_type: Type,
 }
@@ -2950,11 +2536,11 @@ struct Typecomma {
 /// And(Id(type), Modified(*,And(Raw(,), Id(type))))
 struct TypeList {
     dart_type: Type,
-    typecomma: Vec<Typecomma>,
+    type_item: Vec<TypeItem>,
 }
 
 /// And(Raw(,), Id(typeNotVoidNotFunction))
-struct TypeNotVoidNotFunctioncomma {
+struct TypeNotVoidNotFunctionItem {
     comma_token: Token,
     type_not_void_not_function: TypeNotVoidNotFunction,
 }
@@ -2962,7 +2548,7 @@ struct TypeNotVoidNotFunctioncomma {
 /// And(Id(typeNotVoidNotFunction), Modified(*,And(Raw(,), Id(typeNotVoidNotFunction))))
 struct TypeNotVoidNotFunctionList {
     type_not_void_not_function: TypeNotVoidNotFunction,
-    type_not_void_not_functioncomma: Vec<TypeNotVoidNotFunctioncomma>,
+    type_not_void_not_function_item: Vec<TypeNotVoidNotFunctionItem>,
 }
 
 /// And(Id(typeNotFunction), Id(functionTypeTails))
@@ -2978,7 +2564,7 @@ enum FunctionType {
 }
 
 /// And(Id(functionTypeTail), Modified(?,Raw(?)), Id(functionTypeTails))
-struct FunctionTypeTailsV0FunctionTypeTail {
+struct FunctionTypeTailsMany {
     function_type_tail: FunctionTypeTail,
     question_token: Option<Token>,
     function_type_tails: FunctionTypeTails,
@@ -2986,7 +2572,7 @@ struct FunctionTypeTailsV0FunctionTypeTail {
 
 /// Or( And(Id(functionTypeTail), Modified(?,Raw(?)), Id(functionTypeTails)), Id(functionTypeTail), )
 enum FunctionTypeTails {
-    FunctionTypeTail(FunctionTypeTailsV0FunctionTypeTail),
+    FunctionTypeTailsMany(FunctionTypeTailsMany),
     FunctionTypeTail(FunctionTypeTail),
 }
 
@@ -2999,8 +2585,8 @@ struct FunctionTypeTail {
 
 /// And(Raw((), Raw()))
 struct ParameterTypeListV0OpenParenToken {
-    openParenToken: Token,
-    closeParenToken: Token,
+    open_paren_token: Token,
+    close_paren_token: Token,
 }
 
 /// And(Raw((), Id(normalParameterTypes), Raw(,), Id(optionalParameterTypes), Raw()))
@@ -3036,7 +2622,7 @@ enum ParameterTypeList {
 }
 
 /// And(Raw(,), Id(normalParameterType))
-struct NormalParameterTypecomma {
+struct NormalParameterTypeItem {
     comma_token: Token,
     normal_parameter_type: NormalParameterType,
 }
@@ -3044,7 +2630,7 @@ struct NormalParameterTypecomma {
 /// And(Id(normalParameterType), Modified(*,And(Raw(,), Id(normalParameterType))))
 struct NormalParameterTypes {
     normal_parameter_type: NormalParameterType,
-    normal_parameter_typecomma: Vec<NormalParameterTypecomma>,
+    normal_parameter_type_item: Vec<NormalParameterTypeItem>,
 }
 
 /// And(Id(metadata), Id(typedIdentifier))
@@ -3080,7 +2666,7 @@ struct OptionalPositionalParameterTypes {
 }
 
 /// And(Raw(,), Id(namedParameterType))
-struct NamedParameterTypecomma {
+struct NamedParameterTypeItem {
     comma_token: Token,
     named_parameter_type: NamedParameterType,
 }
@@ -3089,7 +2675,7 @@ struct NamedParameterTypecomma {
 struct NamedParameterTypes {
     open_curly_bracket_token: Token,
     named_parameter_type: NamedParameterType,
-    named_parameter_typecomma: Vec<NamedParameterTypecomma>,
+    named_parameter_type_item: Vec<NamedParameterTypeItem>,
     comma_token: Option<Token>,
     close_curly_bracket_token: Token,
 }
@@ -3140,67 +2726,4 @@ struct FunctionTypeAlias {
 struct FunctionPrefix {
     dart_type: Option<Type>,
     identifier: Identifier,
-}
-
-/// Or( Raw(assert), Raw(break), Raw(case), Raw(catch), Raw(class), Raw(const), Raw(continue), Raw(default), Raw(do), Raw(else), Raw(enum), Raw(extends), Raw(false), Raw(final), Raw(finally), Raw(for), Raw(if), Raw(in), Raw(is), Raw(new), Raw(null), Raw(rethrow), Raw(return), Raw(super), Raw(switch), Raw(this), Raw(throw), Raw(true), Raw(try), Raw(var), Raw(void), Raw(while), Raw(with), )
-enum ReservedWord {
-    Assert(Token),
-    Break(Token),
-    Case(Token),
-    Catch(Token),
-    Class(Token),
-    Const(Token),
-    Continue(Token),
-    Default(Token),
-    Do(Token),
-    Else(Token),
-    Enum(Token),
-    Extends(Token),
-    False(Token),
-    Final(Token),
-    Finally(Token),
-    For(Token),
-    If(Token),
-    In(Token),
-    Is(Token),
-    New(Token),
-    Null(Token),
-    Rethrow(Token),
-    Return(Token),
-    Super(Token),
-    Switch(Token),
-    This(Token),
-    Throw(Token),
-    True(Token),
-    Try(Token),
-    Var(Token),
-    Void(Token),
-    While(Token),
-    With(Token),
-}
-
-/// And(Raw(//), Modified(*,Negated(Id(NEWLINE))), Modified(?,Id(NEWLINE)))
-struct SingleLineComment {
-    comment_token: Token,
-    null: Vec<Token>,
-    newline: Option<Token>,
-}
-
-/// Or( Id(MULTI_LINE_COMMENT), Negated(Raw(*/)), )
-enum null {
-    MultiLineComment(MultiLineComment),
-    V1 { null: Token },
-}
-
-/// And(Raw(/*), Modified(*,Or( Id(MULTI_LINE_COMMENT), Negated(Raw(*/)), )), Raw(*/))
-struct MultiLineComment {
-    comment_multiline_start_token: Token,
-    null: Vec<null>,
-    comment_multiline_end_token: Token,
-}
-
-/// Or( Id(SINGLE_LINE_COMMENT), Id(MULTI_LINE_COMMENT), )
-enum Comment {
-    SingleLineComment(SingleLineComment),
-    MultiLineComment(MultiLineComment),
 }

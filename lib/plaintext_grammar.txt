@@ -25,9 +25,9 @@ functionBody ::= 'async'? '=>' expression ';'
 
 block ::= '{' statements '}'
 
-formalParameterList ::= '(' ')'
+formalParameterList ::= (<EmptyParameters>'(' ')')
   | '(' normalFormalParameters ','? ')'
-  | '(' normalFormalParameters ',' optionalOrNamedFormalParameters ')'
+  | (<NormalWithOptionalOrNamedParameters>'(' normalFormalParameters ',' optionalOrNamedFormalParameters ')')
   | '(' optionalOrNamedFormalParameters ')'
 
 normalFormalParameters ::=
@@ -559,8 +559,8 @@ typeIdentifier ::= IDENTIFIER
   | OTHER_IDENTIFIER
   | 'dynamic'
 
-qualifiedName ::= typeIdentifier '.' identifier
-  | typeIdentifier '.' typeIdentifier '.' identifier
+qualifiedName ::= (<QualifiedNameSingle>typeIdentifier '.' identifier)
+  | (<QualifiedNameDouble>typeIdentifier '.' typeIdentifier '.' identifier)
 
 BUILT_IN_IDENTIFIER ::= 'abstract' | 'as' | 'covariant' | 'deferred'
   | 'dynamic' | 'export' | 'external' | 'extension' |
@@ -757,7 +757,7 @@ typeNotVoidNotFunctionList ::=
 functionType ::= functionTypeTails
   | typeNotFunction functionTypeTails
 
-functionTypeTails ::= functionTypeTail '?'? functionTypeTails
+functionTypeTails ::= (<FunctionTypeTailsMany>functionTypeTail '?'? functionTypeTails)
   | functionTypeTail
 
 functionTypeTail ::= 'Function' typeParameters? parameterTypeList

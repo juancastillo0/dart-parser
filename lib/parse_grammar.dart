@@ -428,7 +428,20 @@ class Ctx {
         ]),
       )
     ]).forEach((e) {
-      toRustStructGrammarExpr(e.expression, e.id.value);
+      if (e.id.value.toUpperCase() != e.id.value) {
+        final value = toRustStructGrammarExpr(e.expression, e.id.value);
+        if (e.expression is ExprSimple) {
+          final name = pascalCase(value.name);
+          String suffix = '';
+          if (value.type == 'Vec<${name}>') {
+            suffix = 'List';
+          }
+          addType(
+            e.expression,
+            'type ${name}${suffix} = ${value.type};',
+          );
+        }
+      }
     });
 
     return ['use crate::Token;'].followedBy(_types).join('\n\n');
@@ -457,34 +470,20 @@ class Ctx {
         final exprs = and.expressions;
         final allRaw = exprs.whereType<ExprRaw>().toList();
         String? _name = name;
-        // "bitwiseXorExpression ('|' bitwiseXorExpression)*";
-        // if (exprs.length == 2 &&
-        //     exprs[1] is ExprModified &&
-        //     exprs[0] is ExprId) {
-        //   final modified = exprs[1] as ExprModified;
-        //   final inner = modified.expression;
-        //   if (inner is ExprAnd &&
-        //       inner.expressions.length == 2 &&
-        //       inner.expressions.first is ExprRaw &&
-        //       inner.expressions.last == exprs[0]) {
-        //   addType(
-        //     expr,
-        //     'struct ${pascalCase(_name)} {${allRaw.map((e) => '${rawTokenName(e)}: Token,').join('')}}',
-        //   );
-        //   }
-        // }
         if (_name == null &&
             exprs.length == 2 &&
             previousExpr is ExprModified &&
-            exprs.first is ExprRaw &&
+            isFlatExpression(exprs.first) &&
             exprs.last is ExprId) {
-          final raw = (exprs.first as ExprRaw).value;
+          final raw = exprs.first is ExprRaw
+              ? (exprs.first as ExprRaw).value
+              : (exprs.first as ExprId).value;
           String suffix = raw == ','
               ? 'Item'
               : raw == '.'
                   ? 'Selector'
                   : pascalCase(raw)!;
-          if (!RegExp('^[a-zA-Z]\$').hasMatch(suffix)) {
+          if (!RegExp('^[a-zA-Z]+\$').hasMatch(suffix)) {
             suffix = rawTokenName(exprs.first as ExprRaw);
             suffix = suffix.substring(0, suffix.length - 5);
           }
@@ -503,22 +502,15 @@ class Ctx {
           // }
         }
 
-        if (allRaw.length == exprs.length) {
-          addType(
-            expr,
-            'struct ${pascalCase(_name)} {${allRaw.map((e) => '${rawTokenName(e)}: Token,').join('')}}',
-          );
-        } else {
-          addType(
-            expr,
-            'struct ${pascalCase(_name)} {${exprs.map((e) {
-              final field = toRustStructGrammarExpr(e, null, parentName: name);
-              final fieldName = field.name;
-              final count = addFieldName(fieldName ?? 'null');
-              return count == 1 ? field : '${fieldName}${count}: ${field.type}';
-            }).join(',')}}',
-          );
-        }
+        addType(
+          expr,
+          'struct ${pascalCase(_name)} {${exprs.map((e) {
+            final field = toRustStructGrammarExpr(e, null, parentName: name);
+            final fieldName = field.name;
+            final count = addFieldName(fieldName ?? 'null');
+            return count == 1 ? field : '${fieldName}${count}: ${field.type}';
+          }).join(',')}}',
+        );
 
         return RustField(
           name: _name != null &&
@@ -532,12 +524,6 @@ class Ctx {
       or: (or) {
         final allExprId = or.expressions.whereType<ExprId>().toList();
         final allRaw = or.expressions.whereType<ExprRaw>().toList();
-        // if (allRaw.length == or.expressions.length) {
-        //   addType(
-        //     expr,
-        //     'enum ${pascalCase(name)} {${allRaw.map((e) => '${rawTokenName(e)}(Token),').join('')}}',
-        //   );
-        // } else {
         if (name == null && allExprId.length == or.expressions.length) {
           name = allExprId.map((e) => pascalCase(e.value)).join('Or');
         } else if (name == null && allRaw.length == or.expressions.length) {
@@ -553,7 +539,7 @@ class Ctx {
             final variant = 'V${i++}';
 
             if (e is ExprId) {
-              return '${pascalCase(e.value)}(${pascalCase(e.value)}),';
+              return '${pascalCase(e.value)}(${e.value.toUpperCase() == e.value ? 'Token' : pascalCase(e.value)}),';
             } else if (e is ExprRaw) {
               final variantName = pascalCase(rawTokenName(e))!;
               return '${variantName.substring(0, variantName.length - 5)}(Token),';
@@ -591,7 +577,9 @@ class Ctx {
         modified: (modified) {
           final inner = toRustStructGrammarExpr(
             modified.expression,
-            name,
+            name != null && modified.modifier != Modifier.optional
+                ? '${name}Item'
+                : name,
             parentName: parentName,
           );
           switch (modified.modifier) {
@@ -599,7 +587,10 @@ class Ctx {
               return RustField(name: inner.name, type: 'Option<${inner.type}>');
             case Modifier.plus:
             case Modifier.star:
-              return RustField(name: inner.name, type: 'Vec<${inner.type}>');
+              return RustField(
+                name: name ?? inner.name,
+                type: 'Vec<${inner.type}>',
+              );
           }
         },
         negated: (v) => RustField(name: name, type: 'Token'),
@@ -639,6 +630,9 @@ String rawTokenName(ExprRaw raw) {
   final value = tokenNames[raw.value] ?? raw.value;
   return '${value}Token';
 }
+
+bool isFlatExpression(Expr expr) =>
+    expr is ExprRaw || expr is ExprId && expr.value.toUpperCase() == expr.value;
 
 const tokenNames = {
   "\\": "back",
