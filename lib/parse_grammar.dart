@@ -336,12 +336,22 @@ STRING_CONTENT_COMMON ::= ~('\\' | '\'' | '$' | '\r' | '\n' | '"')
   if (result.isSuccess) {
     final items = result.value;
     // print(items.join('\n\n'));
-    final types = Ctx().toRustTypes(items);
+    final ctx = Ctx();
+    final types = ctx.toRustTypes(items);
     // print(ExprRaw.allRaw.map((e) => '"${e}"').join('\n'));
 
     await File('./dart-parser-pest/src/ast.rs').writeAsString(types);
-    // await File('./dart-parser-pest/src/dart.pest')
-    //     .writeAsString(toPestGrammar(items));
+
+    // final grammar = LalrpopGrammar(items).toLalrpopGrammar();
+    // await File('./dart-parser-lalrpop/src/dart_gen.lalrpop')
+    //     .writeAsString(grammar);
+    await File('./dart-parser-pest/src/dart.pest').writeAsString(
+      PestGrammar(ctx).toPestGrammar(ctx.typeDescriptions.values
+          .map((e) => Item(ExprId(e.name), e.expr))
+          .followedBy(items.where(
+              (element) => element.id.value.toUpperCase() == element.id.value))
+          .toList()),
+    );
   } else {
     print(result);
   }
@@ -354,57 +364,73 @@ const pestExpressionMapper = {
   // was '@{(IDENTIFIER_START ~ (IDENTIFIER_PART)*)}',
   'IDENTIFIER': '@{!RESERVED_WORD ~ (IDENTIFIER_START ~ (IDENTIFIER_PART)*)}',
   // TODO: was '{((cascade ~ ".." ~ cascadeSection) | (conditionalExpression ~ ("?.." | "..") ~ cascadeSection))}'
-  'cascade':
-      '{(".." ~ cascadeSection)+ | (conditionalExpression ~ ("?.." | "..") ~ cascadeSection)}',
+  // 'Cascade':
+  //     '{(".." ~ CascadeSection)+ | (ConditionalExpression ~ ("?.." | "..") ~ CascadeSection)}',
   // TODO: was '@{("\n" | "\r" | "\f" | "\b" | "\t" | "\v" | ("\x" ~ HEX_DIGIT ~ HEX_DIGIT) | ("\u" ~ HEX_DIGIT ~ HEX_DIGIT ~ HEX_DIGIT ~ HEX_DIGIT) | ("\u{" ~ HEX_DIGIT_SEQUENCE ~ "}"))}',
   'ESCAPE_SEQUENCE':
       r'@{("\n" | "\r" | "\\f" | "\\b" | "\t" | "\\v" | ("\\x" ~ HEX_DIGIT ~ HEX_DIGIT) | ("\\u" ~ HEX_DIGIT ~ HEX_DIGIT ~ HEX_DIGIT ~ HEX_DIGIT) | ("\\u{" ~ HEX_DIGIT_SEQUENCE ~ "}"))}',
 };
 
-String toPestGrammar(List<Item> items) {
-  return items.followedBy([
-    Item(
-      ExprId('COMMENT'),
-      ExprOr([
-        ExprId('SINGLE_LINE_COMMENT'),
-        ExprId('MULTI_LINE_COMMENT'),
-      ]),
-    )
-  ]).map((e) {
-    if (pestExpressionMapper.containsKey(e.id.value)) {
-      return '${toPestGrammarId(e.id)} = ${pestExpressionMapper[e.id.value]!}';
+extension StringExt on String {
+  bool get isUpperCase => toUpperCase() == this;
+}
+
+class PestGrammar {
+  final Ctx ctx;
+
+  PestGrammar(this.ctx);
+
+  static const pestIdMapper = {'EOF': 'EOI'}; // 'type': 'dartType',
+
+  String toPestGrammarId(ExprId id) {
+    final name = pestIdMapper[id.value] ?? id.value;
+    return name.isUpperCase ? name : name.pascalCase;
+  }
+
+  String toPestGrammar(List<Item> items) {
+    return items.followedBy([
+      Item(
+        ExprId('COMMENT'),
+        ExprOr([
+          ExprId('SINGLE_LINE_COMMENT'),
+          ExprId('MULTI_LINE_COMMENT'),
+        ]),
+      )
+    ]).map((e) {
+      if (pestExpressionMapper.containsKey(e.id.value)) {
+        return '${toPestGrammarId(e.id)} = ${pestExpressionMapper[e.id.value]!}';
+      }
+      final mod = e.id.value.toUpperCase() == e.id.value ? '@' : '';
+      return '${toPestGrammarId(e.id)} = ${mod}{${toPestGrammarExpr(e.expression, isRoot: true)}}';
+    }).join('\n\n');
+  }
+
+  String toPestGrammarExpr(Expr expr, {bool isRoot = false}) {
+    if (!isRoot && ctx.typeDescriptions.containsKey(expr)) {
+      return ctx.typeDescriptions[expr]!.name;
     }
-    final mod = e.id.value.toUpperCase() == e.id.value ? '@' : '';
-    return '${toPestGrammarId(e.id)} = ${mod}{${toPestGrammarExpr(e.expression)}}';
-  }).join('\n\n');
+    return expr.when(
+      and: (and) => '(${and.expressions.map(toPestGrammarExpr).join(' ~ ')})',
+      or: (or) => '(${or.expressions.map(toPestGrammarExpr).join(' | ')})',
+      simple: (simple) => simple.whenSimple(
+        any: (any) => 'ANY',
+        id: toPestGrammarId,
+        modified: (modified) =>
+            '(${toPestGrammarExpr(modified.expression)})${modified.modifier.value}',
+        negated: (negated) =>
+            '(!(${toPestGrammarExpr(negated.expression)}) ~ ANY)',
+        raw: (raw) => '"${toPestGrammarRaw(raw)}"',
+        rawRange: (rawRange) =>
+            "'${toPestGrammarRaw(rawRange.start)}'..'${toPestGrammarRaw(rawRange.end)}'",
+      )!,
+    )!;
+  }
+
+  String toPestGrammarRaw(ExprRaw raw) {
+    return raw.value.replaceAll("\\'", "'").replaceAll('"', '\\"');
+  }
 }
 
-const pestIdMapper = {'type': 'dartType', 'EOF': 'EOI'};
-String toPestGrammarId(ExprId id) {
-  return pestIdMapper[id.value] ?? id.value;
-}
-
-String toPestGrammarExpr(Expr expr) {
-  return expr.when(
-    and: (and) => '(${and.expressions.map(toPestGrammarExpr).join(' ~ ')})',
-    or: (or) => '(${or.expressions.map(toPestGrammarExpr).join(' | ')})',
-    simple: (simple) => simple.whenSimple(
-      any: (any) => 'ANY',
-      id: toPestGrammarId,
-      modified: (modified) =>
-          '(${toPestGrammarExpr(modified.expression)})${modified.modifier.value}',
-      negated: (negated) =>
-          '(!(${toPestGrammarExpr(negated.expression)}) ~ ANY)',
-      raw: (raw) => '"${toPestGrammarRaw(raw)}"',
-      rawRange: (rawRange) =>
-          "'${toPestGrammarRaw(rawRange.start)}'..'${toPestGrammarRaw(rawRange.end)}'",
-    )!,
-  )!;
-}
-
-String toPestGrammarRaw(ExprRaw raw) {
-  return raw.value.replaceAll("\\'", "'").replaceAll('"', '\\"');
-}
 class RustType {
   final String name;
   final RustTypeKind kind;

@@ -1,134 +1,800 @@
-letExpression = {("let" ~ staticFinalDeclarationList ~ "in" ~ expression)}
+LetExpression = {("let" ~ StaticFinalDeclarationList ~ "in" ~ Expression)}
 
-finalConstVarOrType = {((("late")? ~ "final" ~ (dartType)?) | ("const" ~ (dartType)?) | (("late")? ~ varOrType))}
+FinalConstVarOrTypeFinalToken = {(("late")? ~ "final" ~ (Type)?)}
 
-varOrType = {("var" | dartType)}
+FinalConstVarOrTypeConstToken = {("const" ~ (Type)?)}
 
-initializedVariableDeclaration = {(declaredIdentifier ~ (("=" ~ expression))? ~ (("," ~ initializedIdentifier))*)}
+FinalConstVarOrTypeVarOrType = {(("late")? ~ VarOrType)}
 
-initializedIdentifier = {(identifier ~ (("=" ~ expression))?)}
+FinalConstVarOrType = {(FinalConstVarOrTypeFinalToken | FinalConstVarOrTypeConstToken | FinalConstVarOrTypeVarOrType)}
 
-initializedIdentifierList = {(initializedIdentifier ~ (("," ~ initializedIdentifier))*)}
+VarOrType = {("var" | Type)}
 
-functionSignature = {((dartType)? ~ identifier ~ formalParameterPart)}
+ExpressionEqual = {("=" ~ Expression)}
 
-formalParameterPart = {((typeParameters)? ~ formalParameterList)}
+InitializedIdentifierItem = {("," ~ InitializedIdentifier)}
 
-functionBody = {((("async")? ~ "=>" ~ expression ~ ";") | (((("async" ~ ("*")?) | ("sync" ~ "*")))? ~ block))}
+InitializedVariableDeclaration = {(DeclaredIdentifier ~ (ExpressionEqual)? ~ (InitializedIdentifierItem)*)}
 
-block = {("{" ~ statements ~ "}")}
+InitializedIdentifier = {(Identifier ~ (("=" ~ Expression))?)}
 
-formalParameterList = {(("(" ~ ")") | ("(" ~ normalFormalParameters ~ (",")? ~ ")") | ("(" ~ normalFormalParameters ~ "," ~ optionalOrNamedFormalParameters ~ ")") | ("(" ~ optionalOrNamedFormalParameters ~ ")"))}
+InitializedIdentifierList = {(InitializedIdentifier ~ (("," ~ InitializedIdentifier))*)}
 
-normalFormalParameters = {(normalFormalParameter ~ (("," ~ normalFormalParameter))*)}
+FunctionSignature = {((Type)? ~ Identifier ~ FormalParameterPart)}
 
-optionalOrNamedFormalParameters = {(optionalPositionalFormalParameters | namedFormalParameters)}
+FormalParameterPart = {((TypeParameters)? ~ FormalParameterList)}
 
-optionalPositionalFormalParameters = {("[" ~ defaultFormalParameter ~ (("," ~ defaultFormalParameter))* ~ (",")? ~ "]")}
+FunctionBodyArrowToken = {(("async")? ~ "=>" ~ Expression ~ ";")}
 
-namedFormalParameters = {("{" ~ defaultNamedParameter ~ (("," ~ defaultNamedParameter))* ~ (",")? ~ "}")}
+FunctionBodyGeneratorAsyncToken = {("async" ~ ("*")?)}
 
-normalFormalParameter = {(metadata ~ normalFormalParameterNoMetadata)}
+FunctionBodyGeneratorSyncToken = {("sync" ~ "*")}
 
-normalFormalParameterNoMetadata = {(functionFormalParameter | fieldFormalParameter | simpleFormalParameter)}
+FunctionBodyGenerator = {(FunctionBodyGeneratorAsyncToken | FunctionBodyGeneratorSyncToken)}
 
-functionFormalParameter = {(("covariant")? ~ (dartType)? ~ identifier ~ formalParameterPart ~ ("?")?)}
+FunctionBodyBlock = {((FunctionBodyGenerator)? ~ Block)}
 
-simpleFormalParameter = {(declaredIdentifier | (("covariant")? ~ identifier))}
+FunctionBody = {(FunctionBodyArrowToken | FunctionBodyBlock)}
 
-declaredIdentifier = {(("covariant")? ~ finalConstVarOrType ~ identifier)}
+Block = {("{" ~ Statements ~ "}")}
 
-fieldFormalParameter = {((finalConstVarOrType)? ~ "this" ~ "." ~ identifier ~ ((formalParameterPart ~ ("?")?))?)}
+EmptyParameters = {("(" ~ ")")}
 
-defaultFormalParameter = {(normalFormalParameter ~ (("=" ~ expression))?)}
+FormalParameterListNormalFormalParameters = {("(" ~ NormalFormalParameters ~ (",")? ~ ")")}
 
-defaultNamedParameter = {(metadata ~ ("required")? ~ normalFormalParameterNoMetadata ~ ((("=" | ":") ~ expression))?)}
+NormalWithOptionalOrNamedParameters = {("(" ~ NormalFormalParameters ~ "," ~ OptionalOrNamedFormalParameters ~ ")")}
 
-classDeclaration = {((("abstract")? ~ "class" ~ typeIdentifier ~ (typeParameters)? ~ (superclass)? ~ (interfaces)? ~ "{" ~ ((metadata ~ classMemberDeclaration))* ~ "}") | (("abstract")? ~ "class" ~ mixinApplicationClass))}
+FormalParameterListOptionalOrNamedFormalParameters = {("(" ~ OptionalOrNamedFormalParameters ~ ")")}
 
-typeNotVoidList = {(typeNotVoid ~ (("," ~ typeNotVoid))*)}
+FormalParameterList = {(EmptyParameters | FormalParameterListNormalFormalParameters | NormalWithOptionalOrNamedParameters | FormalParameterListOptionalOrNamedFormalParameters)}
 
-classMemberDeclaration = {((declaration ~ ";") | (methodSignature ~ functionBody))}
+NormalFormalParameterItem = {("," ~ NormalFormalParameter)}
 
-methodSignature = {((constructorSignature ~ (initializers)?) | factoryConstructorSignature | (("static")? ~ functionSignature) | (("static")? ~ getterSignature) | (("static")? ~ setterSignature) | operatorSignature)}
+NormalFormalParameters = {(NormalFormalParameter ~ (NormalFormalParameterItem)*)}
 
-declaration = {(("external" ~ factoryConstructorSignature) | ("external" ~ constantConstructorSignature) | ("external" ~ constructorSignature) | ((("external" ~ ("static")?))? ~ getterSignature) | ((("external" ~ ("static")?))? ~ setterSignature) | ((("external" ~ ("static")?))? ~ functionSignature) | (("external")? ~ operatorSignature) | ("static" ~ "const" ~ (dartType)? ~ staticFinalDeclarationList) | ("static" ~ "final" ~ (dartType)? ~ staticFinalDeclarationList) | ("static" ~ "late" ~ "final" ~ (dartType)? ~ initializedIdentifierList) | ("static" ~ ("late")? ~ varOrType ~ initializedIdentifierList) | ("covariant" ~ "late" ~ "final" ~ (dartType)? ~ identifierList) | ("covariant" ~ ("late")? ~ varOrType ~ initializedIdentifierList) | (("late")? ~ "final" ~ (dartType)? ~ initializedIdentifierList) | (("late")? ~ varOrType ~ initializedIdentifierList) | redirectingFactoryConstructorSignature | (constantConstructorSignature ~ ((redirection | initializers))?) | (constructorSignature ~ ((redirection | initializers))?))}
+OptionalOrNamedFormalParameters = {(OptionalPositionalFormalParameters | NamedFormalParameters)}
 
-staticFinalDeclarationList = {(staticFinalDeclaration ~ (("," ~ staticFinalDeclaration))*)}
+DefaultFormalParameterItem = {("," ~ DefaultFormalParameter)}
 
-staticFinalDeclaration = {(identifier ~ "=" ~ expression)}
+OptionalPositionalFormalParameters = {("[" ~ DefaultFormalParameter ~ (DefaultFormalParameterItem)* ~ (",")? ~ "]")}
 
-operatorSignature = {((dartType)? ~ "operator" ~ operator ~ formalParameterList)}
+DefaultNamedParameterItem = {("," ~ DefaultNamedParameter)}
 
-operator = {("~" | binaryOperator | "[]" | "[]=")}
+NamedFormalParameters = {("{" ~ DefaultNamedParameter ~ (DefaultNamedParameterItem)* ~ (",")? ~ "}")}
 
-binaryOperator = {(multiplicativeOperator | additiveOperator | shiftOperator | relationalOperator | "==" | bitwiseOperator)}
+NormalFormalParameter = {(Metadata ~ NormalFormalParameterNoMetadata)}
 
-getterSignature = {((dartType)? ~ "get" ~ identifier)}
+NormalFormalParameterNoMetadata = {(FunctionFormalParameter | FieldFormalParameter | SimpleFormalParameter)}
 
-setterSignature = {((dartType)? ~ "set" ~ identifier ~ formalParameterList)}
+FunctionFormalParameter = {(("covariant")? ~ (Type)? ~ Identifier ~ FormalParameterPart ~ ("?")?)}
 
-constructorSignature = {(constructorName ~ formalParameterList)}
+SimpleFormalParameterIdentifier = {(("covariant")? ~ Identifier)}
 
-constructorName = {(typeIdentifier ~ (("." ~ identifier))?)}
+SimpleFormalParameter = {(DeclaredIdentifier | SimpleFormalParameterIdentifier)}
 
-redirection = {(":" ~ "this" ~ (("." ~ identifier))? ~ arguments)}
+DeclaredIdentifier = {(("covariant")? ~ FinalConstVarOrType ~ Identifier)}
 
-initializers = {(":" ~ initializerListEntry ~ (("," ~ initializerListEntry))*)}
+FieldFormalParameterFormalParameterPart = {(FormalParameterPart ~ ("?")?)}
 
-initializerListEntry = {(("super" ~ arguments) | ("super" ~ "." ~ identifier ~ arguments) | fieldInitializer | assertion)}
+FieldFormalParameter = {((FinalConstVarOrType)? ~ "this" ~ "." ~ Identifier ~ (FieldFormalParameterFormalParameterPart)?)}
 
-fieldInitializer = {((("this" ~ "."))? ~ identifier ~ "=" ~ initializerExpression)}
+DefaultFormalParameter = {(NormalFormalParameter ~ (("=" ~ Expression))?)}
 
-initializerExpression = {(conditionalExpression | cascade)}
+EqualTokenOrColonToken = {("=" | ":")}
 
-factoryConstructorSignature = {(("const")? ~ "factory" ~ constructorName ~ formalParameterList)}
+DefaultNamedParameterAssignment = {(EqualTokenOrColonToken ~ Expression)}
 
-redirectingFactoryConstructorSignature = {(("const")? ~ "factory" ~ constructorName ~ formalParameterList ~ "=" ~ constructorDesignation)}
+DefaultNamedParameter = {(Metadata ~ ("required")? ~ NormalFormalParameterNoMetadata ~ (DefaultNamedParameterAssignment)?)}
 
-constructorDesignation = {(typeIdentifier | qualifiedName | (typeName ~ typeArguments ~ (("." ~ identifier))?))}
+ClassDeclarationMembers = {(Metadata ~ ClassMemberDeclaration)}
 
-constantConstructorSignature = {("const" ~ constructorName ~ formalParameterList)}
+ClassDeclarationClassToken = {(("abstract")? ~ "class" ~ TypeIdentifier ~ (TypeParameters)? ~ (Superclass)? ~ (Interfaces)? ~ "{" ~ (ClassDeclarationMembers)* ~ "}")}
 
-superclass = {(("extends" ~ typeNotVoid ~ (mixins)?) | mixins)}
+ClassDeclarationMixin = {(("abstract")? ~ "class" ~ MixinApplicationClass)}
 
-mixins = {("with" ~ typeNotVoidList)}
+ClassDeclaration = {(ClassDeclarationClassToken | ClassDeclarationMixin)}
 
-interfaces = {("implements" ~ typeNotVoidList)}
+TypeNotVoidItem = {("," ~ TypeNotVoid)}
 
-mixinApplicationClass = {(identifier ~ (typeParameters)? ~ "=" ~ mixinApplication ~ ";")}
+TypeNotVoidList = {(TypeNotVoid ~ (TypeNotVoidItem)*)}
 
-mixinApplication = {(typeNotVoid ~ mixins ~ (interfaces)?)}
+ClassMemberDeclarationSemicolonToken = {(Declaration ~ ";")}
 
-mixinDeclaration = {("mixin" ~ typeIdentifier ~ (typeParameters)? ~ (("on" ~ typeNotVoidList))? ~ (interfaces)? ~ "{" ~ ((metadata ~ classMemberDeclaration))* ~ "}")}
+ClassMemberDeclarationMethodSignature = {(MethodSignature ~ FunctionBody)}
 
-extensionDeclaration = {("extension" ~ (identifier)? ~ (typeParameters)? ~ "on" ~ dartType ~ "{" ~ ((metadata ~ classMemberDeclaration))* ~ "}")}
+ClassMemberDeclaration = {(ClassMemberDeclarationSemicolonToken | ClassMemberDeclarationMethodSignature)}
 
-enumType = {("enum" ~ identifier ~ "{" ~ enumEntry ~ (("," ~ enumEntry))* ~ (",")? ~ "}")}
+MethodSignatureConstructorSignature = {(ConstructorSignature ~ (Initializers)?)}
 
-enumEntry = {(metadata ~ identifier)}
+MethodSignatureFunctionSignature = {(("static")? ~ FunctionSignature)}
 
-typeParameter = {(metadata ~ identifier ~ (("extends" ~ typeNotVoid))?)}
+MethodSignatureGetterSignature = {(("static")? ~ GetterSignature)}
 
-typeParameters = {("<" ~ typeParameter ~ (("," ~ typeParameter))* ~ ">")}
+MethodSignatureSetterSignature = {(("static")? ~ SetterSignature)}
 
-metadata = {(("@" ~ metadatum))*}
+MethodSignature = {(MethodSignatureConstructorSignature | FactoryConstructorSignature | MethodSignatureFunctionSignature | MethodSignatureGetterSignature | MethodSignatureSetterSignature | OperatorSignature)}
 
-metadatum = {(identifier | qualifiedName | (constructorDesignation ~ arguments))}
+DeclarationFactoryConstructorSignature = {("external" ~ FactoryConstructorSignature)}
 
-expression = {((assignableExpression ~ assignmentOperator ~ expression) | conditionalExpression | cascade | throwExpression)}
+ExternalConstantConstructorSignature = {("external" ~ ConstantConstructorSignature)}
 
-expressionWithoutCascade = {((assignableExpression ~ assignmentOperator ~ expressionWithoutCascade) | conditionalExpression | throwExpressionWithoutCascade)}
+ExternalConstructorSignature = {("external" ~ ConstructorSignature)}
 
-expressionList = {(expression ~ (("," ~ expression))*)}
+ExternalMaybeStatic = {("external" ~ ("static")?)}
 
-primary = {(thisExpression | ("super" ~ unconditionalAssignableSelector) | ("super" ~ argumentPart) | functionExpression | literal | identifier | newExpression | constObjectExpression | constructorInvocation | ("(" ~ expression ~ ")"))}
+DeclarationGetterSignature = {((ExternalMaybeStatic)? ~ GetterSignature)}
 
-literal = {(nullLiteral | booleanLiteral | numericLiteral | stringLiteral | symbolLiteral | listLiteral | setOrMapLiteral)}
+DeclarationSetterSignature = {((("external" ~ ("static")?))? ~ SetterSignature)}
 
-nullLiteral = {"null"}
+DeclarationFunctionSignature = {((("external" ~ ("static")?))? ~ FunctionSignature)}
 
-numericLiteral = {(NUMBER | HEX_NUMBER)}
+DeclarationOperatorSignature = {(("external")? ~ OperatorSignature)}
+
+StaticConst = {("static" ~ "const" ~ (Type)? ~ StaticFinalDeclarationList)}
+
+StaticFinal = {("static" ~ "final" ~ (Type)? ~ StaticFinalDeclarationList)}
+
+StaticLateFinal = {("static" ~ "late" ~ "final" ~ (Type)? ~ InitializedIdentifierList)}
+
+StaticVarOrType = {("static" ~ ("late")? ~ VarOrType ~ InitializedIdentifierList)}
+
+CovariantLateFinal = {("covariant" ~ "late" ~ "final" ~ (Type)? ~ IdentifierList)}
+
+CovariantVarOrType = {("covariant" ~ ("late")? ~ VarOrType ~ InitializedIdentifierList)}
+
+DeclarationFinalToken = {(("late")? ~ "final" ~ (Type)? ~ InitializedIdentifierList)}
+
+DeclarationVarOrType = {(("late")? ~ VarOrType ~ InitializedIdentifierList)}
+
+RedirectionOrInitializers = {(Redirection | Initializers)}
+
+DeclarationConstantConstructorSignature = {(ConstantConstructorSignature ~ (RedirectionOrInitializers)?)}
+
+DeclarationConstructorSignature = {(ConstructorSignature ~ ((Redirection | Initializers))?)}
+
+Declaration = {(DeclarationFactoryConstructorSignature | ExternalConstantConstructorSignature | ExternalConstructorSignature | DeclarationGetterSignature | DeclarationSetterSignature | DeclarationFunctionSignature | DeclarationOperatorSignature | StaticConst | StaticFinal | StaticLateFinal | StaticVarOrType | CovariantLateFinal | CovariantVarOrType | DeclarationFinalToken | DeclarationVarOrType | RedirectingFactoryConstructorSignature | DeclarationConstantConstructorSignature | DeclarationConstructorSignature)}
+
+StaticFinalDeclarationItem = {("," ~ StaticFinalDeclaration)}
+
+StaticFinalDeclarationList = {(StaticFinalDeclaration ~ (StaticFinalDeclarationItem)*)}
+
+StaticFinalDeclaration = {(Identifier ~ "=" ~ Expression)}
+
+OperatorSignature = {((Type)? ~ "operator" ~ Operator ~ FormalParameterList)}
+
+Operator = {("~" | BinaryOperator | "[]" | "[]=")}
+
+BinaryOperator = {(MultiplicativeOperator | AdditiveOperator | ShiftOperator | RelationalOperator | "==" | BitwiseOperator)}
+
+GetterSignature = {((Type)? ~ "get" ~ Identifier)}
+
+SetterSignature = {((Type)? ~ "set" ~ Identifier ~ FormalParameterList)}
+
+ConstructorSignature = {(ConstructorName ~ FormalParameterList)}
+
+IdentifierSelector = {("." ~ Identifier)}
+
+ConstructorName = {(TypeIdentifier ~ (IdentifierSelector)?)}
+
+Redirection = {(":" ~ "this" ~ (("." ~ Identifier))? ~ Arguments)}
+
+InitializerListEntryItem = {("," ~ InitializerListEntry)}
+
+Initializers = {(":" ~ InitializerListEntry ~ (InitializerListEntryItem)*)}
+
+InitializerListEntryArguments = {("super" ~ Arguments)}
+
+InitializerListEntrySuperToken = {("super" ~ "." ~ Identifier ~ Arguments)}
+
+InitializerListEntry = {(InitializerListEntryArguments | InitializerListEntrySuperToken | FieldInitializer | Assertion)}
+
+FieldInitializerThisToken = {("this" ~ ".")}
+
+FieldInitializer = {((FieldInitializerThisToken)? ~ Identifier ~ "=" ~ InitializerExpression)}
+
+InitializerExpression = {(ConditionalExpression | Cascade)}
+
+FactoryConstructorSignature = {(("const")? ~ "factory" ~ ConstructorName ~ FormalParameterList)}
+
+RedirectingFactoryConstructorSignature = {(("const")? ~ "factory" ~ ConstructorName ~ FormalParameterList ~ "=" ~ ConstructorDesignation)}
+
+ConstructorDesignationTypeName = {(TypeName ~ TypeArguments ~ (("." ~ Identifier))?)}
+
+ConstructorDesignation = {(TypeIdentifier | QualifiedName | ConstructorDesignationTypeName)}
+
+ConstantConstructorSignature = {("const" ~ ConstructorName ~ FormalParameterList)}
+
+SuperclassTypeNotVoid = {("extends" ~ TypeNotVoid ~ (Mixins)?)}
+
+Superclass = {(SuperclassTypeNotVoid | Mixins)}
+
+Mixins = {("with" ~ TypeNotVoidList)}
+
+Interfaces = {("implements" ~ TypeNotVoidList)}
+
+MixinApplicationClass = {(Identifier ~ (TypeParameters)? ~ "=" ~ MixinApplication ~ ";")}
+
+MixinApplication = {(TypeNotVoid ~ Mixins ~ (Interfaces)?)}
+
+TypeNotVoidListOn = {("on" ~ TypeNotVoidList)}
+
+MixinDeclarationMetadata = {(Metadata ~ ClassMemberDeclaration)}
+
+MixinDeclaration = {("mixin" ~ TypeIdentifier ~ (TypeParameters)? ~ (TypeNotVoidListOn)? ~ (Interfaces)? ~ "{" ~ (MixinDeclarationMetadata)* ~ "}")}
+
+ExtensionDeclarationMetadata = {(Metadata ~ ClassMemberDeclaration)}
+
+ExtensionDeclaration = {("extension" ~ (Identifier)? ~ (TypeParameters)? ~ "on" ~ Type ~ "{" ~ (ExtensionDeclarationMetadata)* ~ "}")}
+
+EnumEntryItem = {("," ~ EnumEntry)}
+
+EnumType = {("enum" ~ Identifier ~ "{" ~ EnumEntry ~ (EnumEntryItem)* ~ (",")? ~ "}")}
+
+EnumEntry = {(Metadata ~ Identifier)}
+
+TypeNotVoidExtends = {("extends" ~ TypeNotVoid)}
+
+TypeParameter = {(Metadata ~ Identifier ~ (TypeNotVoidExtends)?)}
+
+TypeParameterItem = {("," ~ TypeParameter)}
+
+TypeParameters = {("<" ~ TypeParameter ~ (TypeParameterItem)* ~ ">")}
+
+MetadataItem = {("@" ~ Metadatum)}
+
+Metadata = {(MetadataItem)*}
+
+MetadatumConstructorDesignation = {(ConstructorDesignation ~ Arguments)}
+
+Metadatum = {(Identifier | QualifiedName | MetadatumConstructorDesignation)}
+
+ExpressionAssignableExpression = {(AssignableExpression ~ AssignmentOperator ~ Expression)}
+
+Expression = {(ExpressionAssignableExpression | ConditionalExpression | Cascade | ThrowExpression)}
+
+ExpressionWithoutCascadeAssignableExpression = {(AssignableExpression ~ AssignmentOperator ~ ExpressionWithoutCascade)}
+
+ExpressionWithoutCascade = {(ExpressionWithoutCascadeAssignableExpression | ConditionalExpression | ThrowExpressionWithoutCascade)}
+
+ExpressionItem = {("," ~ Expression)}
+
+ExpressionList = {(Expression ~ (ExpressionItem)*)}
+
+PrimaryUnconditionalAssignableSelector = {("super" ~ UnconditionalAssignableSelector)}
+
+PrimaryArgumentPart = {("super" ~ ArgumentPart)}
+
+PrimaryExpression = {("(" ~ Expression ~ ")")}
+
+Primary = {(ThisExpression | PrimaryUnconditionalAssignableSelector | PrimaryArgumentPart | FunctionExpression | Literal | Identifier | NewExpression | ConstObjectExpression | ConstructorInvocation | PrimaryExpression)}
+
+Literal = {(NullLiteral | BooleanLiteral | NumericLiteral | StringLiteral | SymbolLiteral | ListLiteral | SetOrMapLiteral)}
+
+NullLiteral = {"null"}
+
+NumericLiteral = {(NUMBER | HEX_NUMBER)}
+
+BooleanLiteral = {("true" | "false")}
+
+StringLiteralItem = {(MultilineString | SingleLineString)}
+
+StringLiteral = {(StringLiteralItem)+}
+
+ExpressionSingleLineStringSqMidMid = {(SINGLE_LINE_STRING_SQ_MID_MID ~ Expression)}
+
+SingleLineStringSingleLineStringSqBeginMid = {(SINGLE_LINE_STRING_SQ_BEGIN_MID ~ Expression ~ (ExpressionSingleLineStringSqMidMid)* ~ SINGLE_LINE_STRING_SQ_MID_END)}
+
+ExpressionSingleLineStringDqMidMid = {(SINGLE_LINE_STRING_DQ_MID_MID ~ Expression)}
+
+SingleLineStringSingleLineStringDqBeginMid = {(SINGLE_LINE_STRING_DQ_BEGIN_MID ~ Expression ~ (ExpressionSingleLineStringDqMidMid)* ~ SINGLE_LINE_STRING_DQ_MID_END)}
+
+SingleLineString = {(RAW_SINGLE_LINE_STRING | SINGLE_LINE_STRING_SQ_BEGIN_END | SingleLineStringSingleLineStringSqBeginMid | SINGLE_LINE_STRING_DQ_BEGIN_END | SingleLineStringSingleLineStringDqBeginMid)}
+
+ExpressionMultiLineStringSqMidMid = {(MULTI_LINE_STRING_SQ_MID_MID ~ Expression)}
+
+MultilineStringMultiLineStringSqBeginMid = {(MULTI_LINE_STRING_SQ_BEGIN_MID ~ Expression ~ (ExpressionMultiLineStringSqMidMid)* ~ MULTI_LINE_STRING_SQ_MID_END)}
+
+ExpressionMultiLineStringDqMidMid = {(MULTI_LINE_STRING_DQ_MID_MID ~ Expression)}
+
+MultilineStringMultiLineStringDqBeginMid = {(MULTI_LINE_STRING_DQ_BEGIN_MID ~ Expression ~ (ExpressionMultiLineStringDqMidMid)* ~ MULTI_LINE_STRING_DQ_MID_END)}
+
+MultilineString = {(RAW_MULTI_LINE_STRING | MULTI_LINE_STRING_SQ_BEGIN_END | MultilineStringMultiLineStringSqBeginMid | MULTI_LINE_STRING_DQ_BEGIN_END | MultilineStringMultiLineStringDqBeginMid)}
+
+StringInterpolationExpression = {("${" ~ Expression ~ "}")}
+
+StringInterpolation = {(SIMPLE_STRING_INTERPOLATION | StringInterpolationExpression)}
+
+SymbolLiteralOtherIdentifiers = {("." ~ Identifier)}
+
+SymbolLiteralValueIdentifier = {(Identifier ~ (SymbolLiteralOtherIdentifiers)*)}
+
+SymbolLiteralValue = {(SymbolLiteralValueIdentifier | Operator | "void")}
+
+SymbolLiteral = {("#" ~ SymbolLiteralValue)}
+
+ListLiteral = {(("const")? ~ (TypeArguments)? ~ "[" ~ (Elements)? ~ "]")}
+
+SetOrMapLiteral = {(("const")? ~ (TypeArguments)? ~ "{" ~ (Elements)? ~ "}")}
+
+ElementItem = {("," ~ Element)}
+
+Elements = {(Element ~ (ElementItem)* ~ (",")?)}
+
+Element = {(ExpressionElement | MapElement | SpreadElement | IfElement | ForElement)}
+
+ExpressionElement = {Expression}
+
+MapElement = {(Expression ~ ":" ~ Expression)}
+
+SpreadElementType = {("..." | "...?")}
+
+SpreadElement = {(SpreadElementType ~ Expression)}
+
+ElementElse = {("else" ~ Element)}
+
+IfElement = {("if" ~ "(" ~ Expression ~ ")" ~ Element ~ (ElementElse)?)}
+
+ForElement = {(("await")? ~ "for" ~ "(" ~ ForLoopParts ~ ")" ~ Element)}
+
+ThrowExpression = {("throw" ~ Expression)}
+
+ThrowExpressionWithoutCascade = {("throw" ~ ExpressionWithoutCascade)}
+
+FunctionExpression = {(FormalParameterPart ~ FunctionExpressionBody)}
+
+FunctionExpressionBodyArrowToken = {(("async")? ~ "=>" ~ Expression)}
+
+FunctionExpressionGeneratorAsyncToken = {("async" ~ ("*")?)}
+
+FunctionExpressionGeneratorSyncToken = {("sync" ~ "*")}
+
+FunctionExpressionGenerator = {(FunctionExpressionGeneratorAsyncToken | FunctionExpressionGeneratorSyncToken)}
+
+FunctionExpressionBodyBlock = {((FunctionExpressionGenerator)? ~ Block)}
+
+FunctionExpressionBody = {(FunctionExpressionBodyArrowToken | FunctionExpressionBodyBlock)}
+
+ThisExpression = {"this"}
+
+NewExpression = {("new" ~ ConstructorDesignation ~ Arguments)}
+
+ConstObjectExpression = {("const" ~ ConstructorDesignation ~ Arguments)}
+
+ArgumentsArgumentList = {(ArgumentList ~ (",")?)}
+
+Arguments = {("(" ~ (ArgumentsArgumentList)? ~ ")")}
+
+NamedArgumentItem = {("," ~ NamedArgument)}
+
+ArgumentListNamedArgument = {(NamedArgument ~ (NamedArgumentItem)*)}
+
+ArgumentListExpressionList = {(ExpressionList ~ (("," ~ NamedArgument))*)}
+
+ArgumentList = {(ArgumentListNamedArgument | ArgumentListExpressionList)}
+
+NamedArgument = {(Label ~ Expression)}
+
+CascadeRight = {(".." ~ CascadeSection ~ (CascadeRight)?)}
+
+CascadePrefixType = {("?.." | "..")}
+
+CascadeLeft = {(ConditionalExpression ~ CascadePrefixType ~ CascadeSection)}
+
+Cascade = {(CascadeLeft ~ (CascadeRight)?)}
+
+CascadeSection = {(CascadeSelector ~ CascadeSectionTail)}
+
+CascadeSelectorExpression = {("[" ~ Expression ~ "]")}
+
+CascadeSelector = {(CascadeSelectorExpression | Identifier)}
+
+SelectedCascadeAssignment = {(AssignableSelector ~ CascadeAssignment)}
+
+SelectedCascade = {((Selector)* ~ (SelectedCascadeAssignment)?)}
+
+CascadeSectionTail = {(CascadeAssignment | SelectedCascade)}
+
+CascadeAssignment = {(AssignmentOperator ~ ExpressionWithoutCascade)}
+
+AssignmentOperator = {("=" | CompoundAssignmentOperator)}
+
+CompoundAssignmentOperator = {("*=" | "/=" | "~/=" | "%=" | "+=" | "-=" | "<<=" | ">>>=" | ">>=" | "&=" | "^=" | "|=" | "??=")}
+
+ConditionalExpressionExpressionWithoutCascade = {("?" ~ ExpressionWithoutCascade ~ ":" ~ ExpressionWithoutCascade)}
+
+ConditionalExpression = {(IfNullExpression ~ (ConditionalExpressionExpressionWithoutCascade)?)}
+
+LogicalOrExpressionQuestionQuestion = {("??" ~ LogicalOrExpression)}
+
+IfNullExpression = {(LogicalOrExpression ~ (LogicalOrExpressionQuestionQuestion)*)}
+
+LogicalAndExpressionOr = {("||" ~ LogicalAndExpression)}
+
+LogicalOrExpression = {(LogicalAndExpression ~ (LogicalAndExpressionOr)*)}
+
+EqualityExpressionAnd = {("&&" ~ EqualityExpression)}
+
+LogicalAndExpression = {(EqualityExpression ~ (EqualityExpressionAnd)*)}
+
+EqualityExpressionInner = {(EqualityOperator ~ RelationalExpression)}
+
+EqualityExpressionRelationalExpression = {(RelationalExpression ~ (EqualityExpressionInner)?)}
+
+EqualityExpressionEqualityOperator = {("super" ~ EqualityOperator ~ RelationalExpression)}
+
+EqualityExpression = {(EqualityExpressionRelationalExpression | EqualityExpressionEqualityOperator)}
+
+EqualityOperator = {("==" | "!=")}
+
+BitwiseOrExpressionInterRelationalOperator = {(RelationalOperator ~ BitwiseOrExpression)}
+
+BitwiseOrExpressionInter = {(TypeTest | TypeCast | BitwiseOrExpressionInterRelationalOperator)}
+
+RelationalExpressionBitwiseOrExpression = {(BitwiseOrExpression ~ (BitwiseOrExpressionInter)?)}
+
+RelationalExpressionRelationalOperator = {("super" ~ RelationalOperator ~ BitwiseOrExpression)}
+
+RelationalExpression = {(RelationalExpressionBitwiseOrExpression | RelationalExpressionRelationalOperator)}
+
+RelationalOperator = {(">=" | ">" | "<=" | "<")}
+
+BitwiseXorExpressionBitXor = {("|" ~ BitwiseXorExpression)}
+
+BitwiseOrExpressionBitwiseXorExpression = {(BitwiseXorExpression ~ (BitwiseXorExpressionBitXor)*)}
+
+BitwiseOrExpressionSuperToken = {("super" ~ (("|" ~ BitwiseXorExpression))+)}
+
+BitwiseOrExpression = {(BitwiseOrExpressionBitwiseXorExpression | BitwiseOrExpressionSuperToken)}
+
+BitwiseAndExpressionBitNeg = {("^" ~ BitwiseAndExpression)}
+
+BitwiseXorExpressionBitwiseAndExpression = {(BitwiseAndExpression ~ (BitwiseAndExpressionBitNeg)*)}
+
+BitwiseXorExpressionSuperToken = {("super" ~ (("^" ~ BitwiseAndExpression))+)}
+
+BitwiseXorExpression = {(BitwiseXorExpressionBitwiseAndExpression | BitwiseXorExpressionSuperToken)}
+
+ShiftExpressionBitAnd = {("&" ~ ShiftExpression)}
+
+BitwiseAndExpressionShiftExpression = {(ShiftExpression ~ (ShiftExpressionBitAnd)*)}
+
+BitwiseAndExpressionSuperToken = {("super" ~ (("&" ~ ShiftExpression))+)}
+
+BitwiseAndExpression = {(BitwiseAndExpressionShiftExpression | BitwiseAndExpressionSuperToken)}
+
+BitwiseOperator = {("&" | "^" | "|")}
+
+ShiftExpressionInner = {(ShiftOperator ~ AdditiveExpression)}
+
+ShiftExpressionAdditiveExpression = {(AdditiveExpression ~ (ShiftExpressionInner)*)}
+
+ShiftExpressionSuperToken = {("super" ~ ((ShiftOperator ~ AdditiveExpression))+)}
+
+ShiftExpression = {(ShiftExpressionAdditiveExpression | ShiftExpressionSuperToken)}
+
+ShiftOperator = {("<<" | ">>>" | ">>")}
+
+AdditiveExpressionInner = {(AdditiveOperator ~ MultiplicativeExpression)}
+
+AdditiveExpressionMultiplicativeExpression = {(MultiplicativeExpression ~ (AdditiveExpressionInner)*)}
+
+AdditiveExpressionSuperToken = {("super" ~ ((AdditiveOperator ~ MultiplicativeExpression))+)}
+
+AdditiveExpression = {(AdditiveExpressionMultiplicativeExpression | AdditiveExpressionSuperToken)}
+
+AdditiveOperator = {("+" | "-")}
+
+MultiplicativeExpressionInner = {(MultiplicativeOperator ~ UnaryExpression)}
+
+MultiplicativeExpressionUnaryExpression = {(UnaryExpression ~ (MultiplicativeExpressionInner)*)}
+
+MultiplicativeExpressionSuperToken = {("super" ~ ((MultiplicativeOperator ~ UnaryExpression))+)}
+
+MultiplicativeExpression = {(MultiplicativeExpressionUnaryExpression | MultiplicativeExpressionSuperToken)}
+
+MultiplicativeOperator = {("*" | "/" | "%" | "~/")}
+
+UnaryExpressionPrefixOperator = {(PrefixOperator ~ UnaryExpression)}
+
+UnaryOperator = {(MinusOperator | TildeOperator)}
+
+UnaryExpressionSuperToken = {(UnaryOperator ~ "super")}
+
+UnaryExpressionIncrementOperator = {(IncrementOperator ~ AssignableExpression)}
+
+UnaryExpression = {(UnaryExpressionPrefixOperator | AwaitExpression | PostfixExpression | UnaryExpressionSuperToken | UnaryExpressionIncrementOperator)}
+
+PrefixOperator = {(MinusOperator | NegationOperator | TildeOperator)}
+
+MinusOperator = {"-"}
+
+NegationOperator = {"!"}
+
+TildeOperator = {"~"}
+
+AwaitExpression = {("await" ~ UnaryExpression)}
+
+PostfixExpressionAssignableExpression = {(AssignableExpression ~ PostfixOperator)}
+
+PostfixExpressionPrimary = {(Primary ~ (Selector)*)}
+
+PostfixExpression = {(PostfixExpressionAssignableExpression | PostfixExpressionPrimary)}
+
+PostfixOperator = {IncrementOperator}
+
+ConstructorInvocation = {(TypeName ~ TypeArguments ~ "." ~ Identifier ~ Arguments)}
+
+Selector = {("!" | AssignableSelector | ArgumentPart)}
+
+ArgumentPart = {((TypeArguments)? ~ Arguments)}
+
+IncrementOperator = {("++" | "--")}
+
+AssignableExpressionPrimary = {(Primary ~ AssignableSelectorPart)}
+
+AssignableExpressionUnconditionalAssignableSelector = {("super" ~ UnconditionalAssignableSelector)}
+
+AssignableExpression = {(AssignableExpressionPrimary | AssignableExpressionUnconditionalAssignableSelector | Identifier)}
+
+AssignableSelectorPart = {((Selector)* ~ AssignableSelector)}
+
+UnconditionalAssignableSelectorExpression = {("[" ~ Expression ~ "]")}
+
+UnconditionalAssignableSelectorIdentifier = {("." ~ Identifier)}
+
+UnconditionalAssignableSelector = {(UnconditionalAssignableSelectorExpression | UnconditionalAssignableSelectorIdentifier)}
+
+AssignableSelectorIdentifier = {("?." ~ Identifier)}
+
+AssignableSelectorQuestionToken = {("?" ~ "[" ~ Expression ~ "]")}
+
+AssignableSelector = {(UnconditionalAssignableSelector | AssignableSelectorIdentifier | AssignableSelectorQuestionToken)}
+
+Identifier = {(IDENTIFIER | BUILT_IN_IDENTIFIER | OTHER_IDENTIFIER)}
+
+TypeIdentifier = {(IDENTIFIER | OTHER_IDENTIFIER | "dynamic")}
+
+QualifiedNameSingle = {(TypeIdentifier ~ "." ~ Identifier)}
+
+QualifiedNameDouble = {(TypeIdentifier ~ "." ~ TypeIdentifier ~ "." ~ Identifier)}
+
+QualifiedName = {(QualifiedNameSingle | QualifiedNameDouble)}
+
+TypeTest = {(IsOperator ~ TypeNotVoid)}
+
+IsOperator = {("is" ~ ("!")?)}
+
+TypeCast = {(AsOperator ~ TypeNotVoid)}
+
+AsOperator = {"as"}
+
+Statements = {(Statement)*}
+
+Statement = {((Label)* ~ NonLabelledStatement)}
+
+NonLabelledStatement = {(Block | LocalVariableDeclaration | ForStatement | WhileStatement | DoStatement | SwitchStatement | IfStatement | RethrowStatement | TryStatement | BreakStatement | ContinueStatement | ReturnStatement | YieldStatement | YieldEachStatement | ExpressionStatement | AssertStatement | LocalFunctionDeclaration)}
+
+ExpressionStatement = {((Expression)? ~ ";")}
+
+LocalVariableDeclaration = {(Metadata ~ InitializedVariableDeclaration ~ ";")}
+
+LocalFunctionDeclaration = {(Metadata ~ FunctionSignature ~ FunctionBody)}
+
+StatementElse = {("else" ~ Statement)}
+
+IfStatement = {("if" ~ "(" ~ Expression ~ ")" ~ Statement ~ (StatementElse)?)}
+
+ForStatement = {(("await")? ~ "for" ~ "(" ~ ForLoopParts ~ ")" ~ Statement)}
+
+ForLoopPartsSemicolonToken = {(ForInitializerStatement ~ (Expression)? ~ ";" ~ (ExpressionList)?)}
+
+ForLoopPartsMetadata = {(Metadata ~ DeclaredIdentifier ~ "in" ~ Expression)}
+
+ForLoopPartsInToken = {(Identifier ~ "in" ~ Expression)}
+
+ForLoopParts = {(ForLoopPartsSemicolonToken | ForLoopPartsMetadata | ForLoopPartsInToken)}
+
+ForInitializerStatementSemicolonToken = {((Expression)? ~ ";")}
+
+ForInitializerStatement = {(LocalVariableDeclaration | ForInitializerStatementSemicolonToken)}
+
+WhileStatement = {("while" ~ "(" ~ Expression ~ ")" ~ Statement)}
+
+DoStatement = {("do" ~ Statement ~ "while" ~ "(" ~ Expression ~ ")" ~ ";")}
+
+SwitchStatement = {("switch" ~ "(" ~ Expression ~ ")" ~ "{" ~ (SwitchCase)* ~ (DefaultCase)? ~ "}")}
+
+SwitchCase = {((Label)* ~ "case" ~ Expression ~ ":" ~ Statements)}
+
+DefaultCase = {((Label)* ~ "default" ~ ":" ~ Statements)}
+
+RethrowStatement = {("rethrow" ~ ";")}
+
+TryStatementOnPart = {((OnPart)+ ~ (FinallyPart)?)}
+
+TryStatementCatchFinally = {(TryStatementOnPart | FinallyPart)}
+
+TryStatement = {("try" ~ Block ~ TryStatementCatchFinally)}
+
+OnPartCatchPart = {(CatchPart ~ Block)}
+
+OnPartTypeNotVoid = {("on" ~ TypeNotVoid ~ (CatchPart)? ~ Block)}
+
+OnPart = {(OnPartCatchPart | OnPartTypeNotVoid)}
+
+IdentifierItem = {("," ~ Identifier)}
+
+CatchPart = {("catch" ~ "(" ~ Identifier ~ (IdentifierItem)? ~ ")")}
+
+FinallyPart = {("finally" ~ Block)}
+
+ReturnStatement = {("return" ~ (Expression)? ~ ";")}
+
+Label = {(Identifier ~ ":")}
+
+BreakStatement = {("break" ~ (Identifier)? ~ ";")}
+
+ContinueStatement = {("continue" ~ (Identifier)? ~ ";")}
+
+YieldStatement = {("yield" ~ Expression ~ ";")}
+
+YieldEachStatement = {("yield" ~ "*" ~ Expression ~ ";")}
+
+AssertStatement = {(Assertion ~ ";")}
+
+Assertion = {("assert" ~ "(" ~ Expression ~ (("," ~ Expression))? ~ (",")? ~ ")")}
+
+ExternalFunctionSignature = {("external" ~ FunctionSignature ~ ";")}
+
+ExternalGetterSignature = {("external" ~ GetterSignature ~ ";")}
+
+ExternalSetterSignature = {("external" ~ SetterSignature ~ ";")}
+
+TopLevelDeclarationFunctionSignature = {(FunctionSignature ~ FunctionBody)}
+
+TopLevelDeclarationGetterSignature = {(GetterSignature ~ FunctionBody)}
+
+TopLevelDeclarationSetterSignature = {(SetterSignature ~ FunctionBody)}
+
+FinalOrConst = {("final" | "const")}
+
+TopLevelDeclarationSemicolonToken = {(FinalOrConst ~ (Type)? ~ StaticFinalDeclarationList ~ ";")}
+
+TopLevelDeclarationLateToken = {("late" ~ "final" ~ (Type)? ~ InitializedIdentifierList ~ ";")}
+
+TopLevelDeclarationVarOrType = {(("late")? ~ VarOrType ~ InitializedIdentifierList ~ ";")}
+
+TopLevelDeclaration = {(ClassDeclaration | MixinDeclaration | ExtensionDeclaration | EnumType | TypeAlias | ExternalFunctionSignature | ExternalGetterSignature | ExternalSetterSignature | TopLevelDeclarationFunctionSignature | TopLevelDeclarationGetterSignature | TopLevelDeclarationSetterSignature | TopLevelDeclarationSemicolonToken | TopLevelDeclarationLateToken | TopLevelDeclarationVarOrType)}
+
+LibraryDeclarationMetadata = {(Metadata ~ TopLevelDeclaration)}
+
+LibraryDeclaration = {((ScriptTag)? ~ (LibraryName)? ~ (ImportOrExport)* ~ (PartDirective)* ~ (LibraryDeclarationMetadata)* ~ EOI)}
+
+ScriptTag = {("#!" ~ ((!(NEWLINE) ~ ANY))* ~ NEWLINE)}
+
+LibraryName = {(Metadata ~ "library" ~ DottedIdentifierList ~ ";")}
+
+ImportOrExport = {(LibraryImport | LibraryExport)}
+
+DottedIdentifierList = {(Identifier ~ (("." ~ Identifier))*)}
+
+LibraryImport = {(Metadata ~ ImportSpecification)}
+
+ImportSpecificationAsToken = {(("deferred")? ~ "as" ~ Identifier)}
+
+ImportSpecification = {("import" ~ ConfigurableUri ~ (ImportSpecificationAsToken)? ~ (Combinator)* ~ ";")}
+
+LibraryExport = {(Metadata ~ "export" ~ ConfigurableUri ~ (Combinator)* ~ ";")}
+
+ShowCombinator = {("show" ~ IdentifierList)}
+
+HideCombinator = {("hide" ~ IdentifierList)}
+
+Combinator = {(ShowCombinator | HideCombinator)}
+
+IdentifierList = {(Identifier ~ (("," ~ Identifier))*)}
+
+PartDirective = {(Metadata ~ "part" ~ Uri ~ ";")}
+
+DottedIdentifierListOrUri = {(DottedIdentifierList | Uri)}
+
+PartHeader = {(Metadata ~ "part" ~ "of" ~ DottedIdentifierListOrUri ~ ";")}
+
+PartDeclarationMetadata = {(Metadata ~ TopLevelDeclaration)}
+
+PartDeclaration = {(PartHeader ~ (PartDeclarationMetadata)* ~ EOI)}
+
+Uri = {StringLiteral}
+
+ConfigurableUri = {(Uri ~ (ConfigurationUri)*)}
+
+ConfigurationUri = {("if" ~ "(" ~ UriTest ~ ")" ~ Uri)}
+
+StringLiteralDoubleEqual = {("==" ~ StringLiteral)}
+
+UriTest = {(DottedIdentifierList ~ (StringLiteralDoubleEqual)?)}
+
+TypeFunctionType = {(FunctionType ~ ("?")?)}
+
+Type = {(TypeFunctionType | TypeNotFunction)}
+
+TypeNotVoidFunctionType = {(FunctionType ~ ("?")?)}
+
+TypeNotVoid = {(TypeNotVoidFunctionType | TypeNotVoidNotFunction)}
+
+TypeNotFunction = {("void" | TypeNotVoidNotFunction)}
+
+TypeNotVoidNotFunctionTypeName = {(TypeName ~ (TypeArguments)? ~ ("?")?)}
+
+TypeNotVoidNotFunctionFunctionToken = {("Function" ~ ("?")?)}
+
+TypeNotVoidNotFunction = {(TypeNotVoidNotFunctionTypeName | TypeNotVoidNotFunctionFunctionToken)}
+
+TypeIdentifierSelector = {("." ~ TypeIdentifier)}
+
+TypeName = {(TypeIdentifier ~ (TypeIdentifierSelector)?)}
+
+TypeArguments = {("<" ~ TypeList ~ ">")}
+
+TypeItem = {("," ~ Type)}
+
+TypeList = {(Type ~ (TypeItem)*)}
+
+TypeNotVoidNotFunctionItem = {("," ~ TypeNotVoidNotFunction)}
+
+TypeNotVoidNotFunctionList = {(TypeNotVoidNotFunction ~ (TypeNotVoidNotFunctionItem)*)}
+
+FunctionTypeTypeNotFunction = {(TypeNotFunction ~ FunctionTypeTails)}
+
+FunctionType = {(FunctionTypeTails | FunctionTypeTypeNotFunction)}
+
+FunctionTypeTailsMany = {(FunctionTypeTail ~ ("?")? ~ FunctionTypeTails)}
+
+FunctionTypeTails = {(FunctionTypeTailsMany | FunctionTypeTail)}
+
+FunctionTypeTail = {("Function" ~ (TypeParameters)? ~ ParameterTypeList)}
+
+NormalWithOptionalParameters = {("(" ~ NormalParameterTypes ~ "," ~ OptionalParameterTypes ~ ")")}
+
+ParameterTypeListNormalParameterTypes = {("(" ~ NormalParameterTypes ~ (",")? ~ ")")}
+
+ParameterTypeListOptionalParameterTypes = {("(" ~ OptionalParameterTypes ~ ")")}
+
+ParameterTypeList = {(("(" ~ ")") | NormalWithOptionalParameters | ParameterTypeListNormalParameterTypes | ParameterTypeListOptionalParameterTypes)}
+
+NormalParameterTypeItem = {("," ~ NormalParameterType)}
+
+NormalParameterTypes = {(NormalParameterType ~ (NormalParameterTypeItem)*)}
+
+IdentifierParameterType = {(Metadata ~ TypedIdentifier)}
+
+TypeParameterType = {(Metadata ~ Type)}
+
+NormalParameterType = {(IdentifierParameterType | TypeParameterType)}
+
+OptionalParameterTypes = {(OptionalPositionalParameterTypes | NamedParameterTypes)}
+
+OptionalPositionalParameterTypes = {("[" ~ NormalParameterTypes ~ (",")? ~ "]")}
+
+NamedParameterTypeItem = {("," ~ NamedParameterType)}
+
+NamedParameterTypes = {("{" ~ NamedParameterType ~ (NamedParameterTypeItem)* ~ (",")? ~ "}")}
+
+NamedParameterType = {(Metadata ~ ("required")? ~ TypedIdentifier)}
+
+TypedIdentifier = {(Type ~ Identifier)}
+
+TypeAliasTypeIdentifier = {("typedef" ~ TypeIdentifier ~ (TypeParameters)? ~ "=" ~ Type ~ ";")}
+
+TypeAliasFunctionTypeAlias = {("typedef" ~ FunctionTypeAlias)}
+
+TypeAlias = {(TypeAliasTypeIdentifier | TypeAliasFunctionTypeAlias)}
+
+FunctionTypeAlias = {(FunctionPrefix ~ FormalParameterPart ~ ";")}
+
+FunctionPrefix = {((Type)? ~ Identifier)}
+
+Comment = {(SINGLE_LINE_COMMENT | MULTI_LINE_COMMENT)}
 
 NUMBER = @{(((DIGIT)+ ~ (("." ~ (DIGIT)+))? ~ (EXPONENT)?) | ("." ~ (DIGIT)+ ~ (EXPONENT)?))}
 
@@ -137,12 +803,6 @@ EXPONENT = @{(("e" | "E") ~ (("+" | "-"))? ~ (DIGIT)+)}
 HEX_NUMBER = @{(("0x" ~ (HEX_DIGIT)+) | ("0X" ~ (HEX_DIGIT)+))}
 
 HEX_DIGIT = @{('a'..'f' | 'A'..'F' | DIGIT)}
-
-booleanLiteral = {("true" | "false")}
-
-stringLiteral = {((multilineString | singleLineString))+}
-
-singleLineString = {(RAW_SINGLE_LINE_STRING | SINGLE_LINE_STRING_SQ_BEGIN_END | (SINGLE_LINE_STRING_SQ_BEGIN_MID ~ expression ~ ((SINGLE_LINE_STRING_SQ_MID_MID ~ expression))* ~ SINGLE_LINE_STRING_SQ_MID_END) | SINGLE_LINE_STRING_DQ_BEGIN_END | (SINGLE_LINE_STRING_DQ_BEGIN_MID ~ expression ~ ((SINGLE_LINE_STRING_DQ_MID_MID ~ expression))* ~ SINGLE_LINE_STRING_DQ_MID_END))}
 
 RAW_SINGLE_LINE_STRING = @{(("r" ~ "'" ~ ((!(("'" | "\r" | "\n")) ~ ANY))* ~ "'") | ("r" ~ "\"" ~ ((!(("\"" | "\r" | "\n")) ~ ANY))* ~ "\""))}
 
@@ -167,8 +827,6 @@ SINGLE_LINE_STRING_DQ_BEGIN_MID = @{("\"" ~ (STRING_CONTENT_DQ)* ~ "${")}
 SINGLE_LINE_STRING_DQ_MID_MID = @{("}" ~ (STRING_CONTENT_DQ)* ~ "${")}
 
 SINGLE_LINE_STRING_DQ_MID_END = @{("}" ~ (STRING_CONTENT_DQ)* ~ "\"")}
-
-multilineString = {(RAW_MULTI_LINE_STRING | MULTI_LINE_STRING_SQ_BEGIN_END | (MULTI_LINE_STRING_SQ_BEGIN_MID ~ expression ~ ((MULTI_LINE_STRING_SQ_MID_MID ~ expression))* ~ MULTI_LINE_STRING_SQ_MID_END) | MULTI_LINE_STRING_DQ_BEGIN_END | (MULTI_LINE_STRING_DQ_BEGIN_MID ~ expression ~ ((MULTI_LINE_STRING_DQ_MID_MID ~ expression))* ~ MULTI_LINE_STRING_DQ_MID_END))}
 
 RAW_MULTI_LINE_STRING = @{(("r" ~ "'''" ~ ANY ~ "'''") | ("r" ~ "\"\"\"" ~ ANY ~ "\"\"\""))}
 
@@ -202,137 +860,7 @@ HEX_DIGIT_SEQUENCE = @{(HEX_DIGIT ~ (HEX_DIGIT)? ~ (HEX_DIGIT)? ~ (HEX_DIGIT)? ~
 
 NEWLINE = @{("\n" | "\r" | "\r\n")}
 
-stringInterpolation = {(SIMPLE_STRING_INTERPOLATION | ("${" ~ expression ~ "}"))}
-
 SIMPLE_STRING_INTERPOLATION = @{("$" ~ (IDENTIFIER_NO_DOLLAR | BUILT_IN_IDENTIFIER | "this"))}
-
-symbolLiteral = {("#" ~ ((identifier ~ (("." ~ identifier))*) | operator | "void"))}
-
-listLiteral = {(("const")? ~ (typeArguments)? ~ "[" ~ (elements)? ~ "]")}
-
-setOrMapLiteral = {(("const")? ~ (typeArguments)? ~ "{" ~ (elements)? ~ "}")}
-
-elements = {(element ~ (("," ~ element))* ~ (",")?)}
-
-element = {(expressionElement | mapElement | spreadElement | ifElement | forElement)}
-
-expressionElement = {expression}
-
-mapElement = {(expression ~ ":" ~ expression)}
-
-spreadElement = {(("..." | "...?") ~ expression)}
-
-ifElement = {("if" ~ "(" ~ expression ~ ")" ~ element ~ (("else" ~ element))?)}
-
-forElement = {(("await")? ~ "for" ~ "(" ~ forLoopParts ~ ")" ~ element)}
-
-throwExpression = {("throw" ~ expression)}
-
-throwExpressionWithoutCascade = {("throw" ~ expressionWithoutCascade)}
-
-functionExpression = {(formalParameterPart ~ functionExpressionBody)}
-
-functionExpressionBody = {((("async")? ~ "=>" ~ expression) | (((("async" ~ ("*")?) | ("sync" ~ "*")))? ~ block))}
-
-thisExpression = {"this"}
-
-newExpression = {("new" ~ constructorDesignation ~ arguments)}
-
-constObjectExpression = {("const" ~ constructorDesignation ~ arguments)}
-
-arguments = {("(" ~ ((argumentList ~ (",")?))? ~ ")")}
-
-argumentList = {((namedArgument ~ (("," ~ namedArgument))*) | (expressionList ~ (("," ~ namedArgument))*))}
-
-namedArgument = {(label ~ expression)}
-
-cascade = {(".." ~ cascadeSection)+ | (conditionalExpression ~ ("?.." | "..") ~ cascadeSection)}
-
-cascadeSection = {(cascadeSelector ~ cascadeSectionTail)}
-
-cascadeSelector = {(("[" ~ expression ~ "]") | identifier)}
-
-cascadeSectionTail = {(cascadeAssignment | ((selector)* ~ ((assignableSelector ~ cascadeAssignment))?))}
-
-cascadeAssignment = {(assignmentOperator ~ expressionWithoutCascade)}
-
-assignmentOperator = {("=" | compoundAssignmentOperator)}
-
-compoundAssignmentOperator = {("*=" | "/=" | "~/=" | "%=" | "+=" | "-=" | "<<=" | ">>>=" | ">>=" | "&=" | "^=" | "|=" | "??=")}
-
-conditionalExpression = {(ifNullExpression ~ (("?" ~ expressionWithoutCascade ~ ":" ~ expressionWithoutCascade))?)}
-
-ifNullExpression = {(logicalOrExpression ~ (("??" ~ logicalOrExpression))*)}
-
-logicalOrExpression = {(logicalAndExpression ~ (("||" ~ logicalAndExpression))*)}
-
-logicalAndExpression = {(equalityExpression ~ (("&&" ~ equalityExpression))*)}
-
-equalityExpression = {((relationalExpression ~ ((equalityOperator ~ relationalExpression))?) | ("super" ~ equalityOperator ~ relationalExpression))}
-
-equalityOperator = {("==" | "!=")}
-
-relationalExpression = {((bitwiseOrExpression ~ ((typeTest | typeCast | (relationalOperator ~ bitwiseOrExpression)))?) | ("super" ~ relationalOperator ~ bitwiseOrExpression))}
-
-relationalOperator = {(">=" | ">" | "<=" | "<")}
-
-bitwiseOrExpression = {((bitwiseXorExpression ~ (("|" ~ bitwiseXorExpression))*) | ("super" ~ (("|" ~ bitwiseXorExpression))+))}
-
-bitwiseXorExpression = {((bitwiseAndExpression ~ (("^" ~ bitwiseAndExpression))*) | ("super" ~ (("^" ~ bitwiseAndExpression))+))}
-
-bitwiseAndExpression = {((shiftExpression ~ (("&" ~ shiftExpression))*) | ("super" ~ (("&" ~ shiftExpression))+))}
-
-bitwiseOperator = {("&" | "^" | "|")}
-
-shiftExpression = {((additiveExpression ~ ((shiftOperator ~ additiveExpression))*) | ("super" ~ ((shiftOperator ~ additiveExpression))+))}
-
-shiftOperator = {("<<" | ">>>" | ">>")}
-
-additiveExpression = {((multiplicativeExpression ~ ((additiveOperator ~ multiplicativeExpression))*) | ("super" ~ ((additiveOperator ~ multiplicativeExpression))+))}
-
-additiveOperator = {("+" | "-")}
-
-multiplicativeExpression = {((unaryExpression ~ ((multiplicativeOperator ~ unaryExpression))*) | ("super" ~ ((multiplicativeOperator ~ unaryExpression))+))}
-
-multiplicativeOperator = {("*" | "/" | "%" | "~/")}
-
-unaryExpression = {((prefixOperator ~ unaryExpression) | awaitExpression | postfixExpression | ((minusOperator | tildeOperator) ~ "super") | (incrementOperator ~ assignableExpression))}
-
-prefixOperator = {(minusOperator | negationOperator | tildeOperator)}
-
-minusOperator = {"-"}
-
-negationOperator = {"!"}
-
-tildeOperator = {"~"}
-
-awaitExpression = {("await" ~ unaryExpression)}
-
-postfixExpression = {((assignableExpression ~ postfixOperator) | (primary ~ (selector)*))}
-
-postfixOperator = {incrementOperator}
-
-constructorInvocation = {(typeName ~ typeArguments ~ "." ~ identifier ~ arguments)}
-
-selector = {("!" | assignableSelector | argumentPart)}
-
-argumentPart = {((typeArguments)? ~ arguments)}
-
-incrementOperator = {("++" | "--")}
-
-assignableExpression = {((primary ~ assignableSelectorPart) | ("super" ~ unconditionalAssignableSelector) | identifier)}
-
-assignableSelectorPart = {((selector)* ~ assignableSelector)}
-
-unconditionalAssignableSelector = {(("[" ~ expression ~ "]") | ("." ~ identifier))}
-
-assignableSelector = {(unconditionalAssignableSelector | ("?." ~ identifier) | ("?" ~ "[" ~ expression ~ "]"))}
-
-identifier = {(IDENTIFIER | BUILT_IN_IDENTIFIER | OTHER_IDENTIFIER)}
-
-typeIdentifier = {(IDENTIFIER | OTHER_IDENTIFIER | "dynamic")}
-
-qualifiedName = {((typeIdentifier ~ "." ~ identifier) | (typeIdentifier ~ "." ~ typeIdentifier ~ "." ~ identifier))}
 
 BUILT_IN_IDENTIFIER = @{("abstract" | "as" | "covariant" | "deferred" | "dynamic" | "export" | "external" | "extension" | "factory" | "Function" | "get" | "implements" | "import" | "interface" | "late" | "library" | "mixin" | "operator" | "part" | "required" | "set" | "static" | "typedef")}
 
@@ -355,150 +883,6 @@ LETTER = @{('a'..'z' | 'A'..'Z')}
 DIGIT = @{'0'..'9'}
 
 WHITESPACE = @{(("\t" | " " | NEWLINE))+}
-
-typeTest = {(isOperator ~ typeNotVoid)}
-
-isOperator = {("is" ~ ("!")?)}
-
-typeCast = {(asOperator ~ typeNotVoid)}
-
-asOperator = {"as"}
-
-statements = {(statement)*}
-
-statement = {((label)* ~ nonLabelledStatement)}
-
-nonLabelledStatement = {(block | localVariableDeclaration | forStatement | whileStatement | doStatement | switchStatement | ifStatement | rethrowStatement | tryStatement | breakStatement | continueStatement | returnStatement | yieldStatement | yieldEachStatement | expressionStatement | assertStatement | localFunctionDeclaration)}
-
-expressionStatement = {((expression)? ~ ";")}
-
-localVariableDeclaration = {(metadata ~ initializedVariableDeclaration ~ ";")}
-
-localFunctionDeclaration = {(metadata ~ functionSignature ~ functionBody)}
-
-ifStatement = {("if" ~ "(" ~ expression ~ ")" ~ statement ~ (("else" ~ statement))?)}
-
-forStatement = {(("await")? ~ "for" ~ "(" ~ forLoopParts ~ ")" ~ statement)}
-
-forLoopParts = {((forInitializerStatement ~ (expression)? ~ ";" ~ (expressionList)?) | (metadata ~ declaredIdentifier ~ "in" ~ expression) | (identifier ~ "in" ~ expression))}
-
-forInitializerStatement = {(localVariableDeclaration | ((expression)? ~ ";"))}
-
-whileStatement = {("while" ~ "(" ~ expression ~ ")" ~ statement)}
-
-doStatement = {("do" ~ statement ~ "while" ~ "(" ~ expression ~ ")" ~ ";")}
-
-switchStatement = {("switch" ~ "(" ~ expression ~ ")" ~ "{" ~ (switchCase)* ~ (defaultCase)? ~ "}")}
-
-switchCase = {((label)* ~ "case" ~ expression ~ ":" ~ statements)}
-
-defaultCase = {((label)* ~ "default" ~ ":" ~ statements)}
-
-rethrowStatement = {("rethrow" ~ ";")}
-
-tryStatement = {("try" ~ block ~ (((onPart)+ ~ (finallyPart)?) | finallyPart))}
-
-onPart = {((catchPart ~ block) | ("on" ~ typeNotVoid ~ (catchPart)? ~ block))}
-
-catchPart = {("catch" ~ "(" ~ identifier ~ (("," ~ identifier))? ~ ")")}
-
-finallyPart = {("finally" ~ block)}
-
-returnStatement = {("return" ~ (expression)? ~ ";")}
-
-label = {(identifier ~ ":")}
-
-breakStatement = {("break" ~ (identifier)? ~ ";")}
-
-continueStatement = {("continue" ~ (identifier)? ~ ";")}
-
-yieldStatement = {("yield" ~ expression ~ ";")}
-
-yieldEachStatement = {("yield" ~ "*" ~ expression ~ ";")}
-
-assertStatement = {(assertion ~ ";")}
-
-assertion = {("assert" ~ "(" ~ expression ~ (("," ~ expression))? ~ (",")? ~ ")")}
-
-topLevelDeclaration = {(classDeclaration | mixinDeclaration | extensionDeclaration | enumType | typeAlias | ("external" ~ functionSignature ~ ";") | ("external" ~ getterSignature ~ ";") | ("external" ~ setterSignature ~ ";") | (functionSignature ~ functionBody) | (getterSignature ~ functionBody) | (setterSignature ~ functionBody) | (("final" | "const") ~ (dartType)? ~ staticFinalDeclarationList ~ ";") | ("late" ~ "final" ~ (dartType)? ~ initializedIdentifierList ~ ";") | (("late")? ~ varOrType ~ initializedIdentifierList ~ ";"))}
-
-libraryDeclaration = {((scriptTag)? ~ (libraryName)? ~ (importOrExport)* ~ (partDirective)* ~ ((metadata ~ topLevelDeclaration))* ~ EOI)}
-
-scriptTag = {("#!" ~ ((!(NEWLINE) ~ ANY))* ~ NEWLINE)}
-
-libraryName = {(metadata ~ "library" ~ dottedIdentifierList ~ ";")}
-
-importOrExport = {(libraryImport | libraryExport)}
-
-dottedIdentifierList = {(identifier ~ (("." ~ identifier))*)}
-
-libraryImport = {(metadata ~ importSpecification)}
-
-importSpecification = {("import" ~ configurableUri ~ ((("deferred")? ~ "as" ~ identifier))? ~ (combinator)* ~ ";")}
-
-libraryExport = {(metadata ~ "export" ~ configurableUri ~ (combinator)* ~ ";")}
-
-combinator = {(("show" ~ identifierList) | ("hide" ~ identifierList))}
-
-identifierList = {(identifier ~ (("," ~ identifier))*)}
-
-partDirective = {(metadata ~ "part" ~ uri ~ ";")}
-
-partHeader = {(metadata ~ "part" ~ "of" ~ (dottedIdentifierList | uri) ~ ";")}
-
-partDeclaration = {(partHeader ~ ((metadata ~ topLevelDeclaration))* ~ EOI)}
-
-uri = {stringLiteral}
-
-configurableUri = {(uri ~ (configurationUri)*)}
-
-configurationUri = {("if" ~ "(" ~ uriTest ~ ")" ~ uri)}
-
-uriTest = {(dottedIdentifierList ~ (("==" ~ stringLiteral))?)}
-
-dartType = {((functionType ~ ("?")?) | typeNotFunction)}
-
-typeNotVoid = {((functionType ~ ("?")?) | typeNotVoidNotFunction)}
-
-typeNotFunction = {("void" | typeNotVoidNotFunction)}
-
-typeNotVoidNotFunction = {((typeName ~ (typeArguments)? ~ ("?")?) | ("Function" ~ ("?")?))}
-
-typeName = {(typeIdentifier ~ (("." ~ typeIdentifier))?)}
-
-typeArguments = {("<" ~ typeList ~ ">")}
-
-typeList = {(dartType ~ (("," ~ dartType))*)}
-
-typeNotVoidNotFunctionList = {(typeNotVoidNotFunction ~ (("," ~ typeNotVoidNotFunction))*)}
-
-functionType = {(functionTypeTails | (typeNotFunction ~ functionTypeTails))}
-
-functionTypeTails = {((functionTypeTail ~ ("?")? ~ functionTypeTails) | functionTypeTail)}
-
-functionTypeTail = {("Function" ~ (typeParameters)? ~ parameterTypeList)}
-
-parameterTypeList = {(("(" ~ ")") | ("(" ~ normalParameterTypes ~ "," ~ optionalParameterTypes ~ ")") | ("(" ~ normalParameterTypes ~ (",")? ~ ")") | ("(" ~ optionalParameterTypes ~ ")"))}
-
-normalParameterTypes = {(normalParameterType ~ (("," ~ normalParameterType))*)}
-
-normalParameterType = {((metadata ~ typedIdentifier) | (metadata ~ dartType))}
-
-optionalParameterTypes = {(optionalPositionalParameterTypes | namedParameterTypes)}
-
-optionalPositionalParameterTypes = {("[" ~ normalParameterTypes ~ (",")? ~ "]")}
-
-namedParameterTypes = {("{" ~ namedParameterType ~ (("," ~ namedParameterType))* ~ (",")? ~ "}")}
-
-namedParameterType = {(metadata ~ ("required")? ~ typedIdentifier)}
-
-typedIdentifier = {(dartType ~ identifier)}
-
-typeAlias = {(("typedef" ~ typeIdentifier ~ (typeParameters)? ~ "=" ~ dartType ~ ";") | ("typedef" ~ functionTypeAlias))}
-
-functionTypeAlias = {(functionPrefix ~ formalParameterPart ~ ";")}
-
-functionPrefix = {((dartType)? ~ identifier)}
 
 RESERVED_WORD = @{("assert" | "break" | "case" | "catch" | "class" | "const" | "continue" | "default" | "do" | "else" | "enum" | "extends" | "false" | "final" | "finally" | "for" | "if" | "in" | "is" | "new" | "null" | "rethrow" | "return" | "super" | "switch" | "this" | "throw" | "true" | "try" | "var" | "void" | "while" | "with") ~ !IDENTIFIER}
 

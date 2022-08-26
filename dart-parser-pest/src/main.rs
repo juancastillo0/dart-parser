@@ -24,14 +24,14 @@ fn main() {
 
     // println!("{:?}", field);
 
-    let dart_type = DartParser::parse(Rule::dartType, "List<int?>")
+    let dart_type = DartParser::parse(Rule::Type, "List<int?>")
         .unwrap()
         .next()
         .unwrap();
 
     println!("{:?}", dart_type);
 
-    let type_args = DartParser::parse(Rule::typeArguments, "<Int?>")
+    let type_args = DartParser::parse(Rule::TypeArguments, "<Int?>")
         .unwrap()
         .next()
         .unwrap();
@@ -39,8 +39,10 @@ fn main() {
     println!("{:?}", type_args);
 
     let library_declaration: Pair<Rule> = DartParser::parse(
-        Rule::libraryDeclaration,
+        Rule::LibraryDeclaration,
         "
+import './daw.dart' hide String show May, July;
+
 class B {
     String field;
 final List<int?>
