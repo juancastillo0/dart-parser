@@ -405,10 +405,49 @@ String toPestGrammarExpr(Expr expr) {
 String toPestGrammarRaw(ExprRaw raw) {
   return raw.value.replaceAll("\\'", "'").replaceAll('"', '\\"');
 }
+class RustType {
+  final String name;
+  final RustTypeKind kind;
+  final String? assignedType;
+  final List<RustField> fields;
+  final Expr expr;
+
+  bool get isBoxed => Ctx.boxedTypeNames.contains(name);
+
+  RustType({
+    required this.name,
+    required this.kind,
+    required this.fields,
+    required this.expr,
+    this.assignedType,
+  });
+
+  String toCode() {
+    switch (kind) {
+      case RustTypeKind.type:
+        return 'pub type ${name} = ${isBoxed ? 'Box<${name}Inner>' : assignedType};';
+      case RustTypeKind.enum$:
+        return 'pub enum ${name} {${fields.map((f) => '${f.name}(${f.type})').join(',')}}';
+      case RustTypeKind.struct:
+        return 'pub struct ${name} {${fields.map((f) => 'pub ${f}').join(',')}}';
+    }
+  }
+}
+
+enum RustTypeKind {
+  enum$('enum'),
+  type('type'),
+  struct('struct');
+
+  final String value;
+  const RustTypeKind(this.value);
+}
 
 class Ctx {
   final List<String> _types = [];
   final Set<String> _added = {};
+
+  final Map<Expr, RustType> typeDescriptions = Map.identity();
 
   static const boxedTypeNames = {
     'FormalParameterList',
@@ -416,28 +455,32 @@ class Ctx {
     'Expression',
     'ExpressionWithoutCascade',
     'Element',
-    'Cascade',
     'UnaryExpression',
     'Statement',
     'TypeArguments',
     'FunctionTypeTails',
     'ParameterTypeList',
+    'CascadeRight',
   };
 
-  static final boxedTypeNamesRegExp =
-      RegExp('^(enum|struct|type) (${boxedTypeNames.join('|')}) ');
-
-  void addType(Expr expr, String rustType) {
+  void addType(RustType rustType) {
     String boxed = '';
-    rustType = rustType.replaceFirstMapped(boxedTypeNamesRegExp, (match) {
-      final typeName = match.group(2)!;
-      boxed = '\n\ntype ${typeName} = Box<${typeName}Inner>;';
-      return '${match.group(1)} ${typeName}Inner ';
-    });
+    RustType _rustType = rustType;
+    if (rustType.isBoxed) {
+      boxed = '\n\ntype ${rustType.name} = Box<${rustType.name}Inner>;';
+      _rustType = RustType(
+        name: '${rustType.name}Inner',
+        kind: rustType.kind,
+        fields: rustType.fields,
+        expr: rustType.expr,
+      );
+    }
     final toAdd =
-        '/// ${expr.toString().replaceAll(RegExp('\n *'), ' ')}\n${rustType}${boxed}';
+        '/// ${_rustType.expr.toString().replaceAll(RegExp('\n *'), ' ')}'
+        '\n${_rustType.toCode()}${boxed}';
 
     if (_added.add(toAdd)) {
+      typeDescriptions[rustType.expr] = rustType;
       _types.add(toAdd);
     }
   }
@@ -461,8 +504,13 @@ class Ctx {
             suffix = 'List';
           }
           addType(
-            e.expression,
-            'type ${name}${suffix} = ${value.type};',
+            RustType(
+              expr: e.expression,
+              name: '${name}${suffix}',
+              kind: RustTypeKind.type,
+              fields: [],
+              assignedType: value.type,
+            ),
           );
         }
       }
@@ -527,15 +575,22 @@ class Ctx {
         }
 
         addType(
-          expr,
-          'struct ${pascalCase(_name)} {${exprs.map((e) {
-            final field = toRustStructGrammarExpr(e, null, parentName: name);
-            final fieldName = field.name;
-            final count = addFieldName(fieldName ?? 'null');
-            return count == 1
-                ? field
-                : '${('${fieldName}${count}').snakeCase}: ${field.type}';
-          }).join(',')}}',
+          RustType(
+            expr: expr,
+            name: _name!.pascalCase,
+            kind: RustTypeKind.struct,
+            fields: exprs.map((e) {
+              final field = toRustStructGrammarExpr(e, null, parentName: name);
+              final fieldName = field.name;
+              final count = addFieldName(fieldName ?? 'null');
+              return count == 1
+                  ? field
+                  : RustField(
+                      name: '${fieldName}${count}'.snakeCase,
+                      type: field.type,
+                    );
+            }).toList(),
+          ),
         );
 
         return RustField(
@@ -557,33 +612,45 @@ class Ctx {
         }
         int i = 0;
         addType(
-          expr,
-          'enum ${pascalCase(name)} {${or.expressions.map((e) {
-            // if (e is ExprAnd) {
-            //   return 'v${i++}{${toRustStructGrammarExpr(e, '')}},';
-            // }
-            final variant = 'V${i++}';
+          RustType(
+            expr: expr,
+            name: pascalCase(name)!,
+            kind: RustTypeKind.enum$,
+            fields: or.expressions.map((e) {
+              // if (e is ExprAnd) {
+              //   return 'v${i++}{${toRustStructGrammarExpr(e, '')}},';
+              // }
+              final variant = 'V${i++}';
 
-            if (e is ExprId) {
-              return '${pascalCase(e.value)}(${e.value.toUpperCase() == e.value ? 'Token' : pascalCase(e.value)}),';
-            } else if (e is ExprRaw) {
-              final variantName = pascalCase(rawTokenName(e))!;
-              return '${variantName.substring(0, variantName.length - 5)}(Token),';
-            }
-            final inner = toRustStructGrammarExpr(
-              e,
-              null,
-              parentName: '${name}',
-            );
-            if (e is ExprAnd) {
-              final innerName = (inner.name ?? 'null')
-                  .replaceFirst('${name}', '')
-                  .replaceFirst(RegExp('Token\$'), '');
+              if (e is ExprId) {
+                return RustField(
+                  name: pascalCase(e.value)!,
+                  type: e.value.toUpperCase() == e.value
+                      ? 'Token'
+                      : pascalCase(e.value),
+                );
+              } else if (e is ExprRaw) {
+                final variantName = pascalCase(rawTokenName(e))!;
+                return RustField(
+                  name: variantName.substring(0, variantName.length - 5),
+                  type: 'Token',
+                );
+              }
+              final inner = toRustStructGrammarExpr(
+                e,
+                null,
+                parentName: '${name}',
+              );
+              if (e is ExprAnd) {
+                final innerName = (inner.name ?? 'null')
+                    .replaceFirst('${name}', '')
+                    .replaceFirst(RegExp('Token\$'), '');
 
-              return '${innerName}(${inner.type}),';
-            }
-            return '$variant{${inner}},';
-          }).join('')}}',
+                return RustField(name: innerName, type: inner.type);
+              }
+              return RustField(name: variant, type: inner.type);
+            }).toList(),
+          ),
         );
 
         return RustField(
@@ -652,9 +719,9 @@ class RustField {
 String? pascalCase(String? value) =>
     value == null || value.isEmpty ? value : ReCase(value).pascalCase;
 
-String rawTokenName(ExprRaw raw) {
+String rawTokenName(ExprRaw raw, {bool withToken = true}) {
   final value = tokenNames[raw.value] ?? raw.value;
-  return pascalCase('${value}Token')!;
+  return pascalCase('${value}${withToken ? 'Token' : ''}')!;
 }
 
 bool isFlatExpression(Expr expr) =>

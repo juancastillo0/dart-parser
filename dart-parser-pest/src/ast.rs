@@ -1315,12 +1315,14 @@ pub struct NamedArgument {
     pub expression: Expression,
 }
 
-/// And(Id(cascade), Raw(..), Id(cascadeSection))
-pub struct CascadePointsIdToken {
-    pub cascade: Cascade,
+/// And(Raw(..), Id(cascadeSection), Modified(?,Id(cascadeRight)))
+pub struct CascadeRightInner {
     pub points_id_token: Token,
     pub cascade_section: CascadeSection,
+    pub cascade_right: Option<CascadeRight>,
 }
+
+type CascadeRight = Box<CascadeRightInner>;
 
 /// Or( Raw(?..), Raw(..), )
 pub enum CascadePrefixType {
@@ -1329,19 +1331,17 @@ pub enum CascadePrefixType {
 }
 
 /// And(Id(conditionalExpression), Or( Raw(?..), Raw(..), ), Id(cascadeSection))
-pub struct CascadeConditionalExpression {
+pub struct CascadeLeft {
     pub conditional_expression: ConditionalExpression,
     pub cascade_prefix_type: CascadePrefixType,
     pub cascade_section: CascadeSection,
 }
 
-/// Or( And(Id(cascade), Raw(..), Id(cascadeSection)), And(Id(conditionalExpression), Or( Raw(?..), Raw(..), ), Id(cascadeSection)), )
-pub enum CascadeInner {
-    PointsId(CascadePointsIdToken),
-    ConditionalExpression(CascadeConditionalExpression),
+/// And(Id(cascadeLeft), Modified(?,Id(cascadeRight)))
+pub struct Cascade {
+    pub cascade_left: CascadeLeft,
+    pub cascade_right: Option<CascadeRight>,
 }
-
-type Cascade = Box<CascadeInner>;
 
 /// And(Id(cascadeSelector), Id(cascadeSectionTail))
 pub struct CascadeSection {

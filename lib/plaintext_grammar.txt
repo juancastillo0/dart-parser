@@ -406,8 +406,11 @@ argumentList ::= namedArgument (',' namedArgument)*
 
 namedArgument ::= label expression
 
-cascade ::= cascade '..' cascadeSection
-  | conditionalExpression (<CascadePrefixType>'?..' | '..') cascadeSection
+cascadeRight ::= '..' cascadeSection cascadeRight?
+
+cascadeLeft ::= conditionalExpression (<CascadePrefixType>'?..' | '..') cascadeSection
+
+cascade ::= cascadeLeft cascadeRight?
 
 cascadeSection ::= cascadeSelector cascadeSectionTail
 
