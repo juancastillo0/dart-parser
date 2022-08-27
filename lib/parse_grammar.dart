@@ -467,14 +467,75 @@ class RustType {
     this.assignedType,
   });
 
-  String toCode() {
+  String definitionCode() {
     switch (kind) {
       case RustTypeKind.type:
         return 'pub type ${name} = ${isBoxed ? 'Box<${name}Inner>' : assignedType};';
       case RustTypeKind.enum$:
-        return 'pub enum ${name} {${fields.map((f) => '${f.name}(${f.type})').join(',')}}';
+        return '#[derive(Debug)]\npub enum ${name} {${fields.map((f) => '${f.name}(${f.type})').join(',')}}';
       case RustTypeKind.struct:
-        return 'pub struct ${name} {${fields.map((f) => 'pub ${f}').join(',')}}';
+        return '#[derive(Debug)]\npub struct ${name} {${fields.map((f) => 'pub ${f}').join(',')}}';
+    }
+  }
+
+  String parseCode(Ctx ctx) {
+    const parseToken = 'ctx.parse_token()';
+
+    switch (kind) {
+      case RustTypeKind.type:
+        if (assignedType!.startsWith('Vec<')) {
+          return 'fn parse(ctx: &mut ParseCtx) -> Self {ctx.parse_list()}';
+        }
+        return '';
+      case RustTypeKind.enum$:
+        // int i = 0;
+        final conditions = fields.map((e) {
+          // final isLast = i++ == fields.length - 1;
+          final rule = e.type == 'Token'
+              ? e.raw != null
+                  ? '${e.name?.constantCase}_TOKEN'
+                  : e.name?.constantCase
+              : e.type;
+          final condition = // isLast ? '' :
+              'Rule::${rule} => ';
+          // e.raw != null
+          //     ? 'if ctx.current_str() == "${e.raw}" {'
+          //     :
+          final namePrefix =
+              '${condition}${name}${isBoxed ? 'Inner' : ''}::${e.name}';
+          final type = e.type ?? '';
+          if (type.startsWith('Token') ||
+              ctx.typeDescriptionsByName[e.type]?.assignedType == 'Token') {
+            return '${namePrefix}($parseToken)';
+          } else {
+            return '${namePrefix}(ctx.parse_ast())';
+          }
+        }).join(',');
+        final m = 'match ctx.next_rule() {$conditions, _ => unreachable!()}';
+        return 'fn parse(ctx: &mut ParseCtx) -> Self {${isBoxed ? 'Box::new(${m})' : m}}';
+      case RustTypeKind.struct:
+        final fieldsStr = fields.map((e) {
+          final namePrefix = '${e.name?.snakeCase}:';
+          final type = e.type ?? '';
+          if (type.startsWith('Token') ||
+              ctx.typeDescriptionsByName[e.type]?.assignedType == 'Token') {
+            return '${namePrefix}$parseToken';
+          } else if (type.startsWith('Option<')) {
+            if (type == 'Option<Token>') {
+              return '${namePrefix} if ctx.is_rule_next(Rule::${e.name!.constantCase})' // ctx.current_str() == "${e.raw}"'
+                  ' {Some($parseToken)} else {None}';
+            }
+            return '${namePrefix}ctx.try_parse_ast()';
+          } else if (type.startsWith('Vec<')) {
+            return '${namePrefix}ctx.parse_list()';
+          } else {
+            return '${namePrefix}ctx.parse_ast()';
+          }
+        }).join(',');
+        final body = isBoxed
+            ? 'Box::new(${name}Inner{${fieldsStr}})'
+            : 'Self{${fieldsStr}}';
+        return 'fn parse(ctx: &mut ParseCtx) -> Self {${body}}';
     }
   }
 }
@@ -489,10 +550,8 @@ enum RustTypeKind {
 }
 
 class Ctx {
-  final List<String> _types = [];
-  final Set<String> _added = {};
-
   final Map<Expr, RustType> typeDescriptions = Map.identity();
+  final Map<String, RustType> typeDescriptionsByName = {};
 
   static const boxedTypeNames = {
     'FormalParameterList',
@@ -509,6 +568,22 @@ class Ctx {
   };
 
   void addType(RustType rustType) {
+    final other = typeDescriptions[rustType.expr] ??
+        typeDescriptionsByName[rustType.name];
+    if (other != null) {
+      if (other.name != rustType.name ||
+          other.expr.toString() != rustType.expr.toString()) {
+        throw Exception(
+          '${other.expr.toString()} != ${rustType.expr.toString()}',
+        );
+      }
+    } else {
+      typeDescriptions[rustType.expr] = rustType;
+      typeDescriptionsByName[rustType.name] = rustType;
+    }
+  }
+
+  String typeToString(RustType rustType) {
     String boxed = '';
     RustType _rustType = rustType;
     if (rustType.isBoxed) {
@@ -520,14 +595,14 @@ class Ctx {
         expr: rustType.expr,
       );
     }
-    final toAdd =
-        '/// ${_rustType.expr.toString().replaceAll(RegExp('\n *'), ' ')}'
-        '\n${_rustType.toCode()}${boxed}';
-
-    if (_added.add(toAdd)) {
-      typeDescriptions[rustType.expr] = rustType;
-      _types.add(toAdd);
+    String impl = '';
+    if (rustType.expr is! ExprId && rustType.expr is! ExprRaw) {
+      final ruleName = rustType.name == 'Comment' ? 'COMMENT' : rustType.name;
+      impl =
+          '\nimpl RuleModel for ${rustType.name} {fn rule()-> Rule{Rule::${ruleName}} ${rustType.parseCode(this)}}';
     }
+    return '/// ${_rustType.expr.toString().replaceAll(RegExp('\n *'), ' ')}'
+        '\n${_rustType.definitionCode()}${boxed}$impl';
   }
 
   String toRustTypes(List<Item> items) {
@@ -561,7 +636,9 @@ class Ctx {
       }
     });
 
-    return ['use crate::Token;'].followedBy(_types).join('\n\n');
+    return ['use crate::{Rule, RuleModel, Token, ParseCtx};']
+        .followedBy(typeDescriptions.values.map(typeToString))
+        .join('\n\n');
   }
 
   Expr? previousExpr;
@@ -679,6 +756,7 @@ class Ctx {
                 return RustField(
                   name: variantName.substring(0, variantName.length - 5),
                   type: 'Token',
+                  raw: e.value,
                 );
               }
               final inner = toRustStructGrammarExpr(
@@ -722,7 +800,11 @@ class Ctx {
           );
           switch (modified.modifier) {
             case Modifier.optional:
-              return RustField(name: inner.name, type: 'Option<${inner.type}>');
+              return RustField(
+                name: inner.name,
+                type: 'Option<${inner.type}>',
+                raw: inner.raw,
+              );
             case Modifier.plus:
             case Modifier.star:
               return RustField(
@@ -732,7 +814,11 @@ class Ctx {
           }
         },
         negated: (v) => RustField(name: name, type: 'Token'),
-        raw: (v) => RustField(name: name ?? rawTokenName(v), type: 'Token'),
+        raw: (v) => RustField(
+          name: name ?? rawTokenName(v),
+          type: 'Token',
+          raw: v.value,
+        ),
         rawRange: (v) => RustField(
           name: name ?? '${rawTokenName(v.start)}To${rawTokenName(v.end)}',
           type: 'Token',
@@ -748,10 +834,12 @@ class Ctx {
 class RustField {
   final String? name;
   final String? type;
+  final String? raw;
 
   RustField({
     required String? name,
     required String? type,
+    this.raw,
   })  : name = name == 'type' ? 'dartType' : name,
         type = pascalCase(type);
 
@@ -821,7 +909,7 @@ const tokenNames = {
   // "operator",
   "~": "tilde",
   "[]": "squareBrackets",
-  "[]=": "quareBracketsEq",
+  "[]=": "squareBracketsEq",
   "==": "doubleEqual",
   // "get",
   // "set",
@@ -865,7 +953,7 @@ const tokenNames = {
   r"\r\n": "rnEscape",
   r"\u{": "uBracketEscape",
   r"\u": "uEscape",
-  r"\x": "fEscape",
+  r"\x": "xEscape",
   "#": "hash",
   // "void",
   "...": "pointsExpand",

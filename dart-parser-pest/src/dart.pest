@@ -162,7 +162,7 @@ StaticFinalDeclaration = {(Identifier ~ EQUAL_TOKEN ~ Expression)}
 
 OperatorSignature = {((Type)? ~ OPERATOR_TOKEN ~ Operator ~ FormalParameterList)}
 
-Operator = {(TILDE_TOKEN | BinaryOperator | SQUARE_BRACKETS_TOKEN | QUARE_BRACKETS_EQ_TOKEN)}
+Operator = {(TILDE_TOKEN | BinaryOperator | SQUARE_BRACKETS_TOKEN | SQUARE_BRACKETS_EQ_TOKEN)}
 
 BinaryOperator = {(MultiplicativeOperator | AdditiveOperator | ShiftOperator | RelationalOperator | DOUBLE_EQUAL_TOKEN | BitwiseOperator)}
 
@@ -794,8 +794,6 @@ FunctionTypeAlias = {(FunctionPrefix ~ FormalParameterPart ~ SEMICOLON_TOKEN)}
 
 FunctionPrefix = {((Type)? ~ Identifier)}
 
-Comment = {(SINGLE_LINE_COMMENT | MULTI_LINE_COMMENT)}
-
 NUMBER = @{(((DIGIT)+ ~ ((PERIOD_TOKEN ~ (DIGIT)+))? ~ (EXPONENT)?) | (PERIOD_TOKEN ~ (DIGIT)+ ~ (EXPONENT)?))}
 
 EXPONENT = @{((EXPONENT_TOKEN | SCIENTIFIC_TOKEN) ~ ((PLUS_TOKEN | MINUS_TOKEN))? ~ (DIGIT)+)}
@@ -958,7 +956,7 @@ TILDE_TOKEN = @{"~"}
 
 SQUARE_BRACKETS_TOKEN = @{"[]"}
 
-QUARE_BRACKETS_EQ_TOKEN = @{"[]="}
+SQUARE_BRACKETS_EQ_TOKEN = @{"[]="}
 
 DOUBLE_EQUAL_TOKEN = @{"=="}
 
