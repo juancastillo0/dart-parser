@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:dart_fixer_test/lalrpop_grammar.dart';
 import 'package:petitparser/debug.dart';
 import 'package:petitparser/petitparser.dart';
 import 'package:recase/recase.dart';
