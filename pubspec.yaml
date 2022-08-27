@@ -1,10 +1,15 @@
 name: dart_fixer_test
+description: A starting point for Dart libraries or applications.
+version: 0.0.1
+homepage: https://github.com/juancastillo0/dart-parser
 environment:
   sdk: '>=2.17.0 <3.0.0'
 
 dependencies:
   petitparser: ^5.0.0
   recase: ^4.0.0
+  wasm: ^0.1.0+1
+  wasm_interop: ^2.0.1
 
 dev_dependencies:
-  test:
+  test: ^1.21.4
