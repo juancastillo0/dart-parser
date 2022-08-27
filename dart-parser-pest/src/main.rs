@@ -4,8 +4,6 @@ extern crate pest;
 #[macro_use]
 extern crate pest_derive;
 
-use std::any::Any;
-
 use pest::{iterators::Pair, Parser};
 
 #[derive(Parser)]
@@ -68,126 +66,99 @@ int get value => 2;
     // while (true) {}
 }
 
-struct ParseCtx<'a> {
+pub struct ParseCtx<'a> {
     stack: Vec<pest::iterators::Pairs<'a, Rule>>,
     comments: Vec<ast::Comment>,
     current: Option<Pair<'a, Rule>>,
 }
 
 impl<'a> ParseCtx<'a> {
-    fn parse_str(text: &'a str) -> Self {
-        let pairs = DartParser::parse(Rule::LibraryDeclaration, text).unwrap();
+    pub fn parse_str<T: RuleModel>(
+        text: &'a str,
+    ) -> Result<(T, Vec<ast::Comment>), pest::error::Error<Rule>> {
+        let pairs = DartParser::parse(T::rule(), text)?;
 
-        Self {
+        let mut ctx = ParseCtx {
             stack: vec![pairs],
             comments: vec![],
             current: None,
-        }
+        };
+
+        Ok((ctx.parse_ast(), ctx.comments))
     }
 
-    fn pair(mut self: Self) -> Pair<'a, Rule> {
+    fn pair(mut self: &mut Self) -> &Pair<'a, Rule> {
         while self.current.is_none() {
-            let pairs = self.stack.last().unwrap();
+            let pairs = self.stack.last_mut().unwrap();
             self.current = pairs.next();
             if self.current.is_none() {
                 self.stack.pop();
             }
         }
-        self.current.unwrap()
+        self.current.as_ref().unwrap()
     }
 
-    fn is_rule_next(mut self: Self, rule: Rule) -> bool {
+    pub fn next_rule(self: &mut Self) -> Rule {
         let mut result = None;
         while result.is_none() {
             match self.pair().as_rule() {
-                Rule::COMMENT => self.comments.push(self.parse_ast()),
-                Rule::WHITESPACE => self.parse_ast(),
-                rule => result = Some(true),
-                _ => result = Some(false),
+                Rule::COMMENT => {
+                    println!("Rule::COMMENT");
+                    self.stack.push(self.current.take().unwrap().into_inner());
+                    let comment = ast::Comment::parse(self);
+                    self.comments.push(comment);
+                }
+                Rule::WHITESPACE => {
+                    // ignore whitespace
+                    // TODO: count lines
+                    self.current = None;
+                }
+                rule => result = Some(rule),
             }
         }
+        println!("next_rule {:?}", result);
         result.unwrap()
     }
 
-    fn try_parse_ast(mut self: Self, rule: Rule) -> Option<dyn Any> {
-        if self.is_rule_next(rule) {
+    pub fn is_rule_next(self: &mut Self, rule: Rule) -> bool {
+        self.next_rule() == rule
+    }
+
+    pub fn try_parse_ast<T: RuleModel>(self: &mut Self) -> Option<T> {
+        println!("try_parse_ast {:?}", T::rule());
+        if self.is_rule_next(T::rule()) {
             Some(self.parse_ast())
         } else {
             None
         }
     }
 
-    fn try_parse_list(mut self: Self, rule: Rule) -> Vec<dyn Any> {
-        let result = vec![];
-        while self.is_rule_next(rule) {
+    pub fn parse_list<T: RuleModel>(self: &mut Self) -> Vec<T> {
+        println!("parse_list {:?}", T::rule());
+        let mut result = vec![];
+        while self.is_rule_next(T::rule()) {
             result.push(self.parse_ast());
         }
         result
     }
 
-    fn parse_ast(mut self: Self) -> dyn Any {
-        let value = match self.pair().as_rule() {
-            Rule::libraryDeclaration => {
-                // let initialPair = pair.into_inner().next().unwrap();
-                // let initial = parse_ast(initialPair);
+    pub fn parse_token(self: &mut Self) -> Token {
+        self.next_rule();
+        let pair = self.pair();
+        let token = Token::from_pair(pair);
+        println!("parse_token {:?}", token);
+        self.stack.push(self.current.take().unwrap().into_inner());
+        token
+    }
 
-                // let secondPair = pair.into_inner().next().unwrap();
-                // let second = parse_ast(secondPair);
-
-                ast::LibraryDeclaration {
-                    script_tag: self.try_parse_ast(Rule::scriptTag),
-                    library_name: self.try_parse_ast(Rule::libraryName),
-                    // if initialPair.as_rule() == Rule::libraryName {
-                    //     Some(initial)
-                    // } else if secondPair.as_rule() == Rule::libraryName {
-                    //     Some(second)
-                    // } else {
-                    //     None
-                    // },
-                    import_or_export: self.try_parse_list(Rule::importOrExport),
-                    part_directive: self.try_parse_list(Rule::partDirective),
-                    metadata: self.try_parse_list(Rule::metadata),
-                    eof: todo!(),
-                }
-            }
-            _ => "",
-        };
-        self.pair = self.pair.into_inner();
+    pub fn parse_ast<T: RuleModel>(self: &mut Self) -> T {
+        assert!(self.is_rule_next(T::rule()), "{:?}", T::rule());
+        self.stack.push(self.current.take().unwrap().into_inner());
+        println!("parse_ast {:?}", T::rule());
+        let value = T::parse(self);
         value
     }
 }
-
-// fn parse_ast(pair: Pair<Rule>) -> Any {
-//     match pair.as_rule() {
-//         Rule::libraryDeclaration => {
-//             let initialPair = pair.into_inner().next().unwrap();
-//             let initial = parse_ast(initialPair);
-
-//             let secondPair = pair.into_inner().next().unwrap();
-//             let second = parse_ast(secondPair);
-
-//             ast::LibraryDeclaration {
-//                 script_tag: if initialPair.as_rule() == Rule::scriptTag {
-//                     Some(initial)
-//                 } else {
-//                     None
-//                 },
-//                 library_name: if initialPair.as_rule() == Rule::libraryName {
-//                     Some(initial)
-//                 } else if secondPair.as_rule() == Rule::libraryName {
-//                     Some(second)
-//                 } else {
-//                     None
-//                 },
-//                 import_or_export: todo!(),
-//                 part_directive: todo!(),
-//                 metadata: todo!(),
-//                 eof: todo!(),
-//             }
-//         }
-//         _ => "",
-//     };
-// }
 
 fn parse<'a>(rule: Rule, input: &'a str) -> Pair<Rule> {
     return DartParser::parse(rule, input).unwrap().next().unwrap();
@@ -198,21 +169,57 @@ fn test_comment() {
     parse(Rule::SINGLE_LINE_COMMENT, "// dawionodw");
 }
 
-pub struct Token {
-    pub span: Span,
-    pub rule: Rule,
+#[test]
+fn test_parse_ctx() {
+    let (library, comments) = ParseCtx::parse_str::<ast::LibraryDeclaration>(
+        "
+class Model {
+    // The field
+    final String f;
+    const Model(this.f);
+}",
+    )
+    .unwrap();
+    println!("{:?}", library);
+    println!("{:?}", comments);
 }
 
-pub struct Span {
+pub trait RuleModel: Sized + 'static {
+    fn rule() -> Rule;
+
+    fn parse(ctx: &mut ParseCtx) -> Self;
+
+    // fn as_any(&self) -> &dyn std::any::Any {
+    //     self
+    // }
+    // fn downcast<T: RuleModel>(self) -> T {
+    //     assert!(T::rule() == Self::rule());
+    //     let any_value = self as dyn std::any::Any;
+    //     *any_value.downcast_ref().unwrap()
+    // }
+}
+
+#[derive(Debug)]
+pub struct Token {
     pub start: usize,
     pub end: usize,
+    pub line_start: usize,
+    pub line_end: usize,
+    pub string: String,
 }
 
-impl Span {
-    pub fn from_pest_span(span: pest::Span) -> Self {
+impl Token {
+    pub fn from_pair(pair: &Pair<'_, Rule>) -> Self {
+        let span = pair.as_span();
+        let (line_start, _) = span.start_pos().line_col();
+        let (line_end, _) = span.end_pos().line_col();
+
         Self {
             start: span.start(),
             end: span.end(),
+            line_start: line_start,
+            line_end: line_end,
+            string: pair.as_str().to_string(),
         }
     }
 }
