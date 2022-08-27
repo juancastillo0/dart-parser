@@ -700,7 +700,9 @@ libraryDeclaration ::=
   scriptTag? libraryName? importOrExport* partDirective*
   (metadata topLevelDeclaration)* EOF
 
-scriptTag ::= '#!' (~NEWLINE)* NEWLINE
+scriptTag ::= '#!' SCRIPT_TAG_CONTENT NEWLINE
+
+SCRIPT_TAG_CONTENT ::= (~NEWLINE)*
 
 libraryName ::= metadata 'library' dottedIdentifierList ';'
 
