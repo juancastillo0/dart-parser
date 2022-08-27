@@ -438,13 +438,14 @@ class RustType {
   });
 
   String definitionCode() {
+    const derives = '#[derive(Debug, Serialize, Deserialize)]\n#[serde(rename_all = "camelCase")]\n';
     switch (kind) {
       case RustTypeKind.type:
         return 'pub type ${name} = ${isBoxed ? 'Box<${name}Inner>' : assignedType};';
       case RustTypeKind.enum$:
-        return '#[derive(Debug, Serialize, Deserialize)]\npub enum ${name} {${fields.map((f) => '${f.name}(${f.type})').join(',')}}';
+        return '${derives}pub enum ${name} {${fields.map((f) => '${f.name}(${f.type})').join(',')}}';
       case RustTypeKind.struct:
-        return '#[derive(Debug, Serialize, Deserialize)]\npub struct ${name} {${fields.map((f) => 'pub ${f}').join(',')}}';
+        return '${derives}pub struct ${name} {${fields.map((f) => 'pub ${f}').join(',')}}';
     }
   }
 
