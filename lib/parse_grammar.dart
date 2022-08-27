@@ -349,7 +349,8 @@ STRING_CONTENT_COMMON ::= ~('\\' | '\'' | '$' | '\r' | '\n' | '"')
       PestGrammar(ctx).toPestGrammar(ctx.typeDescriptions.values
           .map((e) => Item(ExprId(e.name), e.expr))
           .followedBy(items.where(
-              (element) => element.id.value.toUpperCase() == element.id.value))
+            (element) => element.id.value.toUpperCase() == element.id.value,
+          ))
           .toList()),
     );
   } else {
@@ -382,27 +383,41 @@ class PestGrammar {
 
   static const pestIdMapper = {'EOF': 'EOI'}; // 'type': 'dartType',
 
+  final rawRules = <String, ExprRaw>{};
+
   String toPestGrammarId(ExprId id) {
     final name = pestIdMapper[id.value] ?? id.value;
     return name.isUpperCase ? name : name.pascalCase;
   }
 
   String toPestGrammar(List<Item> items) {
-    return items.followedBy([
-      Item(
-        ExprId('COMMENT'),
-        ExprOr([
-          ExprId('SINGLE_LINE_COMMENT'),
-          ExprId('MULTI_LINE_COMMENT'),
-        ]),
-      )
-    ]).map((e) {
-      if (pestExpressionMapper.containsKey(e.id.value)) {
-        return '${toPestGrammarId(e.id)} = ${pestExpressionMapper[e.id.value]!}';
-      }
-      final mod = e.id.value.toUpperCase() == e.id.value ? '@' : '';
-      return '${toPestGrammarId(e.id)} = ${mod}{${toPestGrammarExpr(e.expression, isRoot: true)}}';
-    }).join('\n\n');
+    return items
+        .where((element) => element.id.value != 'Comment')
+        .followedBy([
+          Item(
+            ExprId('COMMENT'),
+            ExprOr([
+              ExprId('SINGLE_LINE_COMMENT'),
+              ExprId('MULTI_LINE_COMMENT'),
+            ]),
+          )
+        ])
+        .map((e) {
+          if (pestExpressionMapper.containsKey(e.id.value)) {
+            return '${toPestGrammarId(e.id)} = ${pestExpressionMapper[e.id.value]!}';
+          }
+          final mod = e.id.value.toUpperCase() == e.id.value
+              ? e.id.value == 'COMMENT'
+                  ? '\$'
+                  : '@'
+              : '';
+          return '${toPestGrammarId(e.id)} = ${mod}{${toPestGrammarExpr(e.expression, isRoot: true)}}';
+        })
+        .toList()
+        .followedBy(rawRules.entries.map(
+          (e) => '${e.key} = @{"${toPestGrammarRaw(e.value)}"}',
+        ))
+        .join('\n\n');
   }
 
   String toPestGrammarExpr(Expr expr, {bool isRoot = false}) {
@@ -419,7 +434,11 @@ class PestGrammar {
             '(${toPestGrammarExpr(modified.expression)})${modified.modifier.value}',
         negated: (negated) =>
             '(!(${toPestGrammarExpr(negated.expression)}) ~ ANY)',
-        raw: (raw) => '"${toPestGrammarRaw(raw)}"',
+        raw: (raw) {
+          final name = rawTokenName(raw).constantCase;
+          rawRules[name] = raw;
+          return name; // '"${toPestGrammarRaw(raw)}"';
+        },
         rawRange: (rawRange) =>
             "'${toPestGrammarRaw(rawRange.start)}'..'${toPestGrammarRaw(rawRange.end)}'",
       )!,

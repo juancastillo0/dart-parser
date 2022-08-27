@@ -1,34 +1,34 @@
-LetExpression = {("let" ~ StaticFinalDeclarationList ~ "in" ~ Expression)}
+LetExpression = {(LET_TOKEN ~ StaticFinalDeclarationList ~ IN_TOKEN ~ Expression)}
 
-FinalConstVarOrTypeFinalToken = {(("late")? ~ "final" ~ (Type)?)}
+FinalConstVarOrTypeFinalToken = {((LATE_TOKEN)? ~ FINAL_TOKEN ~ (Type)?)}
 
-FinalConstVarOrTypeConstToken = {("const" ~ (Type)?)}
+FinalConstVarOrTypeConstToken = {(CONST_TOKEN ~ (Type)?)}
 
-FinalConstVarOrTypeVarOrType = {(("late")? ~ VarOrType)}
+FinalConstVarOrTypeVarOrType = {((LATE_TOKEN)? ~ VarOrType)}
 
 FinalConstVarOrType = {(FinalConstVarOrTypeFinalToken | FinalConstVarOrTypeConstToken | FinalConstVarOrTypeVarOrType)}
 
-VarOrType = {("var" | Type)}
+VarOrType = {(VAR_TOKEN | Type)}
 
-ExpressionEqual = {("=" ~ Expression)}
+ExpressionEqual = {(EQUAL_TOKEN ~ Expression)}
 
-InitializedIdentifierItem = {("," ~ InitializedIdentifier)}
+InitializedIdentifierItem = {(COMMA_TOKEN ~ InitializedIdentifier)}
 
 InitializedVariableDeclaration = {(DeclaredIdentifier ~ (ExpressionEqual)? ~ (InitializedIdentifierItem)*)}
 
-InitializedIdentifier = {(Identifier ~ (("=" ~ Expression))?)}
+InitializedIdentifier = {(Identifier ~ ((EQUAL_TOKEN ~ Expression))?)}
 
-InitializedIdentifierList = {(InitializedIdentifier ~ (("," ~ InitializedIdentifier))*)}
+InitializedIdentifierList = {(InitializedIdentifier ~ ((COMMA_TOKEN ~ InitializedIdentifier))*)}
 
 FunctionSignature = {((Type)? ~ Identifier ~ FormalParameterPart)}
 
 FormalParameterPart = {((TypeParameters)? ~ FormalParameterList)}
 
-FunctionBodyArrowToken = {(("async")? ~ "=>" ~ Expression ~ ";")}
+FunctionBodyArrowToken = {((ASYNC_TOKEN)? ~ ARROW_TOKEN ~ Expression ~ SEMICOLON_TOKEN)}
 
-FunctionBodyGeneratorAsyncToken = {("async" ~ ("*")?)}
+FunctionBodyGeneratorAsyncToken = {(ASYNC_TOKEN ~ (ASTERISK_TOKEN)?)}
 
-FunctionBodyGeneratorSyncToken = {("sync" ~ "*")}
+FunctionBodyGeneratorSyncToken = {(SYNC_TOKEN ~ ASTERISK_TOKEN)}
 
 FunctionBodyGenerator = {(FunctionBodyGeneratorAsyncToken | FunctionBodyGeneratorSyncToken)}
 
@@ -36,69 +36,69 @@ FunctionBodyBlock = {((FunctionBodyGenerator)? ~ Block)}
 
 FunctionBody = {(FunctionBodyArrowToken | FunctionBodyBlock)}
 
-Block = {("{" ~ Statements ~ "}")}
+Block = {(OPEN_CURLY_BRACKET_TOKEN ~ Statements ~ CLOSE_CURLY_BRACKET_TOKEN)}
 
-EmptyParameters = {("(" ~ ")")}
+EmptyParameters = {(OPEN_PAREN_TOKEN ~ CLOSE_PAREN_TOKEN)}
 
-FormalParameterListNormalFormalParameters = {("(" ~ NormalFormalParameters ~ (",")? ~ ")")}
+FormalParameterListNormalFormalParameters = {(OPEN_PAREN_TOKEN ~ NormalFormalParameters ~ (COMMA_TOKEN)? ~ CLOSE_PAREN_TOKEN)}
 
-NormalWithOptionalOrNamedParameters = {("(" ~ NormalFormalParameters ~ "," ~ OptionalOrNamedFormalParameters ~ ")")}
+NormalWithOptionalOrNamedParameters = {(OPEN_PAREN_TOKEN ~ NormalFormalParameters ~ COMMA_TOKEN ~ OptionalOrNamedFormalParameters ~ CLOSE_PAREN_TOKEN)}
 
-FormalParameterListOptionalOrNamedFormalParameters = {("(" ~ OptionalOrNamedFormalParameters ~ ")")}
+FormalParameterListOptionalOrNamedFormalParameters = {(OPEN_PAREN_TOKEN ~ OptionalOrNamedFormalParameters ~ CLOSE_PAREN_TOKEN)}
 
 FormalParameterList = {(EmptyParameters | FormalParameterListNormalFormalParameters | NormalWithOptionalOrNamedParameters | FormalParameterListOptionalOrNamedFormalParameters)}
 
-NormalFormalParameterItem = {("," ~ NormalFormalParameter)}
+NormalFormalParameterItem = {(COMMA_TOKEN ~ NormalFormalParameter)}
 
 NormalFormalParameters = {(NormalFormalParameter ~ (NormalFormalParameterItem)*)}
 
 OptionalOrNamedFormalParameters = {(OptionalPositionalFormalParameters | NamedFormalParameters)}
 
-DefaultFormalParameterItem = {("," ~ DefaultFormalParameter)}
+DefaultFormalParameterItem = {(COMMA_TOKEN ~ DefaultFormalParameter)}
 
-OptionalPositionalFormalParameters = {("[" ~ DefaultFormalParameter ~ (DefaultFormalParameterItem)* ~ (",")? ~ "]")}
+OptionalPositionalFormalParameters = {(OPEN_SQUARE_BRACKET_TOKEN ~ DefaultFormalParameter ~ (DefaultFormalParameterItem)* ~ (COMMA_TOKEN)? ~ CLOSE_SQUARE_BRACKET_TOKEN)}
 
-DefaultNamedParameterItem = {("," ~ DefaultNamedParameter)}
+DefaultNamedParameterItem = {(COMMA_TOKEN ~ DefaultNamedParameter)}
 
-NamedFormalParameters = {("{" ~ DefaultNamedParameter ~ (DefaultNamedParameterItem)* ~ (",")? ~ "}")}
+NamedFormalParameters = {(OPEN_CURLY_BRACKET_TOKEN ~ DefaultNamedParameter ~ (DefaultNamedParameterItem)* ~ (COMMA_TOKEN)? ~ CLOSE_CURLY_BRACKET_TOKEN)}
 
 NormalFormalParameter = {(Metadata ~ NormalFormalParameterNoMetadata)}
 
 NormalFormalParameterNoMetadata = {(FunctionFormalParameter | FieldFormalParameter | SimpleFormalParameter)}
 
-FunctionFormalParameter = {(("covariant")? ~ (Type)? ~ Identifier ~ FormalParameterPart ~ ("?")?)}
+FunctionFormalParameter = {((COVARIANT_TOKEN)? ~ (Type)? ~ Identifier ~ FormalParameterPart ~ (QUESTION_TOKEN)?)}
 
-SimpleFormalParameterIdentifier = {(("covariant")? ~ Identifier)}
+SimpleFormalParameterIdentifier = {((COVARIANT_TOKEN)? ~ Identifier)}
 
 SimpleFormalParameter = {(DeclaredIdentifier | SimpleFormalParameterIdentifier)}
 
-DeclaredIdentifier = {(("covariant")? ~ FinalConstVarOrType ~ Identifier)}
+DeclaredIdentifier = {((COVARIANT_TOKEN)? ~ FinalConstVarOrType ~ Identifier)}
 
-FieldFormalParameterFormalParameterPart = {(FormalParameterPart ~ ("?")?)}
+FieldFormalParameterFormalParameterPart = {(FormalParameterPart ~ (QUESTION_TOKEN)?)}
 
-FieldFormalParameter = {((FinalConstVarOrType)? ~ "this" ~ "." ~ Identifier ~ (FieldFormalParameterFormalParameterPart)?)}
+FieldFormalParameter = {((FinalConstVarOrType)? ~ THIS_TOKEN ~ PERIOD_TOKEN ~ Identifier ~ (FieldFormalParameterFormalParameterPart)?)}
 
-DefaultFormalParameter = {(NormalFormalParameter ~ (("=" ~ Expression))?)}
+DefaultFormalParameter = {(NormalFormalParameter ~ ((EQUAL_TOKEN ~ Expression))?)}
 
-EqualTokenOrColonToken = {("=" | ":")}
+EqualTokenOrColonToken = {(EQUAL_TOKEN | COLON_TOKEN)}
 
 DefaultNamedParameterAssignment = {(EqualTokenOrColonToken ~ Expression)}
 
-DefaultNamedParameter = {(Metadata ~ ("required")? ~ NormalFormalParameterNoMetadata ~ (DefaultNamedParameterAssignment)?)}
+DefaultNamedParameter = {(Metadata ~ (REQUIRED_TOKEN)? ~ NormalFormalParameterNoMetadata ~ (DefaultNamedParameterAssignment)?)}
 
 ClassDeclarationMembers = {(Metadata ~ ClassMemberDeclaration)}
 
-ClassDeclarationClassToken = {(("abstract")? ~ "class" ~ TypeIdentifier ~ (TypeParameters)? ~ (Superclass)? ~ (Interfaces)? ~ "{" ~ (ClassDeclarationMembers)* ~ "}")}
+ClassDeclarationClassToken = {((ABSTRACT_TOKEN)? ~ CLASS_TOKEN ~ TypeIdentifier ~ (TypeParameters)? ~ (Superclass)? ~ (Interfaces)? ~ OPEN_CURLY_BRACKET_TOKEN ~ (ClassDeclarationMembers)* ~ CLOSE_CURLY_BRACKET_TOKEN)}
 
-ClassDeclarationMixin = {(("abstract")? ~ "class" ~ MixinApplicationClass)}
+ClassDeclarationMixin = {((ABSTRACT_TOKEN)? ~ CLASS_TOKEN ~ MixinApplicationClass)}
 
 ClassDeclaration = {(ClassDeclarationClassToken | ClassDeclarationMixin)}
 
-TypeNotVoidItem = {("," ~ TypeNotVoid)}
+TypeNotVoidItem = {(COMMA_TOKEN ~ TypeNotVoid)}
 
 TypeNotVoidList = {(TypeNotVoid ~ (TypeNotVoidItem)*)}
 
-ClassMemberDeclarationSemicolonToken = {(Declaration ~ ";")}
+ClassMemberDeclarationSemicolonToken = {(Declaration ~ SEMICOLON_TOKEN)}
 
 ClassMemberDeclarationMethodSignature = {(MethodSignature ~ FunctionBody)}
 
@@ -106,45 +106,45 @@ ClassMemberDeclaration = {(ClassMemberDeclarationSemicolonToken | ClassMemberDec
 
 MethodSignatureConstructorSignature = {(ConstructorSignature ~ (Initializers)?)}
 
-MethodSignatureFunctionSignature = {(("static")? ~ FunctionSignature)}
+MethodSignatureFunctionSignature = {((STATIC_TOKEN)? ~ FunctionSignature)}
 
-MethodSignatureGetterSignature = {(("static")? ~ GetterSignature)}
+MethodSignatureGetterSignature = {((STATIC_TOKEN)? ~ GetterSignature)}
 
-MethodSignatureSetterSignature = {(("static")? ~ SetterSignature)}
+MethodSignatureSetterSignature = {((STATIC_TOKEN)? ~ SetterSignature)}
 
 MethodSignature = {(MethodSignatureConstructorSignature | FactoryConstructorSignature | MethodSignatureFunctionSignature | MethodSignatureGetterSignature | MethodSignatureSetterSignature | OperatorSignature)}
 
-DeclarationFactoryConstructorSignature = {("external" ~ FactoryConstructorSignature)}
+DeclarationFactoryConstructorSignature = {(EXTERNAL_TOKEN ~ FactoryConstructorSignature)}
 
-ExternalConstantConstructorSignature = {("external" ~ ConstantConstructorSignature)}
+ExternalConstantConstructorSignature = {(EXTERNAL_TOKEN ~ ConstantConstructorSignature)}
 
-ExternalConstructorSignature = {("external" ~ ConstructorSignature)}
+ExternalConstructorSignature = {(EXTERNAL_TOKEN ~ ConstructorSignature)}
 
-ExternalMaybeStatic = {("external" ~ ("static")?)}
+ExternalMaybeStatic = {(EXTERNAL_TOKEN ~ (STATIC_TOKEN)?)}
 
 DeclarationGetterSignature = {((ExternalMaybeStatic)? ~ GetterSignature)}
 
-DeclarationSetterSignature = {((("external" ~ ("static")?))? ~ SetterSignature)}
+DeclarationSetterSignature = {(((EXTERNAL_TOKEN ~ (STATIC_TOKEN)?))? ~ SetterSignature)}
 
-DeclarationFunctionSignature = {((("external" ~ ("static")?))? ~ FunctionSignature)}
+DeclarationFunctionSignature = {(((EXTERNAL_TOKEN ~ (STATIC_TOKEN)?))? ~ FunctionSignature)}
 
-DeclarationOperatorSignature = {(("external")? ~ OperatorSignature)}
+DeclarationOperatorSignature = {((EXTERNAL_TOKEN)? ~ OperatorSignature)}
 
-StaticConst = {("static" ~ "const" ~ (Type)? ~ StaticFinalDeclarationList)}
+StaticConst = {(STATIC_TOKEN ~ CONST_TOKEN ~ (Type)? ~ StaticFinalDeclarationList)}
 
-StaticFinal = {("static" ~ "final" ~ (Type)? ~ StaticFinalDeclarationList)}
+StaticFinal = {(STATIC_TOKEN ~ FINAL_TOKEN ~ (Type)? ~ StaticFinalDeclarationList)}
 
-StaticLateFinal = {("static" ~ "late" ~ "final" ~ (Type)? ~ InitializedIdentifierList)}
+StaticLateFinal = {(STATIC_TOKEN ~ LATE_TOKEN ~ FINAL_TOKEN ~ (Type)? ~ InitializedIdentifierList)}
 
-StaticVarOrType = {("static" ~ ("late")? ~ VarOrType ~ InitializedIdentifierList)}
+StaticVarOrType = {(STATIC_TOKEN ~ (LATE_TOKEN)? ~ VarOrType ~ InitializedIdentifierList)}
 
-CovariantLateFinal = {("covariant" ~ "late" ~ "final" ~ (Type)? ~ IdentifierList)}
+CovariantLateFinal = {(COVARIANT_TOKEN ~ LATE_TOKEN ~ FINAL_TOKEN ~ (Type)? ~ IdentifierList)}
 
-CovariantVarOrType = {("covariant" ~ ("late")? ~ VarOrType ~ InitializedIdentifierList)}
+CovariantVarOrType = {(COVARIANT_TOKEN ~ (LATE_TOKEN)? ~ VarOrType ~ InitializedIdentifierList)}
 
-DeclarationFinalToken = {(("late")? ~ "final" ~ (Type)? ~ InitializedIdentifierList)}
+DeclarationFinalToken = {((LATE_TOKEN)? ~ FINAL_TOKEN ~ (Type)? ~ InitializedIdentifierList)}
 
-DeclarationVarOrType = {(("late")? ~ VarOrType ~ InitializedIdentifierList)}
+DeclarationVarOrType = {((LATE_TOKEN)? ~ VarOrType ~ InitializedIdentifierList)}
 
 RedirectionOrInitializers = {(Redirection | Initializers)}
 
@@ -154,93 +154,93 @@ DeclarationConstructorSignature = {(ConstructorSignature ~ ((Redirection | Initi
 
 Declaration = {(DeclarationFactoryConstructorSignature | ExternalConstantConstructorSignature | ExternalConstructorSignature | DeclarationGetterSignature | DeclarationSetterSignature | DeclarationFunctionSignature | DeclarationOperatorSignature | StaticConst | StaticFinal | StaticLateFinal | StaticVarOrType | CovariantLateFinal | CovariantVarOrType | DeclarationFinalToken | DeclarationVarOrType | RedirectingFactoryConstructorSignature | DeclarationConstantConstructorSignature | DeclarationConstructorSignature)}
 
-StaticFinalDeclarationItem = {("," ~ StaticFinalDeclaration)}
+StaticFinalDeclarationItem = {(COMMA_TOKEN ~ StaticFinalDeclaration)}
 
 StaticFinalDeclarationList = {(StaticFinalDeclaration ~ (StaticFinalDeclarationItem)*)}
 
-StaticFinalDeclaration = {(Identifier ~ "=" ~ Expression)}
+StaticFinalDeclaration = {(Identifier ~ EQUAL_TOKEN ~ Expression)}
 
-OperatorSignature = {((Type)? ~ "operator" ~ Operator ~ FormalParameterList)}
+OperatorSignature = {((Type)? ~ OPERATOR_TOKEN ~ Operator ~ FormalParameterList)}
 
-Operator = {("~" | BinaryOperator | "[]" | "[]=")}
+Operator = {(TILDE_TOKEN | BinaryOperator | SQUARE_BRACKETS_TOKEN | QUARE_BRACKETS_EQ_TOKEN)}
 
-BinaryOperator = {(MultiplicativeOperator | AdditiveOperator | ShiftOperator | RelationalOperator | "==" | BitwiseOperator)}
+BinaryOperator = {(MultiplicativeOperator | AdditiveOperator | ShiftOperator | RelationalOperator | DOUBLE_EQUAL_TOKEN | BitwiseOperator)}
 
-GetterSignature = {((Type)? ~ "get" ~ Identifier)}
+GetterSignature = {((Type)? ~ GET_TOKEN ~ Identifier)}
 
-SetterSignature = {((Type)? ~ "set" ~ Identifier ~ FormalParameterList)}
+SetterSignature = {((Type)? ~ SET_TOKEN ~ Identifier ~ FormalParameterList)}
 
 ConstructorSignature = {(ConstructorName ~ FormalParameterList)}
 
-IdentifierSelector = {("." ~ Identifier)}
+IdentifierSelector = {(PERIOD_TOKEN ~ Identifier)}
 
 ConstructorName = {(TypeIdentifier ~ (IdentifierSelector)?)}
 
-Redirection = {(":" ~ "this" ~ (("." ~ Identifier))? ~ Arguments)}
+Redirection = {(COLON_TOKEN ~ THIS_TOKEN ~ ((PERIOD_TOKEN ~ Identifier))? ~ Arguments)}
 
-InitializerListEntryItem = {("," ~ InitializerListEntry)}
+InitializerListEntryItem = {(COMMA_TOKEN ~ InitializerListEntry)}
 
-Initializers = {(":" ~ InitializerListEntry ~ (InitializerListEntryItem)*)}
+Initializers = {(COLON_TOKEN ~ InitializerListEntry ~ (InitializerListEntryItem)*)}
 
-InitializerListEntryArguments = {("super" ~ Arguments)}
+InitializerListEntryArguments = {(SUPER_TOKEN ~ Arguments)}
 
-InitializerListEntrySuperToken = {("super" ~ "." ~ Identifier ~ Arguments)}
+InitializerListEntrySuperToken = {(SUPER_TOKEN ~ PERIOD_TOKEN ~ Identifier ~ Arguments)}
 
 InitializerListEntry = {(InitializerListEntryArguments | InitializerListEntrySuperToken | FieldInitializer | Assertion)}
 
-FieldInitializerThisToken = {("this" ~ ".")}
+FieldInitializerThisToken = {(THIS_TOKEN ~ PERIOD_TOKEN)}
 
-FieldInitializer = {((FieldInitializerThisToken)? ~ Identifier ~ "=" ~ InitializerExpression)}
+FieldInitializer = {((FieldInitializerThisToken)? ~ Identifier ~ EQUAL_TOKEN ~ InitializerExpression)}
 
 InitializerExpression = {(ConditionalExpression | Cascade)}
 
-FactoryConstructorSignature = {(("const")? ~ "factory" ~ ConstructorName ~ FormalParameterList)}
+FactoryConstructorSignature = {((CONST_TOKEN)? ~ FACTORY_TOKEN ~ ConstructorName ~ FormalParameterList)}
 
-RedirectingFactoryConstructorSignature = {(("const")? ~ "factory" ~ ConstructorName ~ FormalParameterList ~ "=" ~ ConstructorDesignation)}
+RedirectingFactoryConstructorSignature = {((CONST_TOKEN)? ~ FACTORY_TOKEN ~ ConstructorName ~ FormalParameterList ~ EQUAL_TOKEN ~ ConstructorDesignation)}
 
-ConstructorDesignationTypeName = {(TypeName ~ TypeArguments ~ (("." ~ Identifier))?)}
+ConstructorDesignationTypeName = {(TypeName ~ TypeArguments ~ ((PERIOD_TOKEN ~ Identifier))?)}
 
 ConstructorDesignation = {(TypeIdentifier | QualifiedName | ConstructorDesignationTypeName)}
 
-ConstantConstructorSignature = {("const" ~ ConstructorName ~ FormalParameterList)}
+ConstantConstructorSignature = {(CONST_TOKEN ~ ConstructorName ~ FormalParameterList)}
 
-SuperclassTypeNotVoid = {("extends" ~ TypeNotVoid ~ (Mixins)?)}
+SuperclassTypeNotVoid = {(EXTENDS_TOKEN ~ TypeNotVoid ~ (Mixins)?)}
 
 Superclass = {(SuperclassTypeNotVoid | Mixins)}
 
-Mixins = {("with" ~ TypeNotVoidList)}
+Mixins = {(WITH_TOKEN ~ TypeNotVoidList)}
 
-Interfaces = {("implements" ~ TypeNotVoidList)}
+Interfaces = {(IMPLEMENTS_TOKEN ~ TypeNotVoidList)}
 
-MixinApplicationClass = {(Identifier ~ (TypeParameters)? ~ "=" ~ MixinApplication ~ ";")}
+MixinApplicationClass = {(Identifier ~ (TypeParameters)? ~ EQUAL_TOKEN ~ MixinApplication ~ SEMICOLON_TOKEN)}
 
 MixinApplication = {(TypeNotVoid ~ Mixins ~ (Interfaces)?)}
 
-TypeNotVoidListOn = {("on" ~ TypeNotVoidList)}
+TypeNotVoidListOn = {(ON_TOKEN ~ TypeNotVoidList)}
 
 MixinDeclarationMetadata = {(Metadata ~ ClassMemberDeclaration)}
 
-MixinDeclaration = {("mixin" ~ TypeIdentifier ~ (TypeParameters)? ~ (TypeNotVoidListOn)? ~ (Interfaces)? ~ "{" ~ (MixinDeclarationMetadata)* ~ "}")}
+MixinDeclaration = {(MIXIN_TOKEN ~ TypeIdentifier ~ (TypeParameters)? ~ (TypeNotVoidListOn)? ~ (Interfaces)? ~ OPEN_CURLY_BRACKET_TOKEN ~ (MixinDeclarationMetadata)* ~ CLOSE_CURLY_BRACKET_TOKEN)}
 
 ExtensionDeclarationMetadata = {(Metadata ~ ClassMemberDeclaration)}
 
-ExtensionDeclaration = {("extension" ~ (Identifier)? ~ (TypeParameters)? ~ "on" ~ Type ~ "{" ~ (ExtensionDeclarationMetadata)* ~ "}")}
+ExtensionDeclaration = {(EXTENSION_TOKEN ~ (Identifier)? ~ (TypeParameters)? ~ ON_TOKEN ~ Type ~ OPEN_CURLY_BRACKET_TOKEN ~ (ExtensionDeclarationMetadata)* ~ CLOSE_CURLY_BRACKET_TOKEN)}
 
-EnumEntryItem = {("," ~ EnumEntry)}
+EnumEntryItem = {(COMMA_TOKEN ~ EnumEntry)}
 
-EnumType = {("enum" ~ Identifier ~ "{" ~ EnumEntry ~ (EnumEntryItem)* ~ (",")? ~ "}")}
+EnumType = {(ENUM_TOKEN ~ Identifier ~ OPEN_CURLY_BRACKET_TOKEN ~ EnumEntry ~ (EnumEntryItem)* ~ (COMMA_TOKEN)? ~ CLOSE_CURLY_BRACKET_TOKEN)}
 
 EnumEntry = {(Metadata ~ Identifier)}
 
-TypeNotVoidExtends = {("extends" ~ TypeNotVoid)}
+TypeNotVoidExtends = {(EXTENDS_TOKEN ~ TypeNotVoid)}
 
 TypeParameter = {(Metadata ~ Identifier ~ (TypeNotVoidExtends)?)}
 
-TypeParameterItem = {("," ~ TypeParameter)}
+TypeParameterItem = {(COMMA_TOKEN ~ TypeParameter)}
 
-TypeParameters = {("<" ~ TypeParameter ~ (TypeParameterItem)* ~ ">")}
+TypeParameters = {(LESS_TOKEN ~ TypeParameter ~ (TypeParameterItem)* ~ MORE_TOKEN)}
 
-MetadataItem = {("@" ~ Metadatum)}
+MetadataItem = {(AT_TOKEN ~ Metadatum)}
 
 Metadata = {(MetadataItem)*}
 
@@ -256,25 +256,25 @@ ExpressionWithoutCascadeAssignableExpression = {(AssignableExpression ~ Assignme
 
 ExpressionWithoutCascade = {(ExpressionWithoutCascadeAssignableExpression | ConditionalExpression | ThrowExpressionWithoutCascade)}
 
-ExpressionItem = {("," ~ Expression)}
+ExpressionItem = {(COMMA_TOKEN ~ Expression)}
 
 ExpressionList = {(Expression ~ (ExpressionItem)*)}
 
-PrimaryUnconditionalAssignableSelector = {("super" ~ UnconditionalAssignableSelector)}
+PrimaryUnconditionalAssignableSelector = {(SUPER_TOKEN ~ UnconditionalAssignableSelector)}
 
-PrimaryArgumentPart = {("super" ~ ArgumentPart)}
+PrimaryArgumentPart = {(SUPER_TOKEN ~ ArgumentPart)}
 
-PrimaryExpression = {("(" ~ Expression ~ ")")}
+PrimaryExpression = {(OPEN_PAREN_TOKEN ~ Expression ~ CLOSE_PAREN_TOKEN)}
 
 Primary = {(ThisExpression | PrimaryUnconditionalAssignableSelector | PrimaryArgumentPart | FunctionExpression | Literal | Identifier | NewExpression | ConstObjectExpression | ConstructorInvocation | PrimaryExpression)}
 
 Literal = {(NullLiteral | BooleanLiteral | NumericLiteral | StringLiteral | SymbolLiteral | ListLiteral | SetOrMapLiteral)}
 
-NullLiteral = {"null"}
+NullLiteral = {NULL_TOKEN}
 
 NumericLiteral = {(NUMBER | HEX_NUMBER)}
 
-BooleanLiteral = {("true" | "false")}
+BooleanLiteral = {(TRUE_TOKEN | FALSE_TOKEN)}
 
 StringLiteralItem = {(MultilineString | SingleLineString)}
 
@@ -300,53 +300,53 @@ MultilineStringMultiLineStringDqBeginMid = {(MULTI_LINE_STRING_DQ_BEGIN_MID ~ Ex
 
 MultilineString = {(RAW_MULTI_LINE_STRING | MULTI_LINE_STRING_SQ_BEGIN_END | MultilineStringMultiLineStringSqBeginMid | MULTI_LINE_STRING_DQ_BEGIN_END | MultilineStringMultiLineStringDqBeginMid)}
 
-StringInterpolationExpression = {("${" ~ Expression ~ "}")}
+StringInterpolationExpression = {(INTERPOLATION_START_TOKEN ~ Expression ~ CLOSE_CURLY_BRACKET_TOKEN)}
 
 StringInterpolation = {(SIMPLE_STRING_INTERPOLATION | StringInterpolationExpression)}
 
-SymbolLiteralOtherIdentifiers = {("." ~ Identifier)}
+SymbolLiteralOtherIdentifiers = {(PERIOD_TOKEN ~ Identifier)}
 
 SymbolLiteralValueIdentifier = {(Identifier ~ (SymbolLiteralOtherIdentifiers)*)}
 
-SymbolLiteralValue = {(SymbolLiteralValueIdentifier | Operator | "void")}
+SymbolLiteralValue = {(SymbolLiteralValueIdentifier | Operator | VOID_TOKEN)}
 
-SymbolLiteral = {("#" ~ SymbolLiteralValue)}
+SymbolLiteral = {(HASH_TOKEN ~ SymbolLiteralValue)}
 
-ListLiteral = {(("const")? ~ (TypeArguments)? ~ "[" ~ (Elements)? ~ "]")}
+ListLiteral = {((CONST_TOKEN)? ~ (TypeArguments)? ~ OPEN_SQUARE_BRACKET_TOKEN ~ (Elements)? ~ CLOSE_SQUARE_BRACKET_TOKEN)}
 
-SetOrMapLiteral = {(("const")? ~ (TypeArguments)? ~ "{" ~ (Elements)? ~ "}")}
+SetOrMapLiteral = {((CONST_TOKEN)? ~ (TypeArguments)? ~ OPEN_CURLY_BRACKET_TOKEN ~ (Elements)? ~ CLOSE_CURLY_BRACKET_TOKEN)}
 
-ElementItem = {("," ~ Element)}
+ElementItem = {(COMMA_TOKEN ~ Element)}
 
-Elements = {(Element ~ (ElementItem)* ~ (",")?)}
+Elements = {(Element ~ (ElementItem)* ~ (COMMA_TOKEN)?)}
 
 Element = {(ExpressionElement | MapElement | SpreadElement | IfElement | ForElement)}
 
 ExpressionElement = {Expression}
 
-MapElement = {(Expression ~ ":" ~ Expression)}
+MapElement = {(Expression ~ COLON_TOKEN ~ Expression)}
 
-SpreadElementType = {("..." | "...?")}
+SpreadElementType = {(POINTS_EXPAND_TOKEN | POINTS_EXPAND_QUESTION_TOKEN)}
 
 SpreadElement = {(SpreadElementType ~ Expression)}
 
-ElementElse = {("else" ~ Element)}
+ElementElse = {(ELSE_TOKEN ~ Element)}
 
-IfElement = {("if" ~ "(" ~ Expression ~ ")" ~ Element ~ (ElementElse)?)}
+IfElement = {(IF_TOKEN ~ OPEN_PAREN_TOKEN ~ Expression ~ CLOSE_PAREN_TOKEN ~ Element ~ (ElementElse)?)}
 
-ForElement = {(("await")? ~ "for" ~ "(" ~ ForLoopParts ~ ")" ~ Element)}
+ForElement = {((AWAIT_TOKEN)? ~ FOR_TOKEN ~ OPEN_PAREN_TOKEN ~ ForLoopParts ~ CLOSE_PAREN_TOKEN ~ Element)}
 
-ThrowExpression = {("throw" ~ Expression)}
+ThrowExpression = {(THROW_TOKEN ~ Expression)}
 
-ThrowExpressionWithoutCascade = {("throw" ~ ExpressionWithoutCascade)}
+ThrowExpressionWithoutCascade = {(THROW_TOKEN ~ ExpressionWithoutCascade)}
 
 FunctionExpression = {(FormalParameterPart ~ FunctionExpressionBody)}
 
-FunctionExpressionBodyArrowToken = {(("async")? ~ "=>" ~ Expression)}
+FunctionExpressionBodyArrowToken = {((ASYNC_TOKEN)? ~ ARROW_TOKEN ~ Expression)}
 
-FunctionExpressionGeneratorAsyncToken = {("async" ~ ("*")?)}
+FunctionExpressionGeneratorAsyncToken = {(ASYNC_TOKEN ~ (ASTERISK_TOKEN)?)}
 
-FunctionExpressionGeneratorSyncToken = {("sync" ~ "*")}
+FunctionExpressionGeneratorSyncToken = {(SYNC_TOKEN ~ ASTERISK_TOKEN)}
 
 FunctionExpressionGenerator = {(FunctionExpressionGeneratorAsyncToken | FunctionExpressionGeneratorSyncToken)}
 
@@ -354,29 +354,29 @@ FunctionExpressionBodyBlock = {((FunctionExpressionGenerator)? ~ Block)}
 
 FunctionExpressionBody = {(FunctionExpressionBodyArrowToken | FunctionExpressionBodyBlock)}
 
-ThisExpression = {"this"}
+ThisExpression = {THIS_TOKEN}
 
-NewExpression = {("new" ~ ConstructorDesignation ~ Arguments)}
+NewExpression = {(NEW_TOKEN ~ ConstructorDesignation ~ Arguments)}
 
-ConstObjectExpression = {("const" ~ ConstructorDesignation ~ Arguments)}
+ConstObjectExpression = {(CONST_TOKEN ~ ConstructorDesignation ~ Arguments)}
 
-ArgumentsArgumentList = {(ArgumentList ~ (",")?)}
+ArgumentsArgumentList = {(ArgumentList ~ (COMMA_TOKEN)?)}
 
-Arguments = {("(" ~ (ArgumentsArgumentList)? ~ ")")}
+Arguments = {(OPEN_PAREN_TOKEN ~ (ArgumentsArgumentList)? ~ CLOSE_PAREN_TOKEN)}
 
-NamedArgumentItem = {("," ~ NamedArgument)}
+NamedArgumentItem = {(COMMA_TOKEN ~ NamedArgument)}
 
 ArgumentListNamedArgument = {(NamedArgument ~ (NamedArgumentItem)*)}
 
-ArgumentListExpressionList = {(ExpressionList ~ (("," ~ NamedArgument))*)}
+ArgumentListExpressionList = {(ExpressionList ~ ((COMMA_TOKEN ~ NamedArgument))*)}
 
 ArgumentList = {(ArgumentListNamedArgument | ArgumentListExpressionList)}
 
 NamedArgument = {(Label ~ Expression)}
 
-CascadeRight = {(".." ~ CascadeSection ~ (CascadeRight)?)}
+CascadeRight = {(POINTS_ID_TOKEN ~ CascadeSection ~ (CascadeRight)?)}
 
-CascadePrefixType = {("?.." | "..")}
+CascadePrefixType = {(POINTS_ID_QUESTION_TOKEN | POINTS_ID_TOKEN)}
 
 CascadeLeft = {(ConditionalExpression ~ CascadePrefixType ~ CascadeSection)}
 
@@ -384,7 +384,7 @@ Cascade = {(CascadeLeft ~ (CascadeRight)?)}
 
 CascadeSection = {(CascadeSelector ~ CascadeSectionTail)}
 
-CascadeSelectorExpression = {("[" ~ Expression ~ "]")}
+CascadeSelectorExpression = {(OPEN_SQUARE_BRACKET_TOKEN ~ Expression ~ CLOSE_SQUARE_BRACKET_TOKEN)}
 
 CascadeSelector = {(CascadeSelectorExpression | Identifier)}
 
@@ -396,23 +396,23 @@ CascadeSectionTail = {(CascadeAssignment | SelectedCascade)}
 
 CascadeAssignment = {(AssignmentOperator ~ ExpressionWithoutCascade)}
 
-AssignmentOperator = {("=" | CompoundAssignmentOperator)}
+AssignmentOperator = {(EQUAL_TOKEN | CompoundAssignmentOperator)}
 
-CompoundAssignmentOperator = {("*=" | "/=" | "~/=" | "%=" | "+=" | "-=" | "<<=" | ">>>=" | ">>=" | "&=" | "^=" | "|=" | "??=")}
+CompoundAssignmentOperator = {(TIMES_EQUAL_TOKEN | DIV_EQUAL_TOKEN | INTEGER_DIV_EQUAL_TOKEN | MODULE_EQUAL_TOKEN | PLUS_EQUAL_TOKEN | MINUS_EQUAL_TOKEN | BIT_LEFT_EQUAL_TOKEN | BIT_RIGHT0_EQUAL_TOKEN | BIT_RIGHT_EQUAL_TOKEN | BIT_AND_EUQAL_TOKEN | BIT_NEG_EQUAL_TOKEN | BIT_XOR_EQUAL_TOKEN | QUESTION_QUESTION_EQUAL_TOKEN)}
 
-ConditionalExpressionExpressionWithoutCascade = {("?" ~ ExpressionWithoutCascade ~ ":" ~ ExpressionWithoutCascade)}
+ConditionalExpressionExpressionWithoutCascade = {(QUESTION_TOKEN ~ ExpressionWithoutCascade ~ COLON_TOKEN ~ ExpressionWithoutCascade)}
 
 ConditionalExpression = {(IfNullExpression ~ (ConditionalExpressionExpressionWithoutCascade)?)}
 
-LogicalOrExpressionQuestionQuestion = {("??" ~ LogicalOrExpression)}
+LogicalOrExpressionQuestionQuestion = {(QUESTION_QUESTION_TOKEN ~ LogicalOrExpression)}
 
 IfNullExpression = {(LogicalOrExpression ~ (LogicalOrExpressionQuestionQuestion)*)}
 
-LogicalAndExpressionOr = {("||" ~ LogicalAndExpression)}
+LogicalAndExpressionOr = {(OR_TOKEN ~ LogicalAndExpression)}
 
 LogicalOrExpression = {(LogicalAndExpression ~ (LogicalAndExpressionOr)*)}
 
-EqualityExpressionAnd = {("&&" ~ EqualityExpression)}
+EqualityExpressionAnd = {(AND_TOKEN ~ EqualityExpression)}
 
 LogicalAndExpression = {(EqualityExpression ~ (EqualityExpressionAnd)*)}
 
@@ -420,11 +420,11 @@ EqualityExpressionInner = {(EqualityOperator ~ RelationalExpression)}
 
 EqualityExpressionRelationalExpression = {(RelationalExpression ~ (EqualityExpressionInner)?)}
 
-EqualityExpressionEqualityOperator = {("super" ~ EqualityOperator ~ RelationalExpression)}
+EqualityExpressionEqualityOperator = {(SUPER_TOKEN ~ EqualityOperator ~ RelationalExpression)}
 
 EqualityExpression = {(EqualityExpressionRelationalExpression | EqualityExpressionEqualityOperator)}
 
-EqualityOperator = {("==" | "!=")}
+EqualityOperator = {(DOUBLE_EQUAL_TOKEN | NOT_EQUAL_TOKEN)}
 
 BitwiseOrExpressionInterRelationalOperator = {(RelationalOperator ~ BitwiseOrExpression)}
 
@@ -432,73 +432,73 @@ BitwiseOrExpressionInter = {(TypeTest | TypeCast | BitwiseOrExpressionInterRelat
 
 RelationalExpressionBitwiseOrExpression = {(BitwiseOrExpression ~ (BitwiseOrExpressionInter)?)}
 
-RelationalExpressionRelationalOperator = {("super" ~ RelationalOperator ~ BitwiseOrExpression)}
+RelationalExpressionRelationalOperator = {(SUPER_TOKEN ~ RelationalOperator ~ BitwiseOrExpression)}
 
 RelationalExpression = {(RelationalExpressionBitwiseOrExpression | RelationalExpressionRelationalOperator)}
 
-RelationalOperator = {(">=" | ">" | "<=" | "<")}
+RelationalOperator = {(MORE_OR_EQUAL_TOKEN | MORE_TOKEN | LESS_OR_EQUAL_TOKEN | LESS_TOKEN)}
 
-BitwiseXorExpressionBitXor = {("|" ~ BitwiseXorExpression)}
+BitwiseXorExpressionBitXor = {(BIT_XOR_TOKEN ~ BitwiseXorExpression)}
 
 BitwiseOrExpressionBitwiseXorExpression = {(BitwiseXorExpression ~ (BitwiseXorExpressionBitXor)*)}
 
-BitwiseOrExpressionSuperToken = {("super" ~ (("|" ~ BitwiseXorExpression))+)}
+BitwiseOrExpressionSuperToken = {(SUPER_TOKEN ~ ((BIT_XOR_TOKEN ~ BitwiseXorExpression))+)}
 
 BitwiseOrExpression = {(BitwiseOrExpressionBitwiseXorExpression | BitwiseOrExpressionSuperToken)}
 
-BitwiseAndExpressionBitNeg = {("^" ~ BitwiseAndExpression)}
+BitwiseAndExpressionBitNeg = {(BIT_NEG_TOKEN ~ BitwiseAndExpression)}
 
 BitwiseXorExpressionBitwiseAndExpression = {(BitwiseAndExpression ~ (BitwiseAndExpressionBitNeg)*)}
 
-BitwiseXorExpressionSuperToken = {("super" ~ (("^" ~ BitwiseAndExpression))+)}
+BitwiseXorExpressionSuperToken = {(SUPER_TOKEN ~ ((BIT_NEG_TOKEN ~ BitwiseAndExpression))+)}
 
 BitwiseXorExpression = {(BitwiseXorExpressionBitwiseAndExpression | BitwiseXorExpressionSuperToken)}
 
-ShiftExpressionBitAnd = {("&" ~ ShiftExpression)}
+ShiftExpressionBitAnd = {(BIT_AND_TOKEN ~ ShiftExpression)}
 
 BitwiseAndExpressionShiftExpression = {(ShiftExpression ~ (ShiftExpressionBitAnd)*)}
 
-BitwiseAndExpressionSuperToken = {("super" ~ (("&" ~ ShiftExpression))+)}
+BitwiseAndExpressionSuperToken = {(SUPER_TOKEN ~ ((BIT_AND_TOKEN ~ ShiftExpression))+)}
 
 BitwiseAndExpression = {(BitwiseAndExpressionShiftExpression | BitwiseAndExpressionSuperToken)}
 
-BitwiseOperator = {("&" | "^" | "|")}
+BitwiseOperator = {(BIT_AND_TOKEN | BIT_NEG_TOKEN | BIT_XOR_TOKEN)}
 
 ShiftExpressionInner = {(ShiftOperator ~ AdditiveExpression)}
 
 ShiftExpressionAdditiveExpression = {(AdditiveExpression ~ (ShiftExpressionInner)*)}
 
-ShiftExpressionSuperToken = {("super" ~ ((ShiftOperator ~ AdditiveExpression))+)}
+ShiftExpressionSuperToken = {(SUPER_TOKEN ~ ((ShiftOperator ~ AdditiveExpression))+)}
 
 ShiftExpression = {(ShiftExpressionAdditiveExpression | ShiftExpressionSuperToken)}
 
-ShiftOperator = {("<<" | ">>>" | ">>")}
+ShiftOperator = {(BIT_LEFT_TOKEN | BIT_RIGHT0_TOKEN | BIT_RIGHT_TOKEN)}
 
 AdditiveExpressionInner = {(AdditiveOperator ~ MultiplicativeExpression)}
 
 AdditiveExpressionMultiplicativeExpression = {(MultiplicativeExpression ~ (AdditiveExpressionInner)*)}
 
-AdditiveExpressionSuperToken = {("super" ~ ((AdditiveOperator ~ MultiplicativeExpression))+)}
+AdditiveExpressionSuperToken = {(SUPER_TOKEN ~ ((AdditiveOperator ~ MultiplicativeExpression))+)}
 
 AdditiveExpression = {(AdditiveExpressionMultiplicativeExpression | AdditiveExpressionSuperToken)}
 
-AdditiveOperator = {("+" | "-")}
+AdditiveOperator = {(PLUS_TOKEN | MINUS_TOKEN)}
 
 MultiplicativeExpressionInner = {(MultiplicativeOperator ~ UnaryExpression)}
 
 MultiplicativeExpressionUnaryExpression = {(UnaryExpression ~ (MultiplicativeExpressionInner)*)}
 
-MultiplicativeExpressionSuperToken = {("super" ~ ((MultiplicativeOperator ~ UnaryExpression))+)}
+MultiplicativeExpressionSuperToken = {(SUPER_TOKEN ~ ((MultiplicativeOperator ~ UnaryExpression))+)}
 
 MultiplicativeExpression = {(MultiplicativeExpressionUnaryExpression | MultiplicativeExpressionSuperToken)}
 
-MultiplicativeOperator = {("*" | "/" | "%" | "~/")}
+MultiplicativeOperator = {(ASTERISK_TOKEN | DIVIDE_TOKEN | MODULUS_TOKEN | INTEGER_DIV_TOKEN)}
 
 UnaryExpressionPrefixOperator = {(PrefixOperator ~ UnaryExpression)}
 
 UnaryOperator = {(MinusOperator | TildeOperator)}
 
-UnaryExpressionSuperToken = {(UnaryOperator ~ "super")}
+UnaryExpressionSuperToken = {(UnaryOperator ~ SUPER_TOKEN)}
 
 UnaryExpressionIncrementOperator = {(IncrementOperator ~ AssignableExpression)}
 
@@ -506,13 +506,13 @@ UnaryExpression = {(UnaryExpressionPrefixOperator | AwaitExpression | PostfixExp
 
 PrefixOperator = {(MinusOperator | NegationOperator | TildeOperator)}
 
-MinusOperator = {"-"}
+MinusOperator = {MINUS_TOKEN}
 
-NegationOperator = {"!"}
+NegationOperator = {EXCLAMATION_TOKEN}
 
-TildeOperator = {"~"}
+TildeOperator = {TILDE_TOKEN}
 
-AwaitExpression = {("await" ~ UnaryExpression)}
+AwaitExpression = {(AWAIT_TOKEN ~ UnaryExpression)}
 
 PostfixExpressionAssignableExpression = {(AssignableExpression ~ PostfixOperator)}
 
@@ -522,51 +522,51 @@ PostfixExpression = {(PostfixExpressionAssignableExpression | PostfixExpressionP
 
 PostfixOperator = {IncrementOperator}
 
-ConstructorInvocation = {(TypeName ~ TypeArguments ~ "." ~ Identifier ~ Arguments)}
+ConstructorInvocation = {(TypeName ~ TypeArguments ~ PERIOD_TOKEN ~ Identifier ~ Arguments)}
 
-Selector = {("!" | AssignableSelector | ArgumentPart)}
+Selector = {(EXCLAMATION_TOKEN | AssignableSelector | ArgumentPart)}
 
 ArgumentPart = {((TypeArguments)? ~ Arguments)}
 
-IncrementOperator = {("++" | "--")}
+IncrementOperator = {(PLUS_PLUS_TOKEN | MINUS_MINUS_TOKEN)}
 
 AssignableExpressionPrimary = {(Primary ~ AssignableSelectorPart)}
 
-AssignableExpressionUnconditionalAssignableSelector = {("super" ~ UnconditionalAssignableSelector)}
+AssignableExpressionUnconditionalAssignableSelector = {(SUPER_TOKEN ~ UnconditionalAssignableSelector)}
 
 AssignableExpression = {(AssignableExpressionPrimary | AssignableExpressionUnconditionalAssignableSelector | Identifier)}
 
 AssignableSelectorPart = {((Selector)* ~ AssignableSelector)}
 
-UnconditionalAssignableSelectorExpression = {("[" ~ Expression ~ "]")}
+UnconditionalAssignableSelectorExpression = {(OPEN_SQUARE_BRACKET_TOKEN ~ Expression ~ CLOSE_SQUARE_BRACKET_TOKEN)}
 
-UnconditionalAssignableSelectorIdentifier = {("." ~ Identifier)}
+UnconditionalAssignableSelectorIdentifier = {(PERIOD_TOKEN ~ Identifier)}
 
 UnconditionalAssignableSelector = {(UnconditionalAssignableSelectorExpression | UnconditionalAssignableSelectorIdentifier)}
 
-AssignableSelectorIdentifier = {("?." ~ Identifier)}
+AssignableSelectorIdentifier = {(QUESTION_ID_TOKEN ~ Identifier)}
 
-AssignableSelectorQuestionToken = {("?" ~ "[" ~ Expression ~ "]")}
+AssignableSelectorQuestionToken = {(QUESTION_TOKEN ~ OPEN_SQUARE_BRACKET_TOKEN ~ Expression ~ CLOSE_SQUARE_BRACKET_TOKEN)}
 
 AssignableSelector = {(UnconditionalAssignableSelector | AssignableSelectorIdentifier | AssignableSelectorQuestionToken)}
 
 Identifier = {(IDENTIFIER | BUILT_IN_IDENTIFIER | OTHER_IDENTIFIER)}
 
-TypeIdentifier = {(IDENTIFIER | OTHER_IDENTIFIER | "dynamic")}
+TypeIdentifier = {(IDENTIFIER | OTHER_IDENTIFIER | DYNAMIC_TOKEN)}
 
-QualifiedNameSingle = {(TypeIdentifier ~ "." ~ Identifier)}
+QualifiedNameSingle = {(TypeIdentifier ~ PERIOD_TOKEN ~ Identifier)}
 
-QualifiedNameDouble = {(TypeIdentifier ~ "." ~ TypeIdentifier ~ "." ~ Identifier)}
+QualifiedNameDouble = {(TypeIdentifier ~ PERIOD_TOKEN ~ TypeIdentifier ~ PERIOD_TOKEN ~ Identifier)}
 
 QualifiedName = {(QualifiedNameSingle | QualifiedNameDouble)}
 
 TypeTest = {(IsOperator ~ TypeNotVoid)}
 
-IsOperator = {("is" ~ ("!")?)}
+IsOperator = {(IS_TOKEN ~ (EXCLAMATION_TOKEN)?)}
 
 TypeCast = {(AsOperator ~ TypeNotVoid)}
 
-AsOperator = {"as"}
+AsOperator = {AS_TOKEN}
 
 Statements = {(Statement)*}
 
@@ -574,81 +574,81 @@ Statement = {((Label)* ~ NonLabelledStatement)}
 
 NonLabelledStatement = {(Block | LocalVariableDeclaration | ForStatement | WhileStatement | DoStatement | SwitchStatement | IfStatement | RethrowStatement | TryStatement | BreakStatement | ContinueStatement | ReturnStatement | YieldStatement | YieldEachStatement | ExpressionStatement | AssertStatement | LocalFunctionDeclaration)}
 
-ExpressionStatement = {((Expression)? ~ ";")}
+ExpressionStatement = {((Expression)? ~ SEMICOLON_TOKEN)}
 
-LocalVariableDeclaration = {(Metadata ~ InitializedVariableDeclaration ~ ";")}
+LocalVariableDeclaration = {(Metadata ~ InitializedVariableDeclaration ~ SEMICOLON_TOKEN)}
 
 LocalFunctionDeclaration = {(Metadata ~ FunctionSignature ~ FunctionBody)}
 
-StatementElse = {("else" ~ Statement)}
+StatementElse = {(ELSE_TOKEN ~ Statement)}
 
-IfStatement = {("if" ~ "(" ~ Expression ~ ")" ~ Statement ~ (StatementElse)?)}
+IfStatement = {(IF_TOKEN ~ OPEN_PAREN_TOKEN ~ Expression ~ CLOSE_PAREN_TOKEN ~ Statement ~ (StatementElse)?)}
 
-ForStatement = {(("await")? ~ "for" ~ "(" ~ ForLoopParts ~ ")" ~ Statement)}
+ForStatement = {((AWAIT_TOKEN)? ~ FOR_TOKEN ~ OPEN_PAREN_TOKEN ~ ForLoopParts ~ CLOSE_PAREN_TOKEN ~ Statement)}
 
-ForLoopPartsSemicolonToken = {(ForInitializerStatement ~ (Expression)? ~ ";" ~ (ExpressionList)?)}
+ForLoopPartsSemicolonToken = {(ForInitializerStatement ~ (Expression)? ~ SEMICOLON_TOKEN ~ (ExpressionList)?)}
 
-ForLoopPartsMetadata = {(Metadata ~ DeclaredIdentifier ~ "in" ~ Expression)}
+ForLoopPartsMetadata = {(Metadata ~ DeclaredIdentifier ~ IN_TOKEN ~ Expression)}
 
-ForLoopPartsInToken = {(Identifier ~ "in" ~ Expression)}
+ForLoopPartsInToken = {(Identifier ~ IN_TOKEN ~ Expression)}
 
 ForLoopParts = {(ForLoopPartsSemicolonToken | ForLoopPartsMetadata | ForLoopPartsInToken)}
 
-ForInitializerStatementSemicolonToken = {((Expression)? ~ ";")}
+ForInitializerStatementSemicolonToken = {((Expression)? ~ SEMICOLON_TOKEN)}
 
 ForInitializerStatement = {(LocalVariableDeclaration | ForInitializerStatementSemicolonToken)}
 
-WhileStatement = {("while" ~ "(" ~ Expression ~ ")" ~ Statement)}
+WhileStatement = {(WHILE_TOKEN ~ OPEN_PAREN_TOKEN ~ Expression ~ CLOSE_PAREN_TOKEN ~ Statement)}
 
-DoStatement = {("do" ~ Statement ~ "while" ~ "(" ~ Expression ~ ")" ~ ";")}
+DoStatement = {(DO_TOKEN ~ Statement ~ WHILE_TOKEN ~ OPEN_PAREN_TOKEN ~ Expression ~ CLOSE_PAREN_TOKEN ~ SEMICOLON_TOKEN)}
 
-SwitchStatement = {("switch" ~ "(" ~ Expression ~ ")" ~ "{" ~ (SwitchCase)* ~ (DefaultCase)? ~ "}")}
+SwitchStatement = {(SWITCH_TOKEN ~ OPEN_PAREN_TOKEN ~ Expression ~ CLOSE_PAREN_TOKEN ~ OPEN_CURLY_BRACKET_TOKEN ~ (SwitchCase)* ~ (DefaultCase)? ~ CLOSE_CURLY_BRACKET_TOKEN)}
 
-SwitchCase = {((Label)* ~ "case" ~ Expression ~ ":" ~ Statements)}
+SwitchCase = {((Label)* ~ CASE_TOKEN ~ Expression ~ COLON_TOKEN ~ Statements)}
 
-DefaultCase = {((Label)* ~ "default" ~ ":" ~ Statements)}
+DefaultCase = {((Label)* ~ DEFAULT_TOKEN ~ COLON_TOKEN ~ Statements)}
 
-RethrowStatement = {("rethrow" ~ ";")}
+RethrowStatement = {(RETHROW_TOKEN ~ SEMICOLON_TOKEN)}
 
 TryStatementOnPart = {((OnPart)+ ~ (FinallyPart)?)}
 
 TryStatementCatchFinally = {(TryStatementOnPart | FinallyPart)}
 
-TryStatement = {("try" ~ Block ~ TryStatementCatchFinally)}
+TryStatement = {(TRY_TOKEN ~ Block ~ TryStatementCatchFinally)}
 
 OnPartCatchPart = {(CatchPart ~ Block)}
 
-OnPartTypeNotVoid = {("on" ~ TypeNotVoid ~ (CatchPart)? ~ Block)}
+OnPartTypeNotVoid = {(ON_TOKEN ~ TypeNotVoid ~ (CatchPart)? ~ Block)}
 
 OnPart = {(OnPartCatchPart | OnPartTypeNotVoid)}
 
-IdentifierItem = {("," ~ Identifier)}
+IdentifierItem = {(COMMA_TOKEN ~ Identifier)}
 
-CatchPart = {("catch" ~ "(" ~ Identifier ~ (IdentifierItem)? ~ ")")}
+CatchPart = {(CATCH_TOKEN ~ OPEN_PAREN_TOKEN ~ Identifier ~ (IdentifierItem)? ~ CLOSE_PAREN_TOKEN)}
 
-FinallyPart = {("finally" ~ Block)}
+FinallyPart = {(FINALLY_TOKEN ~ Block)}
 
-ReturnStatement = {("return" ~ (Expression)? ~ ";")}
+ReturnStatement = {(RETURN_TOKEN ~ (Expression)? ~ SEMICOLON_TOKEN)}
 
-Label = {(Identifier ~ ":")}
+Label = {(Identifier ~ COLON_TOKEN)}
 
-BreakStatement = {("break" ~ (Identifier)? ~ ";")}
+BreakStatement = {(BREAK_TOKEN ~ (Identifier)? ~ SEMICOLON_TOKEN)}
 
-ContinueStatement = {("continue" ~ (Identifier)? ~ ";")}
+ContinueStatement = {(CONTINUE_TOKEN ~ (Identifier)? ~ SEMICOLON_TOKEN)}
 
-YieldStatement = {("yield" ~ Expression ~ ";")}
+YieldStatement = {(YIELD_TOKEN ~ Expression ~ SEMICOLON_TOKEN)}
 
-YieldEachStatement = {("yield" ~ "*" ~ Expression ~ ";")}
+YieldEachStatement = {(YIELD_TOKEN ~ ASTERISK_TOKEN ~ Expression ~ SEMICOLON_TOKEN)}
 
-AssertStatement = {(Assertion ~ ";")}
+AssertStatement = {(Assertion ~ SEMICOLON_TOKEN)}
 
-Assertion = {("assert" ~ "(" ~ Expression ~ (("," ~ Expression))? ~ (",")? ~ ")")}
+Assertion = {(ASSERT_TOKEN ~ OPEN_PAREN_TOKEN ~ Expression ~ ((COMMA_TOKEN ~ Expression))? ~ (COMMA_TOKEN)? ~ CLOSE_PAREN_TOKEN)}
 
-ExternalFunctionSignature = {("external" ~ FunctionSignature ~ ";")}
+ExternalFunctionSignature = {(EXTERNAL_TOKEN ~ FunctionSignature ~ SEMICOLON_TOKEN)}
 
-ExternalGetterSignature = {("external" ~ GetterSignature ~ ";")}
+ExternalGetterSignature = {(EXTERNAL_TOKEN ~ GetterSignature ~ SEMICOLON_TOKEN)}
 
-ExternalSetterSignature = {("external" ~ SetterSignature ~ ";")}
+ExternalSetterSignature = {(EXTERNAL_TOKEN ~ SetterSignature ~ SEMICOLON_TOKEN)}
 
 TopLevelDeclarationFunctionSignature = {(FunctionSignature ~ FunctionBody)}
 
@@ -656,13 +656,13 @@ TopLevelDeclarationGetterSignature = {(GetterSignature ~ FunctionBody)}
 
 TopLevelDeclarationSetterSignature = {(SetterSignature ~ FunctionBody)}
 
-FinalOrConst = {("final" | "const")}
+FinalOrConst = {(FINAL_TOKEN | CONST_TOKEN)}
 
-TopLevelDeclarationSemicolonToken = {(FinalOrConst ~ (Type)? ~ StaticFinalDeclarationList ~ ";")}
+TopLevelDeclarationSemicolonToken = {(FinalOrConst ~ (Type)? ~ StaticFinalDeclarationList ~ SEMICOLON_TOKEN)}
 
-TopLevelDeclarationLateToken = {("late" ~ "final" ~ (Type)? ~ InitializedIdentifierList ~ ";")}
+TopLevelDeclarationLateToken = {(LATE_TOKEN ~ FINAL_TOKEN ~ (Type)? ~ InitializedIdentifierList ~ SEMICOLON_TOKEN)}
 
-TopLevelDeclarationVarOrType = {(("late")? ~ VarOrType ~ InitializedIdentifierList ~ ";")}
+TopLevelDeclarationVarOrType = {((LATE_TOKEN)? ~ VarOrType ~ InitializedIdentifierList ~ SEMICOLON_TOKEN)}
 
 TopLevelDeclaration = {(ClassDeclaration | MixinDeclaration | ExtensionDeclaration | EnumType | TypeAlias | ExternalFunctionSignature | ExternalGetterSignature | ExternalSetterSignature | TopLevelDeclarationFunctionSignature | TopLevelDeclarationGetterSignature | TopLevelDeclarationSetterSignature | TopLevelDeclarationSemicolonToken | TopLevelDeclarationLateToken | TopLevelDeclarationVarOrType)}
 
@@ -670,35 +670,35 @@ LibraryDeclarationMetadata = {(Metadata ~ TopLevelDeclaration)}
 
 LibraryDeclaration = {((ScriptTag)? ~ (LibraryName)? ~ (ImportOrExport)* ~ (PartDirective)* ~ (LibraryDeclarationMetadata)* ~ EOI)}
 
-ScriptTag = {("#!" ~ ((!(NEWLINE) ~ ANY))* ~ NEWLINE)}
+ScriptTag = {(HASH_EXCLAMATION_TOKEN ~ SCRIPT_TAG_CONTENT ~ NEWLINE)}
 
-LibraryName = {(Metadata ~ "library" ~ DottedIdentifierList ~ ";")}
+LibraryName = {(Metadata ~ LIBRARY_TOKEN ~ DottedIdentifierList ~ SEMICOLON_TOKEN)}
 
 ImportOrExport = {(LibraryImport | LibraryExport)}
 
-DottedIdentifierList = {(Identifier ~ (("." ~ Identifier))*)}
+DottedIdentifierList = {(Identifier ~ ((PERIOD_TOKEN ~ Identifier))*)}
 
 LibraryImport = {(Metadata ~ ImportSpecification)}
 
-ImportSpecificationAsToken = {(("deferred")? ~ "as" ~ Identifier)}
+ImportSpecificationAsToken = {((DEFERRED_TOKEN)? ~ AS_TOKEN ~ Identifier)}
 
-ImportSpecification = {("import" ~ ConfigurableUri ~ (ImportSpecificationAsToken)? ~ (Combinator)* ~ ";")}
+ImportSpecification = {(IMPORT_TOKEN ~ ConfigurableUri ~ (ImportSpecificationAsToken)? ~ (Combinator)* ~ SEMICOLON_TOKEN)}
 
-LibraryExport = {(Metadata ~ "export" ~ ConfigurableUri ~ (Combinator)* ~ ";")}
+LibraryExport = {(Metadata ~ EXPORT_TOKEN ~ ConfigurableUri ~ (Combinator)* ~ SEMICOLON_TOKEN)}
 
-ShowCombinator = {("show" ~ IdentifierList)}
+ShowCombinator = {(SHOW_TOKEN ~ IdentifierList)}
 
-HideCombinator = {("hide" ~ IdentifierList)}
+HideCombinator = {(HIDE_TOKEN ~ IdentifierList)}
 
 Combinator = {(ShowCombinator | HideCombinator)}
 
-IdentifierList = {(Identifier ~ (("," ~ Identifier))*)}
+IdentifierList = {(Identifier ~ ((COMMA_TOKEN ~ Identifier))*)}
 
-PartDirective = {(Metadata ~ "part" ~ Uri ~ ";")}
+PartDirective = {(Metadata ~ PART_TOKEN ~ Uri ~ SEMICOLON_TOKEN)}
 
 DottedIdentifierListOrUri = {(DottedIdentifierList | Uri)}
 
-PartHeader = {(Metadata ~ "part" ~ "of" ~ DottedIdentifierListOrUri ~ ";")}
+PartHeader = {(Metadata ~ PART_TOKEN ~ OF_TOKEN ~ DottedIdentifierListOrUri ~ SEMICOLON_TOKEN)}
 
 PartDeclarationMetadata = {(Metadata ~ TopLevelDeclaration)}
 
@@ -708,39 +708,39 @@ Uri = {StringLiteral}
 
 ConfigurableUri = {(Uri ~ (ConfigurationUri)*)}
 
-ConfigurationUri = {("if" ~ "(" ~ UriTest ~ ")" ~ Uri)}
+ConfigurationUri = {(IF_TOKEN ~ OPEN_PAREN_TOKEN ~ UriTest ~ CLOSE_PAREN_TOKEN ~ Uri)}
 
-StringLiteralDoubleEqual = {("==" ~ StringLiteral)}
+StringLiteralDoubleEqual = {(DOUBLE_EQUAL_TOKEN ~ StringLiteral)}
 
 UriTest = {(DottedIdentifierList ~ (StringLiteralDoubleEqual)?)}
 
-TypeFunctionType = {(FunctionType ~ ("?")?)}
+TypeFunctionType = {(FunctionType ~ (QUESTION_TOKEN)?)}
 
 Type = {(TypeFunctionType | TypeNotFunction)}
 
-TypeNotVoidFunctionType = {(FunctionType ~ ("?")?)}
+TypeNotVoidFunctionType = {(FunctionType ~ (QUESTION_TOKEN)?)}
 
 TypeNotVoid = {(TypeNotVoidFunctionType | TypeNotVoidNotFunction)}
 
-TypeNotFunction = {("void" | TypeNotVoidNotFunction)}
+TypeNotFunction = {(VOID_TOKEN | TypeNotVoidNotFunction)}
 
-TypeNotVoidNotFunctionTypeName = {(TypeName ~ (TypeArguments)? ~ ("?")?)}
+TypeNotVoidNotFunctionTypeName = {(TypeName ~ (TypeArguments)? ~ (QUESTION_TOKEN)?)}
 
-TypeNotVoidNotFunctionFunctionToken = {("Function" ~ ("?")?)}
+TypeNotVoidNotFunctionFunctionToken = {(FUNCTION_TOKEN ~ (QUESTION_TOKEN)?)}
 
 TypeNotVoidNotFunction = {(TypeNotVoidNotFunctionTypeName | TypeNotVoidNotFunctionFunctionToken)}
 
-TypeIdentifierSelector = {("." ~ TypeIdentifier)}
+TypeIdentifierSelector = {(PERIOD_TOKEN ~ TypeIdentifier)}
 
 TypeName = {(TypeIdentifier ~ (TypeIdentifierSelector)?)}
 
-TypeArguments = {("<" ~ TypeList ~ ">")}
+TypeArguments = {(LESS_TOKEN ~ TypeList ~ MORE_TOKEN)}
 
-TypeItem = {("," ~ Type)}
+TypeItem = {(COMMA_TOKEN ~ Type)}
 
 TypeList = {(Type ~ (TypeItem)*)}
 
-TypeNotVoidNotFunctionItem = {("," ~ TypeNotVoidNotFunction)}
+TypeNotVoidNotFunctionItem = {(COMMA_TOKEN ~ TypeNotVoidNotFunction)}
 
 TypeNotVoidNotFunctionList = {(TypeNotVoidNotFunction ~ (TypeNotVoidNotFunctionItem)*)}
 
@@ -748,21 +748,21 @@ FunctionTypeTypeNotFunction = {(TypeNotFunction ~ FunctionTypeTails)}
 
 FunctionType = {(FunctionTypeTails | FunctionTypeTypeNotFunction)}
 
-FunctionTypeTailsMany = {(FunctionTypeTail ~ ("?")? ~ FunctionTypeTails)}
+FunctionTypeTailsMany = {(FunctionTypeTail ~ (QUESTION_TOKEN)? ~ FunctionTypeTails)}
 
 FunctionTypeTails = {(FunctionTypeTailsMany | FunctionTypeTail)}
 
-FunctionTypeTail = {("Function" ~ (TypeParameters)? ~ ParameterTypeList)}
+FunctionTypeTail = {(FUNCTION_TOKEN ~ (TypeParameters)? ~ ParameterTypeList)}
 
-NormalWithOptionalParameters = {("(" ~ NormalParameterTypes ~ "," ~ OptionalParameterTypes ~ ")")}
+NormalWithOptionalParameters = {(OPEN_PAREN_TOKEN ~ NormalParameterTypes ~ COMMA_TOKEN ~ OptionalParameterTypes ~ CLOSE_PAREN_TOKEN)}
 
-ParameterTypeListNormalParameterTypes = {("(" ~ NormalParameterTypes ~ (",")? ~ ")")}
+ParameterTypeListNormalParameterTypes = {(OPEN_PAREN_TOKEN ~ NormalParameterTypes ~ (COMMA_TOKEN)? ~ CLOSE_PAREN_TOKEN)}
 
-ParameterTypeListOptionalParameterTypes = {("(" ~ OptionalParameterTypes ~ ")")}
+ParameterTypeListOptionalParameterTypes = {(OPEN_PAREN_TOKEN ~ OptionalParameterTypes ~ CLOSE_PAREN_TOKEN)}
 
-ParameterTypeList = {(("(" ~ ")") | NormalWithOptionalParameters | ParameterTypeListNormalParameterTypes | ParameterTypeListOptionalParameterTypes)}
+ParameterTypeList = {((OPEN_PAREN_TOKEN ~ CLOSE_PAREN_TOKEN) | NormalWithOptionalParameters | ParameterTypeListNormalParameterTypes | ParameterTypeListOptionalParameterTypes)}
 
-NormalParameterTypeItem = {("," ~ NormalParameterType)}
+NormalParameterTypeItem = {(COMMA_TOKEN ~ NormalParameterType)}
 
 NormalParameterTypes = {(NormalParameterType ~ (NormalParameterTypeItem)*)}
 
@@ -774,107 +774,107 @@ NormalParameterType = {(IdentifierParameterType | TypeParameterType)}
 
 OptionalParameterTypes = {(OptionalPositionalParameterTypes | NamedParameterTypes)}
 
-OptionalPositionalParameterTypes = {("[" ~ NormalParameterTypes ~ (",")? ~ "]")}
+OptionalPositionalParameterTypes = {(OPEN_SQUARE_BRACKET_TOKEN ~ NormalParameterTypes ~ (COMMA_TOKEN)? ~ CLOSE_SQUARE_BRACKET_TOKEN)}
 
-NamedParameterTypeItem = {("," ~ NamedParameterType)}
+NamedParameterTypeItem = {(COMMA_TOKEN ~ NamedParameterType)}
 
-NamedParameterTypes = {("{" ~ NamedParameterType ~ (NamedParameterTypeItem)* ~ (",")? ~ "}")}
+NamedParameterTypes = {(OPEN_CURLY_BRACKET_TOKEN ~ NamedParameterType ~ (NamedParameterTypeItem)* ~ (COMMA_TOKEN)? ~ CLOSE_CURLY_BRACKET_TOKEN)}
 
-NamedParameterType = {(Metadata ~ ("required")? ~ TypedIdentifier)}
+NamedParameterType = {(Metadata ~ (REQUIRED_TOKEN)? ~ TypedIdentifier)}
 
 TypedIdentifier = {(Type ~ Identifier)}
 
-TypeAliasTypeIdentifier = {("typedef" ~ TypeIdentifier ~ (TypeParameters)? ~ "=" ~ Type ~ ";")}
+TypeAliasTypeIdentifier = {(TYPEDEF_TOKEN ~ TypeIdentifier ~ (TypeParameters)? ~ EQUAL_TOKEN ~ Type ~ SEMICOLON_TOKEN)}
 
-TypeAliasFunctionTypeAlias = {("typedef" ~ FunctionTypeAlias)}
+TypeAliasFunctionTypeAlias = {(TYPEDEF_TOKEN ~ FunctionTypeAlias)}
 
 TypeAlias = {(TypeAliasTypeIdentifier | TypeAliasFunctionTypeAlias)}
 
-FunctionTypeAlias = {(FunctionPrefix ~ FormalParameterPart ~ ";")}
+FunctionTypeAlias = {(FunctionPrefix ~ FormalParameterPart ~ SEMICOLON_TOKEN)}
 
 FunctionPrefix = {((Type)? ~ Identifier)}
 
 Comment = {(SINGLE_LINE_COMMENT | MULTI_LINE_COMMENT)}
 
-NUMBER = @{(((DIGIT)+ ~ (("." ~ (DIGIT)+))? ~ (EXPONENT)?) | ("." ~ (DIGIT)+ ~ (EXPONENT)?))}
+NUMBER = @{(((DIGIT)+ ~ ((PERIOD_TOKEN ~ (DIGIT)+))? ~ (EXPONENT)?) | (PERIOD_TOKEN ~ (DIGIT)+ ~ (EXPONENT)?))}
 
-EXPONENT = @{(("e" | "E") ~ (("+" | "-"))? ~ (DIGIT)+)}
+EXPONENT = @{((EXPONENT_TOKEN | SCIENTIFIC_TOKEN) ~ ((PLUS_TOKEN | MINUS_TOKEN))? ~ (DIGIT)+)}
 
-HEX_NUMBER = @{(("0x" ~ (HEX_DIGIT)+) | ("0X" ~ (HEX_DIGIT)+))}
+HEX_NUMBER = @{((HEX0X_TOKEN ~ (HEX_DIGIT)+) | (HEX0_X_TOKEN ~ (HEX_DIGIT)+))}
 
 HEX_DIGIT = @{('a'..'f' | 'A'..'F' | DIGIT)}
 
-RAW_SINGLE_LINE_STRING = @{(("r" ~ "'" ~ ((!(("'" | "\r" | "\n")) ~ ANY))* ~ "'") | ("r" ~ "\"" ~ ((!(("\"" | "\r" | "\n")) ~ ANY))* ~ "\""))}
+RAW_SINGLE_LINE_STRING = @{((R_TOKEN ~ QUOTE_TOKEN ~ ((!((QUOTE_TOKEN | R_ESCAPE_TOKEN | NEWLINE_TOKEN)) ~ ANY))* ~ QUOTE_TOKEN) | (R_TOKEN ~ DOUBLE_QUOTE_TOKEN ~ ((!((DOUBLE_QUOTE_TOKEN | R_ESCAPE_TOKEN | NEWLINE_TOKEN)) ~ ANY))* ~ DOUBLE_QUOTE_TOKEN))}
 
-STRING_CONTENT_COMMON = @{((!(("\\" | "'" | "\"" | "$" | "\r" | "\n")) ~ ANY) | ESCAPE_SEQUENCE | ("\\" ~ (!(("n" | "r" | "b" | "t" | "v" | "x" | "u" | "\r" | "\n")) ~ ANY)) | SIMPLE_STRING_INTERPOLATION)}
+STRING_CONTENT_COMMON = @{((!((BACK_TOKEN | QUOTE_TOKEN | DOUBLE_QUOTE_TOKEN | DOLLAR_TOKEN | R_ESCAPE_TOKEN | NEWLINE_TOKEN)) ~ ANY) | ESCAPE_SEQUENCE | (BACK_TOKEN ~ (!((N_TOKEN | R_TOKEN | B_TOKEN | T_TOKEN | V_TOKEN | X_TOKEN | U_TOKEN | R_ESCAPE_TOKEN | NEWLINE_TOKEN)) ~ ANY)) | SIMPLE_STRING_INTERPOLATION)}
 
-STRING_CONTENT_SQ = @{(STRING_CONTENT_COMMON | "\"")}
+STRING_CONTENT_SQ = @{(STRING_CONTENT_COMMON | DOUBLE_QUOTE_TOKEN)}
 
-SINGLE_LINE_STRING_SQ_BEGIN_END = @{("'" ~ (STRING_CONTENT_SQ)* ~ "'")}
+SINGLE_LINE_STRING_SQ_BEGIN_END = @{(QUOTE_TOKEN ~ (STRING_CONTENT_SQ)* ~ QUOTE_TOKEN)}
 
-SINGLE_LINE_STRING_SQ_BEGIN_MID = @{("'" ~ (STRING_CONTENT_SQ)* ~ "${")}
+SINGLE_LINE_STRING_SQ_BEGIN_MID = @{(QUOTE_TOKEN ~ (STRING_CONTENT_SQ)* ~ INTERPOLATION_START_TOKEN)}
 
-SINGLE_LINE_STRING_SQ_MID_MID = @{("}" ~ (STRING_CONTENT_SQ)* ~ "${")}
+SINGLE_LINE_STRING_SQ_MID_MID = @{(CLOSE_CURLY_BRACKET_TOKEN ~ (STRING_CONTENT_SQ)* ~ INTERPOLATION_START_TOKEN)}
 
-SINGLE_LINE_STRING_SQ_MID_END = @{("}" ~ (STRING_CONTENT_SQ)* ~ "'")}
+SINGLE_LINE_STRING_SQ_MID_END = @{(CLOSE_CURLY_BRACKET_TOKEN ~ (STRING_CONTENT_SQ)* ~ QUOTE_TOKEN)}
 
-STRING_CONTENT_DQ = @{(STRING_CONTENT_COMMON | "'")}
+STRING_CONTENT_DQ = @{(STRING_CONTENT_COMMON | QUOTE_TOKEN)}
 
-SINGLE_LINE_STRING_DQ_BEGIN_END = @{("\"" ~ (STRING_CONTENT_DQ)* ~ "\"")}
+SINGLE_LINE_STRING_DQ_BEGIN_END = @{(DOUBLE_QUOTE_TOKEN ~ (STRING_CONTENT_DQ)* ~ DOUBLE_QUOTE_TOKEN)}
 
-SINGLE_LINE_STRING_DQ_BEGIN_MID = @{("\"" ~ (STRING_CONTENT_DQ)* ~ "${")}
+SINGLE_LINE_STRING_DQ_BEGIN_MID = @{(DOUBLE_QUOTE_TOKEN ~ (STRING_CONTENT_DQ)* ~ INTERPOLATION_START_TOKEN)}
 
-SINGLE_LINE_STRING_DQ_MID_MID = @{("}" ~ (STRING_CONTENT_DQ)* ~ "${")}
+SINGLE_LINE_STRING_DQ_MID_MID = @{(CLOSE_CURLY_BRACKET_TOKEN ~ (STRING_CONTENT_DQ)* ~ INTERPOLATION_START_TOKEN)}
 
-SINGLE_LINE_STRING_DQ_MID_END = @{("}" ~ (STRING_CONTENT_DQ)* ~ "\"")}
+SINGLE_LINE_STRING_DQ_MID_END = @{(CLOSE_CURLY_BRACKET_TOKEN ~ (STRING_CONTENT_DQ)* ~ DOUBLE_QUOTE_TOKEN)}
 
-RAW_MULTI_LINE_STRING = @{(("r" ~ "'''" ~ ANY ~ "'''") | ("r" ~ "\"\"\"" ~ ANY ~ "\"\"\""))}
+RAW_MULTI_LINE_STRING = @{((R_TOKEN ~ TRIPLE_QUOTES_TOKEN ~ ANY ~ TRIPLE_QUOTES_TOKEN) | (R_TOKEN ~ TRIPLE_DOUBLE_QUOTES_TOKEN ~ ANY ~ TRIPLE_DOUBLE_QUOTES_TOKEN))}
 
-QUOTES_SQ = @{("'" | "''")}
+QUOTES_SQ = @{(QUOTE_TOKEN | TWO_QUOTES_TOKEN)}
 
-STRING_CONTENT_TSQ = @{((QUOTES_SQ)? ~ (STRING_CONTENT_COMMON | "\"" | "\r" | "\n"))}
+STRING_CONTENT_TSQ = @{((QUOTES_SQ)? ~ (STRING_CONTENT_COMMON | DOUBLE_QUOTE_TOKEN | R_ESCAPE_TOKEN | NEWLINE_TOKEN))}
 
-MULTI_LINE_STRING_SQ_BEGIN_END = @{("'''" ~ (STRING_CONTENT_TSQ)* ~ "'''")}
+MULTI_LINE_STRING_SQ_BEGIN_END = @{(TRIPLE_QUOTES_TOKEN ~ (STRING_CONTENT_TSQ)* ~ TRIPLE_QUOTES_TOKEN)}
 
-MULTI_LINE_STRING_SQ_BEGIN_MID = @{("'''" ~ (STRING_CONTENT_TSQ)* ~ (QUOTES_SQ)? ~ "${")}
+MULTI_LINE_STRING_SQ_BEGIN_MID = @{(TRIPLE_QUOTES_TOKEN ~ (STRING_CONTENT_TSQ)* ~ (QUOTES_SQ)? ~ INTERPOLATION_START_TOKEN)}
 
-MULTI_LINE_STRING_SQ_MID_MID = @{("}" ~ (STRING_CONTENT_TSQ)* ~ (QUOTES_SQ)? ~ "${")}
+MULTI_LINE_STRING_SQ_MID_MID = @{(CLOSE_CURLY_BRACKET_TOKEN ~ (STRING_CONTENT_TSQ)* ~ (QUOTES_SQ)? ~ INTERPOLATION_START_TOKEN)}
 
-MULTI_LINE_STRING_SQ_MID_END = @{("}" ~ (STRING_CONTENT_TSQ)* ~ "'''")}
+MULTI_LINE_STRING_SQ_MID_END = @{(CLOSE_CURLY_BRACKET_TOKEN ~ (STRING_CONTENT_TSQ)* ~ TRIPLE_QUOTES_TOKEN)}
 
-QUOTES_DQ = @{("\"" | "\"\"")}
+QUOTES_DQ = @{(DOUBLE_QUOTE_TOKEN | TWO_DOUBLE_QUOTES_TOKEN)}
 
-STRING_CONTENT_TDQ = @{((QUOTES_DQ)? ~ (STRING_CONTENT_COMMON | "'" | "\r" | "\n"))}
+STRING_CONTENT_TDQ = @{((QUOTES_DQ)? ~ (STRING_CONTENT_COMMON | QUOTE_TOKEN | R_ESCAPE_TOKEN | NEWLINE_TOKEN))}
 
-MULTI_LINE_STRING_DQ_BEGIN_END = @{("\"\"\"" ~ (STRING_CONTENT_TDQ)* ~ "\"\"\"")}
+MULTI_LINE_STRING_DQ_BEGIN_END = @{(TRIPLE_DOUBLE_QUOTES_TOKEN ~ (STRING_CONTENT_TDQ)* ~ TRIPLE_DOUBLE_QUOTES_TOKEN)}
 
-MULTI_LINE_STRING_DQ_BEGIN_MID = @{("\"\"\"" ~ (STRING_CONTENT_TDQ)* ~ (QUOTES_DQ)? ~ "${")}
+MULTI_LINE_STRING_DQ_BEGIN_MID = @{(TRIPLE_DOUBLE_QUOTES_TOKEN ~ (STRING_CONTENT_TDQ)* ~ (QUOTES_DQ)? ~ INTERPOLATION_START_TOKEN)}
 
-MULTI_LINE_STRING_DQ_MID_MID = @{("}" ~ (STRING_CONTENT_TDQ)* ~ (QUOTES_DQ)? ~ "${")}
+MULTI_LINE_STRING_DQ_MID_MID = @{(CLOSE_CURLY_BRACKET_TOKEN ~ (STRING_CONTENT_TDQ)* ~ (QUOTES_DQ)? ~ INTERPOLATION_START_TOKEN)}
 
-MULTI_LINE_STRING_DQ_MID_END = @{("}" ~ (STRING_CONTENT_TDQ)* ~ "\"\"\"")}
+MULTI_LINE_STRING_DQ_MID_END = @{(CLOSE_CURLY_BRACKET_TOKEN ~ (STRING_CONTENT_TDQ)* ~ TRIPLE_DOUBLE_QUOTES_TOKEN)}
 
 ESCAPE_SEQUENCE = @{("\n" | "\r" | "\\f" | "\\b" | "\t" | "\\v" | ("\\x" ~ HEX_DIGIT ~ HEX_DIGIT) | ("\\u" ~ HEX_DIGIT ~ HEX_DIGIT ~ HEX_DIGIT ~ HEX_DIGIT) | ("\\u{" ~ HEX_DIGIT_SEQUENCE ~ "}"))}
 
 HEX_DIGIT_SEQUENCE = @{(HEX_DIGIT ~ (HEX_DIGIT)? ~ (HEX_DIGIT)? ~ (HEX_DIGIT)? ~ (HEX_DIGIT)? ~ (HEX_DIGIT)?)}
 
-NEWLINE = @{("\n" | "\r" | "\r\n")}
+NEWLINE = @{(NEWLINE_TOKEN | R_ESCAPE_TOKEN | RN_ESCAPE_TOKEN)}
 
-SIMPLE_STRING_INTERPOLATION = @{("$" ~ (IDENTIFIER_NO_DOLLAR | BUILT_IN_IDENTIFIER | "this"))}
+SIMPLE_STRING_INTERPOLATION = @{(DOLLAR_TOKEN ~ (IDENTIFIER_NO_DOLLAR | BUILT_IN_IDENTIFIER | THIS_TOKEN))}
 
-BUILT_IN_IDENTIFIER = @{("abstract" | "as" | "covariant" | "deferred" | "dynamic" | "export" | "external" | "extension" | "factory" | "Function" | "get" | "implements" | "import" | "interface" | "late" | "library" | "mixin" | "operator" | "part" | "required" | "set" | "static" | "typedef")}
+BUILT_IN_IDENTIFIER = @{(ABSTRACT_TOKEN | AS_TOKEN | COVARIANT_TOKEN | DEFERRED_TOKEN | DYNAMIC_TOKEN | EXPORT_TOKEN | EXTERNAL_TOKEN | EXTENSION_TOKEN | FACTORY_TOKEN | FUNCTION_TOKEN | GET_TOKEN | IMPLEMENTS_TOKEN | IMPORT_TOKEN | INTERFACE_TOKEN | LATE_TOKEN | LIBRARY_TOKEN | MIXIN_TOKEN | OPERATOR_TOKEN | PART_TOKEN | REQUIRED_TOKEN | SET_TOKEN | STATIC_TOKEN | TYPEDEF_TOKEN)}
 
-OTHER_IDENTIFIER = @{("async" | "hide" | "of" | "on" | "show" | "sync" | "await" | "yield")}
+OTHER_IDENTIFIER = @{(ASYNC_TOKEN | HIDE_TOKEN | OF_TOKEN | ON_TOKEN | SHOW_TOKEN | SYNC_TOKEN | AWAIT_TOKEN | YIELD_TOKEN)}
 
 IDENTIFIER_NO_DOLLAR = @{(IDENTIFIER_START_NO_DOLLAR ~ (IDENTIFIER_PART_NO_DOLLAR)*)}
 
-IDENTIFIER_START_NO_DOLLAR = @{(LETTER | "_")}
+IDENTIFIER_START_NO_DOLLAR = @{(LETTER | UNDERSCORE_TOKEN)}
 
 IDENTIFIER_PART_NO_DOLLAR = @{(IDENTIFIER_START_NO_DOLLAR | DIGIT)}
 
 IDENTIFIER = @{!RESERVED_WORD ~ (IDENTIFIER_START ~ (IDENTIFIER_PART)*)}
 
-IDENTIFIER_START = @{(IDENTIFIER_START_NO_DOLLAR | "$")}
+IDENTIFIER_START = @{(IDENTIFIER_START_NO_DOLLAR | DOLLAR_TOKEN)}
 
 IDENTIFIER_PART = @{(IDENTIFIER_START | DIGIT)}
 
@@ -882,12 +882,324 @@ LETTER = @{('a'..'z' | 'A'..'Z')}
 
 DIGIT = @{'0'..'9'}
 
-WHITESPACE = @{(("\t" | " " | NEWLINE))+}
+WHITESPACE = @{((T_ESCAPE_TOKEN | SPACE_TOKEN | NEWLINE))+}
+
+SCRIPT_TAG_CONTENT = @{((!(NEWLINE) ~ ANY))*}
 
 RESERVED_WORD = @{("assert" | "break" | "case" | "catch" | "class" | "const" | "continue" | "default" | "do" | "else" | "enum" | "extends" | "false" | "final" | "finally" | "for" | "if" | "in" | "is" | "new" | "null" | "rethrow" | "return" | "super" | "switch" | "this" | "throw" | "true" | "try" | "var" | "void" | "while" | "with") ~ !IDENTIFIER}
 
-SINGLE_LINE_COMMENT = @{("//" ~ ((!(NEWLINE) ~ ANY))* ~ (NEWLINE)?)}
+SINGLE_LINE_COMMENT = @{(COMMENT_TOKEN ~ ((!(NEWLINE) ~ ANY))* ~ (NEWLINE)?)}
 
-MULTI_LINE_COMMENT = @{("/*" ~ ((MULTI_LINE_COMMENT | (!("*/") ~ ANY)))* ~ "*/")}
+MULTI_LINE_COMMENT = @{(COMMENT_MULTILINE_START_TOKEN ~ ((MULTI_LINE_COMMENT | (!(COMMENT_MULTILINE_END_TOKEN) ~ ANY)))* ~ COMMENT_MULTILINE_END_TOKEN)}
 
-COMMENT = @{(SINGLE_LINE_COMMENT | MULTI_LINE_COMMENT)}
+COMMENT = ${(SINGLE_LINE_COMMENT | MULTI_LINE_COMMENT)}
+
+LET_TOKEN = @{"let"}
+
+IN_TOKEN = @{"in"}
+
+LATE_TOKEN = @{"late"}
+
+FINAL_TOKEN = @{"final"}
+
+CONST_TOKEN = @{"const"}
+
+VAR_TOKEN = @{"var"}
+
+EQUAL_TOKEN = @{"="}
+
+COMMA_TOKEN = @{","}
+
+ASYNC_TOKEN = @{"async"}
+
+ARROW_TOKEN = @{"=>"}
+
+SEMICOLON_TOKEN = @{";"}
+
+ASTERISK_TOKEN = @{"*"}
+
+SYNC_TOKEN = @{"sync"}
+
+OPEN_CURLY_BRACKET_TOKEN = @{"{"}
+
+CLOSE_CURLY_BRACKET_TOKEN = @{"}"}
+
+OPEN_PAREN_TOKEN = @{"("}
+
+CLOSE_PAREN_TOKEN = @{")"}
+
+OPEN_SQUARE_BRACKET_TOKEN = @{"["}
+
+CLOSE_SQUARE_BRACKET_TOKEN = @{"]"}
+
+COVARIANT_TOKEN = @{"covariant"}
+
+QUESTION_TOKEN = @{"?"}
+
+THIS_TOKEN = @{"this"}
+
+PERIOD_TOKEN = @{"."}
+
+COLON_TOKEN = @{":"}
+
+REQUIRED_TOKEN = @{"required"}
+
+ABSTRACT_TOKEN = @{"abstract"}
+
+CLASS_TOKEN = @{"class"}
+
+STATIC_TOKEN = @{"static"}
+
+EXTERNAL_TOKEN = @{"external"}
+
+OPERATOR_TOKEN = @{"operator"}
+
+TILDE_TOKEN = @{"~"}
+
+SQUARE_BRACKETS_TOKEN = @{"[]"}
+
+QUARE_BRACKETS_EQ_TOKEN = @{"[]="}
+
+DOUBLE_EQUAL_TOKEN = @{"=="}
+
+GET_TOKEN = @{"get"}
+
+SET_TOKEN = @{"set"}
+
+SUPER_TOKEN = @{"super"}
+
+FACTORY_TOKEN = @{"factory"}
+
+EXTENDS_TOKEN = @{"extends"}
+
+WITH_TOKEN = @{"with"}
+
+IMPLEMENTS_TOKEN = @{"implements"}
+
+ON_TOKEN = @{"on"}
+
+MIXIN_TOKEN = @{"mixin"}
+
+EXTENSION_TOKEN = @{"extension"}
+
+ENUM_TOKEN = @{"enum"}
+
+LESS_TOKEN = @{"<"}
+
+MORE_TOKEN = @{">"}
+
+AT_TOKEN = @{"@"}
+
+NULL_TOKEN = @{"null"}
+
+TRUE_TOKEN = @{"true"}
+
+FALSE_TOKEN = @{"false"}
+
+INTERPOLATION_START_TOKEN = @{"${"}
+
+VOID_TOKEN = @{"void"}
+
+HASH_TOKEN = @{"#"}
+
+POINTS_EXPAND_TOKEN = @{"..."}
+
+POINTS_EXPAND_QUESTION_TOKEN = @{"...?"}
+
+ELSE_TOKEN = @{"else"}
+
+IF_TOKEN = @{"if"}
+
+AWAIT_TOKEN = @{"await"}
+
+FOR_TOKEN = @{"for"}
+
+THROW_TOKEN = @{"throw"}
+
+NEW_TOKEN = @{"new"}
+
+POINTS_ID_TOKEN = @{".."}
+
+POINTS_ID_QUESTION_TOKEN = @{"?.."}
+
+TIMES_EQUAL_TOKEN = @{"*="}
+
+DIV_EQUAL_TOKEN = @{"/="}
+
+INTEGER_DIV_EQUAL_TOKEN = @{"~/="}
+
+MODULE_EQUAL_TOKEN = @{"%="}
+
+PLUS_EQUAL_TOKEN = @{"+="}
+
+MINUS_EQUAL_TOKEN = @{"-="}
+
+BIT_LEFT_EQUAL_TOKEN = @{"<<="}
+
+BIT_RIGHT0_EQUAL_TOKEN = @{">>>="}
+
+BIT_RIGHT_EQUAL_TOKEN = @{">>="}
+
+BIT_AND_EUQAL_TOKEN = @{"&="}
+
+BIT_NEG_EQUAL_TOKEN = @{"^="}
+
+BIT_XOR_EQUAL_TOKEN = @{"|="}
+
+QUESTION_QUESTION_EQUAL_TOKEN = @{"??="}
+
+QUESTION_QUESTION_TOKEN = @{"??"}
+
+OR_TOKEN = @{"||"}
+
+AND_TOKEN = @{"&&"}
+
+NOT_EQUAL_TOKEN = @{"!="}
+
+MORE_OR_EQUAL_TOKEN = @{">="}
+
+LESS_OR_EQUAL_TOKEN = @{"<="}
+
+BIT_XOR_TOKEN = @{"|"}
+
+BIT_NEG_TOKEN = @{"^"}
+
+BIT_AND_TOKEN = @{"&"}
+
+BIT_LEFT_TOKEN = @{"<<"}
+
+BIT_RIGHT0_TOKEN = @{">>>"}
+
+BIT_RIGHT_TOKEN = @{">>"}
+
+PLUS_TOKEN = @{"+"}
+
+MINUS_TOKEN = @{"-"}
+
+DIVIDE_TOKEN = @{"/"}
+
+MODULUS_TOKEN = @{"%"}
+
+INTEGER_DIV_TOKEN = @{"~/"}
+
+EXCLAMATION_TOKEN = @{"!"}
+
+PLUS_PLUS_TOKEN = @{"++"}
+
+MINUS_MINUS_TOKEN = @{"--"}
+
+QUESTION_ID_TOKEN = @{"?."}
+
+DYNAMIC_TOKEN = @{"dynamic"}
+
+IS_TOKEN = @{"is"}
+
+AS_TOKEN = @{"as"}
+
+WHILE_TOKEN = @{"while"}
+
+DO_TOKEN = @{"do"}
+
+SWITCH_TOKEN = @{"switch"}
+
+CASE_TOKEN = @{"case"}
+
+DEFAULT_TOKEN = @{"default"}
+
+RETHROW_TOKEN = @{"rethrow"}
+
+TRY_TOKEN = @{"try"}
+
+CATCH_TOKEN = @{"catch"}
+
+FINALLY_TOKEN = @{"finally"}
+
+RETURN_TOKEN = @{"return"}
+
+BREAK_TOKEN = @{"break"}
+
+CONTINUE_TOKEN = @{"continue"}
+
+YIELD_TOKEN = @{"yield"}
+
+ASSERT_TOKEN = @{"assert"}
+
+HASH_EXCLAMATION_TOKEN = @{"#!"}
+
+LIBRARY_TOKEN = @{"library"}
+
+DEFERRED_TOKEN = @{"deferred"}
+
+IMPORT_TOKEN = @{"import"}
+
+EXPORT_TOKEN = @{"export"}
+
+SHOW_TOKEN = @{"show"}
+
+HIDE_TOKEN = @{"hide"}
+
+PART_TOKEN = @{"part"}
+
+OF_TOKEN = @{"of"}
+
+FUNCTION_TOKEN = @{"Function"}
+
+TYPEDEF_TOKEN = @{"typedef"}
+
+EXPONENT_TOKEN = @{"e"}
+
+SCIENTIFIC_TOKEN = @{"E"}
+
+HEX0X_TOKEN = @{"0x"}
+
+HEX0_X_TOKEN = @{"0X"}
+
+R_TOKEN = @{"r"}
+
+QUOTE_TOKEN = @{"'"}
+
+R_ESCAPE_TOKEN = @{"\r"}
+
+NEWLINE_TOKEN = @{"\n"}
+
+DOUBLE_QUOTE_TOKEN = @{"\""}
+
+BACK_TOKEN = @{"\\"}
+
+DOLLAR_TOKEN = @{"$"}
+
+N_TOKEN = @{"n"}
+
+B_TOKEN = @{"b"}
+
+T_TOKEN = @{"t"}
+
+V_TOKEN = @{"v"}
+
+X_TOKEN = @{"x"}
+
+U_TOKEN = @{"u"}
+
+TRIPLE_QUOTES_TOKEN = @{"'''"}
+
+TRIPLE_DOUBLE_QUOTES_TOKEN = @{"\"\"\""}
+
+TWO_QUOTES_TOKEN = @{"''"}
+
+TWO_DOUBLE_QUOTES_TOKEN = @{"\"\""}
+
+RN_ESCAPE_TOKEN = @{"\r\n"}
+
+INTERFACE_TOKEN = @{"interface"}
+
+UNDERSCORE_TOKEN = @{"_"}
+
+T_ESCAPE_TOKEN = @{"\t"}
+
+SPACE_TOKEN = @{" "}
+
+COMMENT_TOKEN = @{"//"}
+
+COMMENT_MULTILINE_START_TOKEN = @{"/*"}
+
+COMMENT_MULTILINE_END_TOKEN = @{"*/"}
