@@ -202,6 +202,7 @@ pub trait RuleModel: Sized + 'static {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Token {
     pub start: usize,
     pub end: usize,
