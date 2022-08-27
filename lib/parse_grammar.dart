@@ -307,27 +307,8 @@ Parser<List<Item>> document() => item()
 // commit a3b45ab2bc4e2442c909252858119ffd2e8c685a
 void main() async {
   final content = await File('./lib/plaintext_grammar.txt').readAsString();
-
-  // var r = document().end().parse(
-  //     "letExpression ::= 'let' staticFinalDeclarationList 'in' expression");
-  // print(r);
-
-// RAW_SINGLE_LINE_STRING ::=
-//   'r' '\'' (\gtilde('\'' | '\r' | '\n'))* '\''
-//   | 'r' '"' (\gtilde('"' | '\r' | '\n'))* '"'
-
-  // r = trace(raw()).parse(r"'\''");
-  // print(r);
-  // r = trace(raw()).parse("'\"'");
-  // print(r);
   final r = document().end().parse(
-//     r'''
-// STRING_CONTENT_COMMON ::= \gtilde('\' | '\'' | '"' | '$' | '\r' | '\n')''',
-    r"""
-STRING_CONTENT_COMMON ::= ~('\\' | '\'' | '$' | '\r' | '\n' | '"')
-  | ESCAPE_SEQUENCE
-  | '\\' ~('n' | 'r' | 'b' | 't' | 'v' | 'x' | 'u' | '\r' | '\n')
-  | SIMPLE_STRING_INTERPOLATION""",
+    r"""expressionElement ::= expression""",
   );
   print(r);
 
@@ -335,10 +316,8 @@ STRING_CONTENT_COMMON ::= ~('\\' | '\'' | '$' | '\r' | '\n' | '"')
 
   if (result.isSuccess) {
     final items = result.value;
-    // print(items.join('\n\n'));
     final ctx = Ctx();
     final types = ctx.toRustTypes(items);
-    // print(ExprRaw.allRaw.map((e) => '"${e}"').join('\n'));
 
     await File('./dart-parser-pest/src/ast.rs').writeAsString(types);
 
@@ -488,19 +467,13 @@ class RustType {
         }
         return '';
       case RustTypeKind.enum$:
-        // int i = 0;
         final conditions = fields.map((e) {
-          // final isLast = i++ == fields.length - 1;
           final rule = e.type == 'Token'
               ? e.raw != null
                   ? '${e.name?.constantCase}_TOKEN'
                   : e.name?.constantCase
               : e.type;
-          final condition = // isLast ? '' :
-              'Rule::${rule} => ';
-          // e.raw != null
-          //     ? 'if ctx.current_str() == "${e.raw}" {'
-          //     :
+          final condition = 'Rule::${rule} => ';
           final namePrefix =
               '${condition}${name}${isBoxed ? 'Inner' : ''}::${e.name}';
           final type = e.type ?? '';
@@ -522,7 +495,7 @@ class RustType {
             return '${namePrefix}$parseToken';
           } else if (type.startsWith('Option<')) {
             if (type == 'Option<Token>') {
-              return '${namePrefix} if ctx.is_rule_next(Rule::${e.name!.constantCase})' // ctx.current_str() == "${e.raw}"'
+              return '${namePrefix} if ctx.is_rule_next(Rule::${e.name!.constantCase})'
                   ' {Some($parseToken)} else {None}';
             }
             return '${namePrefix}ctx.try_parse_ast()';
@@ -684,16 +657,12 @@ class Ctx {
           _name = '${pascalCase((exprs.last as ExprId).value)}$suffix';
         }
         if (_name == null && parentName != null) {
-          // if (allRaw.length == exprs.length) {
-          //   _name = '${parentName}Enum';
-          // } else {
           final identifiers = exprs.whereType<ExprId>().toList();
           if (allRaw.isNotEmpty && (exprs.length < 2 || exprs[1] is! ExprId)) {
             _name = '${parentName}${pascalCase(rawTokenName(allRaw.first))}';
           } else if (identifiers.isNotEmpty) {
             _name = '${parentName}${pascalCase(identifiers.first.value)}';
           }
-          // }
         }
 
         addType(
@@ -739,9 +708,6 @@ class Ctx {
             name: pascalCase(name)!,
             kind: RustTypeKind.enum$,
             fields: or.expressions.map((e) {
-              // if (e is ExprAnd) {
-              //   return 'v${i++}{${toRustStructGrammarExpr(e, '')}},';
-              // }
               final variant = 'V${i++}';
 
               if (e is ExprId) {
@@ -870,74 +836,37 @@ const tokenNames = {
   r"\r": "rEscape",
   r"\n": "newline",
   "\"": "doubleQuote",
-// "n"
-// "r"
-// "b"
-// "t"
-// "v"
-// "x"
-// "u"
-// "let"
-// "in"
-// "late"
-// "final"
-// "const"
-// "var"
+
   "=": "equal",
   ",": "comma",
-// "async"
   ";": "semicolon",
   "=>": "arrow",
   "*": "asterisk",
-  // "sync",
   "{": "openCurlyBracket",
   "}": "closeCurlyBracket",
   "(": "openParen",
   ")": "closeParen",
   "[": "openSquareBracket",
   "]": "closeSquareBracket",
-  // "covariant",
   "?": "question",
-  // "this",
   ".": "period",
-  // "required",
   ":": "colon",
-  // "abstract",
-  // "class",
-  // "static",
-  // "external",
-  // "operator",
+
   "~": "tilde",
   "[]": "squareBrackets",
   "[]=": "squareBracketsEq",
   "==": "doubleEqual",
-  // "get",
-  // "set",
-  // "super",
-  // "factory",
-  // "extends",
-  // "with",
-  // "implements",
-  // "mixin",
-  // "on",
-  // "extension",
-  // "enum",
+
   "<": "less",
   ">": "more",
   "@": "at",
-  // "null",
   "e": "exponent",
   "E": "scientific",
   "+": "plus",
   "-": "minus",
   "0x": "hex0x",
   "0X": "hex0X",
-  // "a",
-  // "f",
-  // "A",
-  // "F",
-  // "true",
-  // "false",
+
   "\${": "interpolationStart",
   "'''": "tripleQuotes",
   "\\'\\'\\'": "tripleQuotes",
@@ -955,15 +884,8 @@ const tokenNames = {
   r"\u": "uEscape",
   r"\x": "xEscape",
   "#": "hash",
-  // "void",
   "...": "pointsExpand",
   "...?": "pointsExpandQuestion",
-  // "if",
-  // "else",
-  // "await",
-  // "for",
-  // "throw",
-  // "new",
   "..": "pointsId",
   "?..": "pointsIdQuestion",
   "*=": "timesEqual",
@@ -1000,6 +922,68 @@ const tokenNames = {
   "++": "plusPlus",
   "--": "minusMinus",
   "?.": "questionId",
+  "_": "underscore",
+  // "z",
+  // "Z",
+  // "0",
+  // "9",
+  " ": "space",
+  "#!": "hashExclamation",
+  "//": "comment",
+  "/*": "commentMultilineStart",
+  "*/": "commentMultilineEnd",
+
+  // "n"
+  // "r"
+  // "b"
+  // "t"
+  // "v"
+  // "x"
+  // "u"
+  // "let"
+  // "in"
+  // "late"
+  // "final"
+  // "const"
+  // "var"
+  // "async"
+  // "sync",
+  // "required",
+  // "covariant",
+  // "this",
+  // "abstract",
+  // "class",
+  // "static",
+  // "external",
+  // "operator",
+
+  // "get",
+  // "set",
+  // "super",
+  // "factory",
+  // "extends",
+  // "with",
+  // "implements",
+  // "mixin",
+  // "on",
+  // "extension",
+  // "enum",
+  // "null",
+
+  // "a",
+  // "f",
+  // "A",
+  // "F",
+  // "true",
+  // "false",
+  // "void",
+  // "if",
+  // "else",
+  // "await",
+  // "for",
+  // "throw",
+  // "new",
+
   // "dynamic",
   // "as",
   // "deferred",
@@ -1014,12 +998,6 @@ const tokenNames = {
   // "of",
   // "show",
   // "yield",
-  "_": "underscore",
-  // "z",
-  // "Z",
-  // "0",
-  // "9",
-  " ": "space",
   // "is",
   // "while",
   // "do",
@@ -1034,8 +1012,4 @@ const tokenNames = {
   // "break",
   // "continue",
   // "assert",
-  "#!": "hashExclamation",
-  "//": "comment",
-  "/*": "commentMultilineStart",
-  "*/": "commentMultilineEnd",
 };
