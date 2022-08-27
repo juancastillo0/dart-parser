@@ -1,10 +1,7 @@
-pub mod ast;
-
-extern crate pest;
-#[macro_use]
-extern crate pest_derive;
-
+use crate::ast;
 use pest::{iterators::Pair, Parser};
+use pest_derive::Parser;
+use serde::{Deserialize, Serialize};
 
 #[derive(Parser)]
 #[grammar = "dart.pest"]
@@ -164,6 +161,19 @@ fn parse<'a>(rule: Rule, input: &'a str) -> Pair<Rule> {
     return DartParser::parse(rule, input).unwrap().next().unwrap();
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ParseOutput {
+    pub library: ast::LibraryDeclaration,
+    pub comments: Vec<ast::Comment>,
+}
+
+impl ParseOutput {
+    pub fn from_str(input: &str) -> Result<Self, pest::error::Error<Rule>> {
+        let (library, comments) = ParseCtx::parse_str(input)?;
+        Ok(Self { library, comments })
+    }
+}
+
 #[test]
 fn test_comment() {
     parse(Rule::SINGLE_LINE_COMMENT, "// dawionodw");
@@ -182,24 +192,16 @@ class Model {
     .unwrap();
     println!("{:?}", library);
     println!("{:?}", comments);
+    println!("{:?}", serde_json::to_string_pretty(&library).unwrap());
 }
 
 pub trait RuleModel: Sized + 'static {
     fn rule() -> Rule;
 
     fn parse(ctx: &mut ParseCtx) -> Self;
-
-    // fn as_any(&self) -> &dyn std::any::Any {
-    //     self
-    // }
-    // fn downcast<T: RuleModel>(self) -> T {
-    //     assert!(T::rule() == Self::rule());
-    //     let any_value = self as dyn std::any::Any;
-    //     *any_value.downcast_ref().unwrap()
-    // }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Token {
     pub start: usize,
     pub end: usize,

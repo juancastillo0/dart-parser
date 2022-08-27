@@ -10,15 +10,6 @@ Parser<ExprId> id() =>
 Parser<Modifier> modifier() => pattern('*+?')
     .map((text) => Modifier.values.firstWhere((v) => v.value == text));
 
-// <STRING_CONTENT_COMMON> ::= \gtilde(`\\' | `\sq' | `"' | `$' | `\\r' | `\\n')
-//   \alt <ESCAPE_SEQUENCE>
-//   \alt `\\' \gtilde(`n' | `r' | `b' | `t' | `v' | `x' | `u' | `\\r' | `\\n')
-//   \alt <SIMPLE_STRING_INTERPOLATION>
-
-// <STRING_CONTENT_SQ> ::= <STRING_CONTENT_COMMON> | `"'
-// ([^\\"\n\r]|\\[^\n\r])*
-
-// `\\n' | `\\r' | `\\f' | `\\b' | `\\t' | `\\v'
 Parser<String> rawInnerContent() =>
     (pattern('^\\\'\r\n') | char('\\') & (pattern('^\r\n'))).plus().flatten();
 
@@ -451,9 +442,9 @@ class RustType {
       case RustTypeKind.type:
         return 'pub type ${name} = ${isBoxed ? 'Box<${name}Inner>' : assignedType};';
       case RustTypeKind.enum$:
-        return '#[derive(Debug)]\npub enum ${name} {${fields.map((f) => '${f.name}(${f.type})').join(',')}}';
+        return '#[derive(Debug, Serialize, Deserialize)]\npub enum ${name} {${fields.map((f) => '${f.name}(${f.type})').join(',')}}';
       case RustTypeKind.struct:
-        return '#[derive(Debug)]\npub struct ${name} {${fields.map((f) => 'pub ${f}').join(',')}}';
+        return '#[derive(Debug, Serialize, Deserialize)]\npub struct ${name} {${fields.map((f) => 'pub ${f}').join(',')}}';
     }
   }
 
@@ -609,7 +600,7 @@ class Ctx {
       }
     });
 
-    return ['use crate::{Rule, RuleModel, Token, ParseCtx};']
+    return ['use serde::{Serialize,Deserialize};\nuse crate::parser::{Rule, RuleModel, Token, ParseCtx};']
         .followedBy(typeDescriptions.values.map(typeToString))
         .join('\n\n');
   }

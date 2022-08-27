@@ -2,9 +2,20 @@
 name = "dart-parser-pest"
 version = "0.1.0"
 edition = "2021"
+authors = ["Juan Manuel Castillo"]
+description = "Dart language parser"
+license = "MIT"
+repository = "https://github.com/juancastillo0/dart-parser"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 pest = "2.0"
 pest_derive = "2.0"
+
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+wasm-bindgen = "0.2.82"

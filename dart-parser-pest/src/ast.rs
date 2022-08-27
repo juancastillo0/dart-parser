@@ -1,7 +1,8 @@
-use crate::{ParseCtx, Rule, RuleModel, Token};
+use crate::parser::{ParseCtx, Rule, RuleModel, Token};
+use serde::{Deserialize, Serialize};
 
 /// And(Raw(let), Id(staticFinalDeclarationList), Raw(in), Id(expression))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct LetExpression {
     pub let_token: Token,
     pub static_final_declaration_list: StaticFinalDeclarationList,
@@ -23,7 +24,7 @@ impl RuleModel for LetExpression {
 }
 
 /// And(Modified(?,Raw(late)), Raw(final), Modified(?,Id(type)))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct FinalConstVarOrTypeFinalToken {
     pub late_token: Option<Token>,
     pub final_token: Token,
@@ -47,7 +48,7 @@ impl RuleModel for FinalConstVarOrTypeFinalToken {
 }
 
 /// And(Raw(const), Modified(?,Id(type)))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct FinalConstVarOrTypeConstToken {
     pub const_token: Token,
     pub dart_type: Option<Type>,
@@ -65,7 +66,7 @@ impl RuleModel for FinalConstVarOrTypeConstToken {
 }
 
 /// And(Modified(?,Raw(late)), Id(varOrType))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct FinalConstVarOrTypeVarOrType {
     pub late_token: Option<Token>,
     pub var_or_type: VarOrType,
@@ -87,7 +88,7 @@ impl RuleModel for FinalConstVarOrTypeVarOrType {
 }
 
 /// Or( And(Modified(?,Raw(late)), Raw(final), Modified(?,Id(type))), And(Raw(const), Modified(?,Id(type))), And(Modified(?,Raw(late)), Id(varOrType)), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum FinalConstVarOrType {
     Final(FinalConstVarOrTypeFinalToken),
     Const(FinalConstVarOrTypeConstToken),
@@ -108,7 +109,7 @@ impl RuleModel for FinalConstVarOrType {
 }
 
 /// Or( Raw(var), Id(type), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum VarOrType {
     Var(Token),
     Type(Type),
@@ -127,7 +128,7 @@ impl RuleModel for VarOrType {
 }
 
 /// And(Raw(=), Id(expression))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ExpressionEqual {
     pub equal_token: Token,
     pub expression: Expression,
@@ -145,7 +146,7 @@ impl RuleModel for ExpressionEqual {
 }
 
 /// And(Raw(,), Id(initializedIdentifier))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct InitializedIdentifierItem {
     pub comma_token: Token,
     pub initialized_identifier: InitializedIdentifier,
@@ -163,7 +164,7 @@ impl RuleModel for InitializedIdentifierItem {
 }
 
 /// And(Id(declaredIdentifier), Modified(?,And(Raw(=), Id(expression))), Modified(*,And(Raw(,), Id(initializedIdentifier))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct InitializedVariableDeclaration {
     pub declared_identifier: DeclaredIdentifier,
     pub expression_equal: Option<ExpressionEqual>,
@@ -183,7 +184,7 @@ impl RuleModel for InitializedVariableDeclaration {
 }
 
 /// And(Id(identifier), Modified(?,And(Raw(=), Id(expression))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct InitializedIdentifier {
     pub identifier: Identifier,
     pub expression_equal: Option<ExpressionEqual>,
@@ -201,7 +202,7 @@ impl RuleModel for InitializedIdentifier {
 }
 
 /// And(Id(initializedIdentifier), Modified(*,And(Raw(,), Id(initializedIdentifier))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct InitializedIdentifierList {
     pub initialized_identifier: InitializedIdentifier,
     pub initialized_identifier_item: Vec<InitializedIdentifierItem>,
@@ -219,7 +220,7 @@ impl RuleModel for InitializedIdentifierList {
 }
 
 /// And(Modified(?,Id(type)), Id(identifier), Id(formalParameterPart))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct FunctionSignature {
     pub dart_type: Option<Type>,
     pub identifier: Identifier,
@@ -239,7 +240,7 @@ impl RuleModel for FunctionSignature {
 }
 
 /// And(Modified(?,Id(typeParameters)), Id(formalParameterList))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct FormalParameterPart {
     pub type_parameters: Option<TypeParameters>,
     pub formal_parameter_list: FormalParameterList,
@@ -257,7 +258,7 @@ impl RuleModel for FormalParameterPart {
 }
 
 /// And(Modified(?,Raw(async)), Raw(=>), Id(expression), Raw(;))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct FunctionBodyArrowToken {
     pub async_token: Option<Token>,
     pub arrow_token: Token,
@@ -283,7 +284,7 @@ impl RuleModel for FunctionBodyArrowToken {
 }
 
 /// And(Raw(async), Modified(?,Raw(*)))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct FunctionBodyGeneratorAsyncToken {
     pub async_token: Token,
     pub asterisk_token: Option<Token>,
@@ -305,7 +306,7 @@ impl RuleModel for FunctionBodyGeneratorAsyncToken {
 }
 
 /// And(Raw(sync), Raw(*))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct FunctionBodyGeneratorSyncToken {
     pub sync_token: Token,
     pub asterisk_token: Token,
@@ -323,7 +324,7 @@ impl RuleModel for FunctionBodyGeneratorSyncToken {
 }
 
 /// Or( And(Raw(async), Modified(?,Raw(*))), And(Raw(sync), Raw(*)), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum FunctionBodyGenerator {
     Async(FunctionBodyGeneratorAsyncToken),
     Sync(FunctionBodyGeneratorSyncToken),
@@ -342,7 +343,7 @@ impl RuleModel for FunctionBodyGenerator {
 }
 
 /// And(Modified(?,Or( And(Raw(async), Modified(?,Raw(*))), And(Raw(sync), Raw(*)), )), Id(block))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct FunctionBodyBlock {
     pub function_body_generator: Option<FunctionBodyGenerator>,
     pub block: Block,
@@ -360,7 +361,7 @@ impl RuleModel for FunctionBodyBlock {
 }
 
 /// Or( And(Modified(?,Raw(async)), Raw(=>), Id(expression), Raw(;)), And(Modified(?,Or( And(Raw(async), Modified(?,Raw(*))), And(Raw(sync), Raw(*)), )), Id(block)), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum FunctionBody {
     Arrow(FunctionBodyArrowToken),
     Block(FunctionBodyBlock),
@@ -379,7 +380,7 @@ impl RuleModel for FunctionBody {
 }
 
 /// And(Raw({), Id(statements), Raw(}))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Block {
     pub open_curly_bracket_token: Token,
     pub statements: Statements,
@@ -399,7 +400,7 @@ impl RuleModel for Block {
 }
 
 /// And(Raw((), Raw()))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct EmptyParameters {
     pub open_paren_token: Token,
     pub close_paren_token: Token,
@@ -417,7 +418,7 @@ impl RuleModel for EmptyParameters {
 }
 
 /// And(Raw((), Id(normalFormalParameters), Modified(?,Raw(,)), Raw()))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct FormalParameterListNormalFormalParameters {
     pub open_paren_token: Token,
     pub normal_formal_parameters: NormalFormalParameters,
@@ -443,7 +444,7 @@ impl RuleModel for FormalParameterListNormalFormalParameters {
 }
 
 /// And(Raw((), Id(normalFormalParameters), Raw(,), Id(optionalOrNamedFormalParameters), Raw()))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct NormalWithOptionalOrNamedParameters {
     pub open_paren_token: Token,
     pub normal_formal_parameters: NormalFormalParameters,
@@ -467,7 +468,7 @@ impl RuleModel for NormalWithOptionalOrNamedParameters {
 }
 
 /// And(Raw((), Id(optionalOrNamedFormalParameters), Raw()))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct FormalParameterListOptionalOrNamedFormalParameters {
     pub open_paren_token: Token,
     pub optional_or_named_formal_parameters: OptionalOrNamedFormalParameters,
@@ -487,7 +488,7 @@ impl RuleModel for FormalParameterListOptionalOrNamedFormalParameters {
 }
 
 /// Or( And(Raw((), Raw())), And(Raw((), Id(normalFormalParameters), Modified(?,Raw(,)), Raw())), And(Raw((), Id(normalFormalParameters), Raw(,), Id(optionalOrNamedFormalParameters), Raw())), And(Raw((), Id(optionalOrNamedFormalParameters), Raw())), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum FormalParameterListInner {
     EmptyParameters(EmptyParameters),
     NormalFormalParameters(FormalParameterListNormalFormalParameters),
@@ -518,7 +519,7 @@ impl RuleModel for FormalParameterList {
 }
 
 /// And(Raw(,), Id(normalFormalParameter))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct NormalFormalParameterItem {
     pub comma_token: Token,
     pub normal_formal_parameter: NormalFormalParameter,
@@ -536,7 +537,7 @@ impl RuleModel for NormalFormalParameterItem {
 }
 
 /// And(Id(normalFormalParameter), Modified(*,And(Raw(,), Id(normalFormalParameter))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct NormalFormalParameters {
     pub normal_formal_parameter: NormalFormalParameter,
     pub normal_formal_parameter_item: Vec<NormalFormalParameterItem>,
@@ -554,7 +555,7 @@ impl RuleModel for NormalFormalParameters {
 }
 
 /// Or( Id(optionalPositionalFormalParameters), Id(namedFormalParameters), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum OptionalOrNamedFormalParameters {
     OptionalPositionalFormalParameters(OptionalPositionalFormalParameters),
     NamedFormalParameters(NamedFormalParameters),
@@ -577,7 +578,7 @@ impl RuleModel for OptionalOrNamedFormalParameters {
 }
 
 /// And(Raw(,), Id(defaultFormalParameter))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct DefaultFormalParameterItem {
     pub comma_token: Token,
     pub default_formal_parameter: DefaultFormalParameter,
@@ -595,7 +596,7 @@ impl RuleModel for DefaultFormalParameterItem {
 }
 
 /// And(Raw([), Id(defaultFormalParameter), Modified(*,And(Raw(,), Id(defaultFormalParameter))), Modified(?,Raw(,)), Raw(]))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct OptionalPositionalFormalParameters {
     pub open_square_bracket_token: Token,
     pub default_formal_parameter: DefaultFormalParameter,
@@ -623,7 +624,7 @@ impl RuleModel for OptionalPositionalFormalParameters {
 }
 
 /// And(Raw(,), Id(defaultNamedParameter))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct DefaultNamedParameterItem {
     pub comma_token: Token,
     pub default_named_parameter: DefaultNamedParameter,
@@ -641,7 +642,7 @@ impl RuleModel for DefaultNamedParameterItem {
 }
 
 /// And(Raw({), Id(defaultNamedParameter), Modified(*,And(Raw(,), Id(defaultNamedParameter))), Modified(?,Raw(,)), Raw(}))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct NamedFormalParameters {
     pub open_curly_bracket_token: Token,
     pub default_named_parameter: DefaultNamedParameter,
@@ -669,7 +670,7 @@ impl RuleModel for NamedFormalParameters {
 }
 
 /// And(Id(metadata), Id(normalFormalParameterNoMetadata))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct NormalFormalParameter {
     pub metadata: Metadata,
     pub normal_formal_parameter_no_metadata: NormalFormalParameterNoMetadata,
@@ -687,7 +688,7 @@ impl RuleModel for NormalFormalParameter {
 }
 
 /// Or( Id(functionFormalParameter), Id(fieldFormalParameter), Id(simpleFormalParameter), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum NormalFormalParameterNoMetadata {
     FunctionFormalParameter(FunctionFormalParameter),
     FieldFormalParameter(FieldFormalParameter),
@@ -714,7 +715,7 @@ impl RuleModel for NormalFormalParameterNoMetadata {
 }
 
 /// And(Modified(?,Raw(covariant)), Modified(?,Id(type)), Id(identifier), Id(formalParameterPart), Modified(?,Raw(?)))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct FunctionFormalParameter {
     pub covariant_token: Option<Token>,
     pub dart_type: Option<Type>,
@@ -746,7 +747,7 @@ impl RuleModel for FunctionFormalParameter {
 }
 
 /// And(Modified(?,Raw(covariant)), Id(identifier))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct SimpleFormalParameterIdentifier {
     pub covariant_token: Option<Token>,
     pub identifier: Identifier,
@@ -768,7 +769,7 @@ impl RuleModel for SimpleFormalParameterIdentifier {
 }
 
 /// Or( Id(declaredIdentifier), And(Modified(?,Raw(covariant)), Id(identifier)), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum SimpleFormalParameter {
     DeclaredIdentifier(DeclaredIdentifier),
     Identifier(SimpleFormalParameterIdentifier),
@@ -789,7 +790,7 @@ impl RuleModel for SimpleFormalParameter {
 }
 
 /// And(Modified(?,Raw(covariant)), Id(finalConstVarOrType), Id(identifier))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct DeclaredIdentifier {
     pub covariant_token: Option<Token>,
     pub final_const_var_or_type: FinalConstVarOrType,
@@ -813,7 +814,7 @@ impl RuleModel for DeclaredIdentifier {
 }
 
 /// And(Id(formalParameterPart), Modified(?,Raw(?)))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct FieldFormalParameterFormalParameterPart {
     pub formal_parameter_part: FormalParameterPart,
     pub question_token: Option<Token>,
@@ -835,7 +836,7 @@ impl RuleModel for FieldFormalParameterFormalParameterPart {
 }
 
 /// And(Modified(?,Id(finalConstVarOrType)), Raw(this), Raw(.), Id(identifier), Modified(?,And(Id(formalParameterPart), Modified(?,Raw(?)))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct FieldFormalParameter {
     pub final_const_var_or_type: Option<FinalConstVarOrType>,
     pub this_token: Token,
@@ -859,7 +860,7 @@ impl RuleModel for FieldFormalParameter {
 }
 
 /// And(Id(normalFormalParameter), Modified(?,And(Raw(=), Id(expression))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct DefaultFormalParameter {
     pub normal_formal_parameter: NormalFormalParameter,
     pub expression_equal: Option<ExpressionEqual>,
@@ -877,7 +878,7 @@ impl RuleModel for DefaultFormalParameter {
 }
 
 /// Or( Raw(=), Raw(:), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum EqualTokenOrColonToken {
     Equal(Token),
     Colon(Token),
@@ -896,7 +897,7 @@ impl RuleModel for EqualTokenOrColonToken {
 }
 
 /// And(Or( Raw(=), Raw(:), ), Id(expression))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct DefaultNamedParameterAssignment {
     pub equal_token_or_colon_token: EqualTokenOrColonToken,
     pub expression: Expression,
@@ -914,7 +915,7 @@ impl RuleModel for DefaultNamedParameterAssignment {
 }
 
 /// And(Id(metadata), Modified(?,Raw(required)), Id(normalFormalParameterNoMetadata), Modified(?,And(Or( Raw(=), Raw(:), ), Id(expression))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct DefaultNamedParameter {
     pub metadata: Metadata,
     pub required_token: Option<Token>,
@@ -940,7 +941,7 @@ impl RuleModel for DefaultNamedParameter {
 }
 
 /// And(Id(metadata), Id(classMemberDeclaration))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ClassDeclarationMembers {
     pub metadata: Metadata,
     pub class_member_declaration: ClassMemberDeclaration,
@@ -958,7 +959,7 @@ impl RuleModel for ClassDeclarationMembers {
 }
 
 /// And(Modified(?,Raw(abstract)), Raw(class), Id(typeIdentifier), Modified(?,Id(typeParameters)), Modified(?,Id(superclass)), Modified(?,Id(interfaces)), Raw({), Modified(*,And(Id(metadata), Id(classMemberDeclaration))), Raw(}))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ClassDeclarationClassToken {
     pub abstract_token: Option<Token>,
     pub class_token: Token,
@@ -994,7 +995,7 @@ impl RuleModel for ClassDeclarationClassToken {
 }
 
 /// And(Modified(?,Raw(abstract)), Raw(class), Id(mixinApplicationClass))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ClassDeclarationMixin {
     pub abstract_token: Option<Token>,
     pub class_token: Token,
@@ -1018,7 +1019,7 @@ impl RuleModel for ClassDeclarationMixin {
 }
 
 /// Or( And(Modified(?,Raw(abstract)), Raw(class), Id(typeIdentifier), Modified(?,Id(typeParameters)), Modified(?,Id(superclass)), Modified(?,Id(interfaces)), Raw({), Modified(*,And(Id(metadata), Id(classMemberDeclaration))), Raw(})), And(Modified(?,Raw(abstract)), Raw(class), Id(mixinApplicationClass)), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum ClassDeclaration {
     Class(ClassDeclarationClassToken),
     ClassDeclarationMixin(ClassDeclarationMixin),
@@ -1037,7 +1038,7 @@ impl RuleModel for ClassDeclaration {
 }
 
 /// And(Raw(,), Id(typeNotVoid))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TypeNotVoidItem {
     pub comma_token: Token,
     pub type_not_void: TypeNotVoid,
@@ -1055,7 +1056,7 @@ impl RuleModel for TypeNotVoidItem {
 }
 
 /// And(Id(typeNotVoid), Modified(*,And(Raw(,), Id(typeNotVoid))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TypeNotVoidList {
     pub type_not_void: TypeNotVoid,
     pub type_not_void_item: Vec<TypeNotVoidItem>,
@@ -1073,7 +1074,7 @@ impl RuleModel for TypeNotVoidList {
 }
 
 /// And(Id(declaration), Raw(;))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ClassMemberDeclarationSemicolonToken {
     pub declaration: Declaration,
     pub semicolon_token: Token,
@@ -1091,7 +1092,7 @@ impl RuleModel for ClassMemberDeclarationSemicolonToken {
 }
 
 /// And(Id(methodSignature), Id(functionBody))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ClassMemberDeclarationMethodSignature {
     pub method_signature: MethodSignature,
     pub function_body: FunctionBody,
@@ -1109,7 +1110,7 @@ impl RuleModel for ClassMemberDeclarationMethodSignature {
 }
 
 /// Or( And(Id(declaration), Raw(;)), And(Id(methodSignature), Id(functionBody)), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum ClassMemberDeclaration {
     Semicolon(ClassMemberDeclarationSemicolonToken),
     MethodSignature(ClassMemberDeclarationMethodSignature),
@@ -1132,7 +1133,7 @@ impl RuleModel for ClassMemberDeclaration {
 }
 
 /// And(Id(constructorSignature), Modified(?,Id(initializers)))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct MethodSignatureConstructorSignature {
     pub constructor_signature: ConstructorSignature,
     pub initializers: Option<Initializers>,
@@ -1150,7 +1151,7 @@ impl RuleModel for MethodSignatureConstructorSignature {
 }
 
 /// And(Modified(?,Raw(static)), Id(functionSignature))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct MethodSignatureFunctionSignature {
     pub static_token: Option<Token>,
     pub function_signature: FunctionSignature,
@@ -1172,7 +1173,7 @@ impl RuleModel for MethodSignatureFunctionSignature {
 }
 
 /// And(Modified(?,Raw(static)), Id(getterSignature))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct MethodSignatureGetterSignature {
     pub static_token: Option<Token>,
     pub getter_signature: GetterSignature,
@@ -1194,7 +1195,7 @@ impl RuleModel for MethodSignatureGetterSignature {
 }
 
 /// And(Modified(?,Raw(static)), Id(setterSignature))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct MethodSignatureSetterSignature {
     pub static_token: Option<Token>,
     pub setter_signature: SetterSignature,
@@ -1216,7 +1217,7 @@ impl RuleModel for MethodSignatureSetterSignature {
 }
 
 /// Or( And(Id(constructorSignature), Modified(?,Id(initializers))), Id(factoryConstructorSignature), And(Modified(?,Raw(static)), Id(functionSignature)), And(Modified(?,Raw(static)), Id(getterSignature)), And(Modified(?,Raw(static)), Id(setterSignature)), Id(operatorSignature), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum MethodSignature {
     ConstructorSignature(MethodSignatureConstructorSignature),
     FactoryConstructorSignature(FactoryConstructorSignature),
@@ -1253,7 +1254,7 @@ impl RuleModel for MethodSignature {
 }
 
 /// And(Raw(external), Id(factoryConstructorSignature))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct DeclarationFactoryConstructorSignature {
     pub external_token: Token,
     pub factory_constructor_signature: FactoryConstructorSignature,
@@ -1271,7 +1272,7 @@ impl RuleModel for DeclarationFactoryConstructorSignature {
 }
 
 /// And(Raw(external), Id(constantConstructorSignature))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ExternalConstantConstructorSignature {
     pub external_token: Token,
     pub constant_constructor_signature: ConstantConstructorSignature,
@@ -1289,7 +1290,7 @@ impl RuleModel for ExternalConstantConstructorSignature {
 }
 
 /// And(Raw(external), Id(constructorSignature))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ExternalConstructorSignature {
     pub external_token: Token,
     pub constructor_signature: ConstructorSignature,
@@ -1307,7 +1308,7 @@ impl RuleModel for ExternalConstructorSignature {
 }
 
 /// And(Raw(external), Modified(?,Raw(static)))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ExternalMaybeStatic {
     pub external_token: Token,
     pub static_token: Option<Token>,
@@ -1329,7 +1330,7 @@ impl RuleModel for ExternalMaybeStatic {
 }
 
 /// And(Modified(?,And(Raw(external), Modified(?,Raw(static)))), Id(getterSignature))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct DeclarationGetterSignature {
     pub external_maybe_static: Option<ExternalMaybeStatic>,
     pub getter_signature: GetterSignature,
@@ -1347,7 +1348,7 @@ impl RuleModel for DeclarationGetterSignature {
 }
 
 /// And(Modified(?,And(Raw(external), Modified(?,Raw(static)))), Id(setterSignature))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct DeclarationSetterSignature {
     pub external_maybe_static: Option<ExternalMaybeStatic>,
     pub setter_signature: SetterSignature,
@@ -1365,7 +1366,7 @@ impl RuleModel for DeclarationSetterSignature {
 }
 
 /// And(Modified(?,And(Raw(external), Modified(?,Raw(static)))), Id(functionSignature))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct DeclarationFunctionSignature {
     pub external_maybe_static: Option<ExternalMaybeStatic>,
     pub function_signature: FunctionSignature,
@@ -1383,7 +1384,7 @@ impl RuleModel for DeclarationFunctionSignature {
 }
 
 /// And(Modified(?,Raw(external)), Id(operatorSignature))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct DeclarationOperatorSignature {
     pub external_token: Option<Token>,
     pub operator_signature: OperatorSignature,
@@ -1405,7 +1406,7 @@ impl RuleModel for DeclarationOperatorSignature {
 }
 
 /// And(Raw(static), Raw(const), Modified(?,Id(type)), Id(staticFinalDeclarationList))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct StaticConst {
     pub static_token: Token,
     pub const_token: Token,
@@ -1427,7 +1428,7 @@ impl RuleModel for StaticConst {
 }
 
 /// And(Raw(static), Raw(final), Modified(?,Id(type)), Id(staticFinalDeclarationList))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct StaticFinal {
     pub static_token: Token,
     pub final_token: Token,
@@ -1449,7 +1450,7 @@ impl RuleModel for StaticFinal {
 }
 
 /// And(Raw(static), Raw(late), Raw(final), Modified(?,Id(type)), Id(initializedIdentifierList))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct StaticLateFinal {
     pub static_token: Token,
     pub late_token: Token,
@@ -1473,7 +1474,7 @@ impl RuleModel for StaticLateFinal {
 }
 
 /// And(Raw(static), Modified(?,Raw(late)), Id(varOrType), Id(initializedIdentifierList))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct StaticVarOrType {
     pub static_token: Token,
     pub late_token: Option<Token>,
@@ -1499,7 +1500,7 @@ impl RuleModel for StaticVarOrType {
 }
 
 /// And(Raw(covariant), Raw(late), Raw(final), Modified(?,Id(type)), Id(identifierList))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct CovariantLateFinal {
     pub covariant_token: Token,
     pub late_token: Token,
@@ -1523,7 +1524,7 @@ impl RuleModel for CovariantLateFinal {
 }
 
 /// And(Raw(covariant), Modified(?,Raw(late)), Id(varOrType), Id(initializedIdentifierList))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct CovariantVarOrType {
     pub covariant_token: Token,
     pub late_token: Option<Token>,
@@ -1549,7 +1550,7 @@ impl RuleModel for CovariantVarOrType {
 }
 
 /// And(Modified(?,Raw(late)), Raw(final), Modified(?,Id(type)), Id(initializedIdentifierList))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct DeclarationFinalToken {
     pub late_token: Option<Token>,
     pub final_token: Token,
@@ -1575,7 +1576,7 @@ impl RuleModel for DeclarationFinalToken {
 }
 
 /// And(Modified(?,Raw(late)), Id(varOrType), Id(initializedIdentifierList))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct DeclarationVarOrType {
     pub late_token: Option<Token>,
     pub var_or_type: VarOrType,
@@ -1599,7 +1600,7 @@ impl RuleModel for DeclarationVarOrType {
 }
 
 /// Or( Id(redirection), Id(initializers), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum RedirectionOrInitializers {
     Redirection(Redirection),
     Initializers(Initializers),
@@ -1618,7 +1619,7 @@ impl RuleModel for RedirectionOrInitializers {
 }
 
 /// And(Id(constantConstructorSignature), Modified(?,Or( Id(redirection), Id(initializers), )))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct DeclarationConstantConstructorSignature {
     pub constant_constructor_signature: ConstantConstructorSignature,
     pub redirection_or_initializers: Option<RedirectionOrInitializers>,
@@ -1636,7 +1637,7 @@ impl RuleModel for DeclarationConstantConstructorSignature {
 }
 
 /// And(Id(constructorSignature), Modified(?,Or( Id(redirection), Id(initializers), )))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct DeclarationConstructorSignature {
     pub constructor_signature: ConstructorSignature,
     pub redirection_or_initializers: Option<RedirectionOrInitializers>,
@@ -1654,7 +1655,7 @@ impl RuleModel for DeclarationConstructorSignature {
 }
 
 /// Or( And(Raw(external), Id(factoryConstructorSignature)), And(Raw(external), Id(constantConstructorSignature)), And(Raw(external), Id(constructorSignature)), And(Modified(?,And(Raw(external), Modified(?,Raw(static)))), Id(getterSignature)), And(Modified(?,And(Raw(external), Modified(?,Raw(static)))), Id(setterSignature)), And(Modified(?,And(Raw(external), Modified(?,Raw(static)))), Id(functionSignature)), And(Modified(?,Raw(external)), Id(operatorSignature)), And(Raw(static), Raw(const), Modified(?,Id(type)), Id(staticFinalDeclarationList)), And(Raw(static), Raw(final), Modified(?,Id(type)), Id(staticFinalDeclarationList)), And(Raw(static), Raw(late), Raw(final), Modified(?,Id(type)), Id(initializedIdentifierList)), And(Raw(static), Modified(?,Raw(late)), Id(varOrType), Id(initializedIdentifierList)), And(Raw(covariant), Raw(late), Raw(final), Modified(?,Id(type)), Id(identifierList)), And(Raw(covariant), Modified(?,Raw(late)), Id(varOrType), Id(initializedIdentifierList)), And(Modified(?,Raw(late)), Raw(final), Modified(?,Id(type)), Id(initializedIdentifierList)), And(Modified(?,Raw(late)), Id(varOrType), Id(initializedIdentifierList)), Id(redirectingFactoryConstructorSignature), And(Id(constantConstructorSignature), Modified(?,Or( Id(redirection), Id(initializers), ))), And(Id(constructorSignature), Modified(?,Or( Id(redirection), Id(initializers), ))), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum Declaration {
     FactoryConstructorSignature(DeclarationFactoryConstructorSignature),
     ExternalConstantConstructorSignature(ExternalConstantConstructorSignature),
@@ -1717,7 +1718,7 @@ impl RuleModel for Declaration {
 }
 
 /// And(Raw(,), Id(staticFinalDeclaration))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct StaticFinalDeclarationItem {
     pub comma_token: Token,
     pub static_final_declaration: StaticFinalDeclaration,
@@ -1735,7 +1736,7 @@ impl RuleModel for StaticFinalDeclarationItem {
 }
 
 /// And(Id(staticFinalDeclaration), Modified(*,And(Raw(,), Id(staticFinalDeclaration))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct StaticFinalDeclarationList {
     pub static_final_declaration: StaticFinalDeclaration,
     pub static_final_declaration_item: Vec<StaticFinalDeclarationItem>,
@@ -1753,7 +1754,7 @@ impl RuleModel for StaticFinalDeclarationList {
 }
 
 /// And(Id(identifier), Raw(=), Id(expression))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct StaticFinalDeclaration {
     pub identifier: Identifier,
     pub equal_token: Token,
@@ -1773,7 +1774,7 @@ impl RuleModel for StaticFinalDeclaration {
 }
 
 /// And(Modified(?,Id(type)), Raw(operator), Id(operator), Id(formalParameterList))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct OperatorSignature {
     pub dart_type: Option<Type>,
     pub operator_token: Token,
@@ -1795,7 +1796,7 @@ impl RuleModel for OperatorSignature {
 }
 
 /// Or( Raw(~), Id(binaryOperator), Raw([]), Raw([]=), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum Operator {
     Tilde(Token),
     BinaryOperator(BinaryOperator),
@@ -1818,7 +1819,7 @@ impl RuleModel for Operator {
 }
 
 /// Or( Id(multiplicativeOperator), Id(additiveOperator), Id(shiftOperator), Id(relationalOperator), Raw(==), Id(bitwiseOperator), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum BinaryOperator {
     MultiplicativeOperator(MultiplicativeOperator),
     AdditiveOperator(AdditiveOperator),
@@ -1845,7 +1846,7 @@ impl RuleModel for BinaryOperator {
 }
 
 /// And(Modified(?,Id(type)), Raw(get), Id(identifier))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct GetterSignature {
     pub dart_type: Option<Type>,
     pub get_token: Token,
@@ -1865,7 +1866,7 @@ impl RuleModel for GetterSignature {
 }
 
 /// And(Modified(?,Id(type)), Raw(set), Id(identifier), Id(formalParameterList))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct SetterSignature {
     pub dart_type: Option<Type>,
     pub set_token: Token,
@@ -1887,7 +1888,7 @@ impl RuleModel for SetterSignature {
 }
 
 /// And(Id(constructorName), Id(formalParameterList))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ConstructorSignature {
     pub constructor_name: ConstructorName,
     pub formal_parameter_list: FormalParameterList,
@@ -1905,7 +1906,7 @@ impl RuleModel for ConstructorSignature {
 }
 
 /// And(Raw(.), Id(identifier))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct IdentifierSelector {
     pub period_token: Token,
     pub identifier: Identifier,
@@ -1923,7 +1924,7 @@ impl RuleModel for IdentifierSelector {
 }
 
 /// And(Id(typeIdentifier), Modified(?,And(Raw(.), Id(identifier))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ConstructorName {
     pub type_identifier: TypeIdentifier,
     pub identifier_selector: Option<IdentifierSelector>,
@@ -1941,7 +1942,7 @@ impl RuleModel for ConstructorName {
 }
 
 /// And(Raw(:), Raw(this), Modified(?,And(Raw(.), Id(identifier))), Id(arguments))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Redirection {
     pub colon_token: Token,
     pub this_token: Token,
@@ -1963,7 +1964,7 @@ impl RuleModel for Redirection {
 }
 
 /// And(Raw(,), Id(initializerListEntry))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct InitializerListEntryItem {
     pub comma_token: Token,
     pub initializer_list_entry: InitializerListEntry,
@@ -1981,7 +1982,7 @@ impl RuleModel for InitializerListEntryItem {
 }
 
 /// And(Raw(:), Id(initializerListEntry), Modified(*,And(Raw(,), Id(initializerListEntry))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Initializers {
     pub colon_token: Token,
     pub initializer_list_entry: InitializerListEntry,
@@ -2001,7 +2002,7 @@ impl RuleModel for Initializers {
 }
 
 /// And(Raw(super), Id(arguments))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct InitializerListEntryArguments {
     pub super_token: Token,
     pub arguments: Arguments,
@@ -2019,7 +2020,7 @@ impl RuleModel for InitializerListEntryArguments {
 }
 
 /// And(Raw(super), Raw(.), Id(identifier), Id(arguments))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct InitializerListEntrySuperToken {
     pub super_token: Token,
     pub period_token: Token,
@@ -2041,7 +2042,7 @@ impl RuleModel for InitializerListEntrySuperToken {
 }
 
 /// Or( And(Raw(super), Id(arguments)), And(Raw(super), Raw(.), Id(identifier), Id(arguments)), Id(fieldInitializer), Id(assertion), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum InitializerListEntry {
     Arguments(InitializerListEntryArguments),
     Super(InitializerListEntrySuperToken),
@@ -2064,7 +2065,7 @@ impl RuleModel for InitializerListEntry {
 }
 
 /// And(Raw(this), Raw(.))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct FieldInitializerThisToken {
     pub this_token: Token,
     pub period_token: Token,
@@ -2082,7 +2083,7 @@ impl RuleModel for FieldInitializerThisToken {
 }
 
 /// And(Modified(?,And(Raw(this), Raw(.))), Id(identifier), Raw(=), Id(initializerExpression))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct FieldInitializer {
     pub this_token: Option<FieldInitializerThisToken>,
     pub identifier: Identifier,
@@ -2104,7 +2105,7 @@ impl RuleModel for FieldInitializer {
 }
 
 /// Or( Id(conditionalExpression), Id(cascade), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum InitializerExpression {
     ConditionalExpression(ConditionalExpression),
     Cascade(Cascade),
@@ -2125,7 +2126,7 @@ impl RuleModel for InitializerExpression {
 }
 
 /// And(Modified(?,Raw(const)), Raw(factory), Id(constructorName), Id(formalParameterList))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct FactoryConstructorSignature {
     pub const_token: Option<Token>,
     pub factory_token: Token,
@@ -2151,7 +2152,7 @@ impl RuleModel for FactoryConstructorSignature {
 }
 
 /// And(Modified(?,Raw(const)), Raw(factory), Id(constructorName), Id(formalParameterList), Raw(=), Id(constructorDesignation))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct RedirectingFactoryConstructorSignature {
     pub const_token: Option<Token>,
     pub factory_token: Token,
@@ -2181,7 +2182,7 @@ impl RuleModel for RedirectingFactoryConstructorSignature {
 }
 
 /// And(Id(typeName), Id(typeArguments), Modified(?,And(Raw(.), Id(identifier))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ConstructorDesignationTypeName {
     pub type_name: TypeName,
     pub type_arguments: TypeArguments,
@@ -2201,7 +2202,7 @@ impl RuleModel for ConstructorDesignationTypeName {
 }
 
 /// Or( Id(typeIdentifier), Id(qualifiedName), And(Id(typeName), Id(typeArguments), Modified(?,And(Raw(.), Id(identifier)))), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum ConstructorDesignation {
     TypeIdentifier(TypeIdentifier),
     QualifiedName(QualifiedName),
@@ -2224,7 +2225,7 @@ impl RuleModel for ConstructorDesignation {
 }
 
 /// And(Raw(const), Id(constructorName), Id(formalParameterList))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ConstantConstructorSignature {
     pub const_token: Token,
     pub constructor_name: ConstructorName,
@@ -2244,7 +2245,7 @@ impl RuleModel for ConstantConstructorSignature {
 }
 
 /// And(Raw(extends), Id(typeNotVoid), Modified(?,Id(mixins)))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct SuperclassTypeNotVoid {
     pub extends_token: Token,
     pub type_not_void: TypeNotVoid,
@@ -2264,7 +2265,7 @@ impl RuleModel for SuperclassTypeNotVoid {
 }
 
 /// Or( And(Raw(extends), Id(typeNotVoid), Modified(?,Id(mixins))), Id(mixins), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum Superclass {
     TypeNotVoid(SuperclassTypeNotVoid),
     Mixins(Mixins),
@@ -2283,7 +2284,7 @@ impl RuleModel for Superclass {
 }
 
 /// And(Raw(with), Id(typeNotVoidList))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Mixins {
     pub with_token: Token,
     pub type_not_void_list: TypeNotVoidList,
@@ -2301,7 +2302,7 @@ impl RuleModel for Mixins {
 }
 
 /// And(Raw(implements), Id(typeNotVoidList))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Interfaces {
     pub implements_token: Token,
     pub type_not_void_list: TypeNotVoidList,
@@ -2319,7 +2320,7 @@ impl RuleModel for Interfaces {
 }
 
 /// And(Id(identifier), Modified(?,Id(typeParameters)), Raw(=), Id(mixinApplication), Raw(;))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct MixinApplicationClass {
     pub identifier: Identifier,
     pub type_parameters: Option<TypeParameters>,
@@ -2343,7 +2344,7 @@ impl RuleModel for MixinApplicationClass {
 }
 
 /// And(Id(typeNotVoid), Id(mixins), Modified(?,Id(interfaces)))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct MixinApplication {
     pub type_not_void: TypeNotVoid,
     pub mixins: Mixins,
@@ -2363,7 +2364,7 @@ impl RuleModel for MixinApplication {
 }
 
 /// And(Raw(on), Id(typeNotVoidList))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TypeNotVoidListOn {
     pub on_token: Token,
     pub type_not_void_list: TypeNotVoidList,
@@ -2381,7 +2382,7 @@ impl RuleModel for TypeNotVoidListOn {
 }
 
 /// And(Id(metadata), Id(classMemberDeclaration))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct MixinDeclarationMetadata {
     pub metadata: Metadata,
     pub class_member_declaration: ClassMemberDeclaration,
@@ -2399,7 +2400,7 @@ impl RuleModel for MixinDeclarationMetadata {
 }
 
 /// And(Raw(mixin), Id(typeIdentifier), Modified(?,Id(typeParameters)), Modified(?,And(Raw(on), Id(typeNotVoidList))), Modified(?,Id(interfaces)), Raw({), Modified(*,And(Id(metadata), Id(classMemberDeclaration))), Raw(}))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct MixinDeclaration {
     pub mixin_token: Token,
     pub type_identifier: TypeIdentifier,
@@ -2429,7 +2430,7 @@ impl RuleModel for MixinDeclaration {
 }
 
 /// And(Id(metadata), Id(classMemberDeclaration))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ExtensionDeclarationMetadata {
     pub metadata: Metadata,
     pub class_member_declaration: ClassMemberDeclaration,
@@ -2447,7 +2448,7 @@ impl RuleModel for ExtensionDeclarationMetadata {
 }
 
 /// And(Raw(extension), Modified(?,Id(identifier)), Modified(?,Id(typeParameters)), Raw(on), Id(type), Raw({), Modified(*,And(Id(metadata), Id(classMemberDeclaration))), Raw(}))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ExtensionDeclaration {
     pub extension_token: Token,
     pub identifier: Option<Identifier>,
@@ -2477,7 +2478,7 @@ impl RuleModel for ExtensionDeclaration {
 }
 
 /// And(Raw(,), Id(enumEntry))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct EnumEntryItem {
     pub comma_token: Token,
     pub enum_entry: EnumEntry,
@@ -2495,7 +2496,7 @@ impl RuleModel for EnumEntryItem {
 }
 
 /// And(Raw(enum), Id(identifier), Raw({), Id(enumEntry), Modified(*,And(Raw(,), Id(enumEntry))), Modified(?,Raw(,)), Raw(}))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct EnumType {
     pub enum_token: Token,
     pub identifier: Identifier,
@@ -2527,7 +2528,7 @@ impl RuleModel for EnumType {
 }
 
 /// And(Id(metadata), Id(identifier))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct EnumEntry {
     pub metadata: Metadata,
     pub identifier: Identifier,
@@ -2545,7 +2546,7 @@ impl RuleModel for EnumEntry {
 }
 
 /// And(Raw(extends), Id(typeNotVoid))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TypeNotVoidExtends {
     pub extends_token: Token,
     pub type_not_void: TypeNotVoid,
@@ -2563,7 +2564,7 @@ impl RuleModel for TypeNotVoidExtends {
 }
 
 /// And(Id(metadata), Id(identifier), Modified(?,And(Raw(extends), Id(typeNotVoid))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TypeParameterInner {
     pub metadata: Metadata,
     pub identifier: Identifier,
@@ -2585,7 +2586,7 @@ impl RuleModel for TypeParameter {
 }
 
 /// And(Raw(,), Id(typeParameter))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TypeParameterItem {
     pub comma_token: Token,
     pub type_parameter: TypeParameter,
@@ -2603,7 +2604,7 @@ impl RuleModel for TypeParameterItem {
 }
 
 /// And(Raw(<), Id(typeParameter), Modified(*,And(Raw(,), Id(typeParameter))), Raw(>))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TypeParameters {
     pub less_token: Token,
     pub type_parameter: TypeParameter,
@@ -2625,7 +2626,7 @@ impl RuleModel for TypeParameters {
 }
 
 /// And(Raw(@), Id(metadatum))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct MetadataItem {
     pub at_token: Token,
     pub metadatum: Metadatum,
@@ -2654,7 +2655,7 @@ impl RuleModel for Metadata {
 }
 
 /// And(Id(constructorDesignation), Id(arguments))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct MetadatumConstructorDesignation {
     pub constructor_designation: ConstructorDesignation,
     pub arguments: Arguments,
@@ -2672,7 +2673,7 @@ impl RuleModel for MetadatumConstructorDesignation {
 }
 
 /// Or( Id(identifier), Id(qualifiedName), And(Id(constructorDesignation), Id(arguments)), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum Metadatum {
     Identifier(Identifier),
     QualifiedName(QualifiedName),
@@ -2695,7 +2696,7 @@ impl RuleModel for Metadatum {
 }
 
 /// And(Id(assignableExpression), Id(assignmentOperator), Id(expression))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ExpressionAssignableExpression {
     pub assignable_expression: AssignableExpression,
     pub assignment_operator: AssignmentOperator,
@@ -2715,7 +2716,7 @@ impl RuleModel for ExpressionAssignableExpression {
 }
 
 /// Or( And(Id(assignableExpression), Id(assignmentOperator), Id(expression)), Id(conditionalExpression), Id(cascade), Id(throwExpression), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum ExpressionInner {
     AssignableExpression(ExpressionAssignableExpression),
     ConditionalExpression(ConditionalExpression),
@@ -2742,7 +2743,7 @@ impl RuleModel for Expression {
 }
 
 /// And(Id(assignableExpression), Id(assignmentOperator), Id(expressionWithoutCascade))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ExpressionWithoutCascadeAssignableExpression {
     pub assignable_expression: AssignableExpression,
     pub assignment_operator: AssignmentOperator,
@@ -2762,7 +2763,7 @@ impl RuleModel for ExpressionWithoutCascadeAssignableExpression {
 }
 
 /// Or( And(Id(assignableExpression), Id(assignmentOperator), Id(expressionWithoutCascade)), Id(conditionalExpression), Id(throwExpressionWithoutCascade), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum ExpressionWithoutCascadeInner {
     AssignableExpression(ExpressionWithoutCascadeAssignableExpression),
     ConditionalExpression(ConditionalExpression),
@@ -2791,7 +2792,7 @@ impl RuleModel for ExpressionWithoutCascade {
 }
 
 /// And(Raw(,), Id(expression))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ExpressionItem {
     pub comma_token: Token,
     pub expression: Expression,
@@ -2809,7 +2810,7 @@ impl RuleModel for ExpressionItem {
 }
 
 /// And(Id(expression), Modified(*,And(Raw(,), Id(expression))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ExpressionList {
     pub expression: Expression,
     pub expression_item: Vec<ExpressionItem>,
@@ -2827,7 +2828,7 @@ impl RuleModel for ExpressionList {
 }
 
 /// And(Raw(super), Id(unconditionalAssignableSelector))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct PrimaryUnconditionalAssignableSelector {
     pub super_token: Token,
     pub unconditional_assignable_selector: UnconditionalAssignableSelector,
@@ -2845,7 +2846,7 @@ impl RuleModel for PrimaryUnconditionalAssignableSelector {
 }
 
 /// And(Raw(super), Id(argumentPart))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct PrimaryArgumentPart {
     pub super_token: Token,
     pub argument_part: ArgumentPart,
@@ -2863,7 +2864,7 @@ impl RuleModel for PrimaryArgumentPart {
 }
 
 /// And(Raw((), Id(expression), Raw()))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct PrimaryExpression {
     pub open_paren_token: Token,
     pub expression: Expression,
@@ -2883,7 +2884,7 @@ impl RuleModel for PrimaryExpression {
 }
 
 /// Or( Id(thisExpression), And(Raw(super), Id(unconditionalAssignableSelector)), And(Raw(super), Id(argumentPart)), Id(functionExpression), Id(literal), Id(identifier), Id(newExpression), Id(constObjectExpression), Id(constructorInvocation), And(Raw((), Id(expression), Raw())), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum Primary {
     ThisExpression(ThisExpression),
     UnconditionalAssignableSelector(PrimaryUnconditionalAssignableSelector),
@@ -2920,7 +2921,7 @@ impl RuleModel for Primary {
 }
 
 /// Or( Id(nullLiteral), Id(booleanLiteral), Id(numericLiteral), Id(stringLiteral), Id(symbolLiteral), Id(listLiteral), Id(setOrMapLiteral), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum Literal {
     NullLiteral(NullLiteral),
     BooleanLiteral(BooleanLiteral),
@@ -2952,7 +2953,7 @@ impl RuleModel for Literal {
 pub type NullLiteral = Token;
 
 /// Or( Id(NUMBER), Id(HEX_NUMBER), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum NumericLiteral {
     Number(Token),
     HexNumber(Token),
@@ -2971,7 +2972,7 @@ impl RuleModel for NumericLiteral {
 }
 
 /// Or( Raw(true), Raw(false), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum BooleanLiteral {
     True(Token),
     False(Token),
@@ -2990,7 +2991,7 @@ impl RuleModel for BooleanLiteral {
 }
 
 /// Or( Id(multilineString), Id(singleLineString), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum StringLiteralItem {
     MultilineString(MultilineString),
     SingleLineString(SingleLineString),
@@ -3020,7 +3021,7 @@ impl RuleModel for StringLiteral {
 }
 
 /// And(Id(SINGLE_LINE_STRING_SQ_MID_MID), Id(expression))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ExpressionSingleLineStringSqMidMid {
     pub single_line_string_sq_mid_mid: Token,
     pub expression: Expression,
@@ -3038,7 +3039,7 @@ impl RuleModel for ExpressionSingleLineStringSqMidMid {
 }
 
 /// And(Id(SINGLE_LINE_STRING_SQ_BEGIN_MID), Id(expression), Modified(*,And(Id(SINGLE_LINE_STRING_SQ_MID_MID), Id(expression))), Id(SINGLE_LINE_STRING_SQ_MID_END))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct SingleLineStringSingleLineStringSqBeginMid {
     pub single_line_string_sq_begin_mid: Token,
     pub expression: Expression,
@@ -3060,7 +3061,7 @@ impl RuleModel for SingleLineStringSingleLineStringSqBeginMid {
 }
 
 /// And(Id(SINGLE_LINE_STRING_DQ_MID_MID), Id(expression))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ExpressionSingleLineStringDqMidMid {
     pub single_line_string_dq_mid_mid: Token,
     pub expression: Expression,
@@ -3078,7 +3079,7 @@ impl RuleModel for ExpressionSingleLineStringDqMidMid {
 }
 
 /// And(Id(SINGLE_LINE_STRING_DQ_BEGIN_MID), Id(expression), Modified(*,And(Id(SINGLE_LINE_STRING_DQ_MID_MID), Id(expression))), Id(SINGLE_LINE_STRING_DQ_MID_END))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct SingleLineStringSingleLineStringDqBeginMid {
     pub single_line_string_dq_begin_mid: Token,
     pub expression: Expression,
@@ -3100,7 +3101,7 @@ impl RuleModel for SingleLineStringSingleLineStringDqBeginMid {
 }
 
 /// Or( Id(RAW_SINGLE_LINE_STRING), Id(SINGLE_LINE_STRING_SQ_BEGIN_END), And(Id(SINGLE_LINE_STRING_SQ_BEGIN_MID), Id(expression), Modified(*,And(Id(SINGLE_LINE_STRING_SQ_MID_MID), Id(expression))), Id(SINGLE_LINE_STRING_SQ_MID_END)), Id(SINGLE_LINE_STRING_DQ_BEGIN_END), And(Id(SINGLE_LINE_STRING_DQ_BEGIN_MID), Id(expression), Modified(*,And(Id(SINGLE_LINE_STRING_DQ_MID_MID), Id(expression))), Id(SINGLE_LINE_STRING_DQ_MID_END)), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum SingleLineString {
     RawSingleLineString(Token),
     SingleLineStringSqBeginEnd(Token),
@@ -3135,7 +3136,7 @@ impl RuleModel for SingleLineString {
 }
 
 /// And(Id(MULTI_LINE_STRING_SQ_MID_MID), Id(expression))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ExpressionMultiLineStringSqMidMid {
     pub multi_line_string_sq_mid_mid: Token,
     pub expression: Expression,
@@ -3153,7 +3154,7 @@ impl RuleModel for ExpressionMultiLineStringSqMidMid {
 }
 
 /// And(Id(MULTI_LINE_STRING_SQ_BEGIN_MID), Id(expression), Modified(*,And(Id(MULTI_LINE_STRING_SQ_MID_MID), Id(expression))), Id(MULTI_LINE_STRING_SQ_MID_END))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct MultilineStringMultiLineStringSqBeginMid {
     pub multi_line_string_sq_begin_mid: Token,
     pub expression: Expression,
@@ -3175,7 +3176,7 @@ impl RuleModel for MultilineStringMultiLineStringSqBeginMid {
 }
 
 /// And(Id(MULTI_LINE_STRING_DQ_MID_MID), Id(expression))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ExpressionMultiLineStringDqMidMid {
     pub multi_line_string_dq_mid_mid: Token,
     pub expression: Expression,
@@ -3193,7 +3194,7 @@ impl RuleModel for ExpressionMultiLineStringDqMidMid {
 }
 
 /// And(Id(MULTI_LINE_STRING_DQ_BEGIN_MID), Id(expression), Modified(*,And(Id(MULTI_LINE_STRING_DQ_MID_MID), Id(expression))), Id(MULTI_LINE_STRING_DQ_MID_END))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct MultilineStringMultiLineStringDqBeginMid {
     pub multi_line_string_dq_begin_mid: Token,
     pub expression: Expression,
@@ -3215,7 +3216,7 @@ impl RuleModel for MultilineStringMultiLineStringDqBeginMid {
 }
 
 /// Or( Id(RAW_MULTI_LINE_STRING), Id(MULTI_LINE_STRING_SQ_BEGIN_END), And(Id(MULTI_LINE_STRING_SQ_BEGIN_MID), Id(expression), Modified(*,And(Id(MULTI_LINE_STRING_SQ_MID_MID), Id(expression))), Id(MULTI_LINE_STRING_SQ_MID_END)), Id(MULTI_LINE_STRING_DQ_BEGIN_END), And(Id(MULTI_LINE_STRING_DQ_BEGIN_MID), Id(expression), Modified(*,And(Id(MULTI_LINE_STRING_DQ_MID_MID), Id(expression))), Id(MULTI_LINE_STRING_DQ_MID_END)), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum MultilineString {
     RawMultiLineString(Token),
     MultiLineStringSqBeginEnd(Token),
@@ -3248,7 +3249,7 @@ impl RuleModel for MultilineString {
 }
 
 /// And(Raw(${), Id(expression), Raw(}))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct StringInterpolationExpression {
     pub interpolation_start_token: Token,
     pub expression: Expression,
@@ -3268,7 +3269,7 @@ impl RuleModel for StringInterpolationExpression {
 }
 
 /// Or( Id(SIMPLE_STRING_INTERPOLATION), And(Raw(${), Id(expression), Raw(})), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum StringInterpolation {
     SimpleStringInterpolation(Token),
     Expression(StringInterpolationExpression),
@@ -3289,7 +3290,7 @@ impl RuleModel for StringInterpolation {
 }
 
 /// And(Raw(.), Id(identifier))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct SymbolLiteralOtherIdentifiers {
     pub period_token: Token,
     pub identifier: Identifier,
@@ -3307,7 +3308,7 @@ impl RuleModel for SymbolLiteralOtherIdentifiers {
 }
 
 /// And(Id(identifier), Modified(*,And(Raw(.), Id(identifier))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct SymbolLiteralValueIdentifier {
     pub identifier: Identifier,
     pub symbol_literal_other_identifiers: Vec<SymbolLiteralOtherIdentifiers>,
@@ -3325,7 +3326,7 @@ impl RuleModel for SymbolLiteralValueIdentifier {
 }
 
 /// Or( And(Id(identifier), Modified(*,And(Raw(.), Id(identifier)))), Id(operator), Raw(void), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum SymbolLiteralValue {
     Identifier(SymbolLiteralValueIdentifier),
     Operator(Operator),
@@ -3346,7 +3347,7 @@ impl RuleModel for SymbolLiteralValue {
 }
 
 /// And(Raw(#), Or( And(Id(identifier), Modified(*,And(Raw(.), Id(identifier)))), Id(operator), Raw(void), ))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct SymbolLiteral {
     pub hash_token: Token,
     pub symbol_literal_value: SymbolLiteralValue,
@@ -3364,7 +3365,7 @@ impl RuleModel for SymbolLiteral {
 }
 
 /// And(Modified(?,Raw(const)), Modified(?,Id(typeArguments)), Raw([), Modified(?,Id(elements)), Raw(]))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ListLiteral {
     pub const_token: Option<Token>,
     pub type_arguments: Option<TypeArguments>,
@@ -3392,7 +3393,7 @@ impl RuleModel for ListLiteral {
 }
 
 /// And(Modified(?,Raw(const)), Modified(?,Id(typeArguments)), Raw({), Modified(?,Id(elements)), Raw(}))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct SetOrMapLiteral {
     pub const_token: Option<Token>,
     pub type_arguments: Option<TypeArguments>,
@@ -3420,7 +3421,7 @@ impl RuleModel for SetOrMapLiteral {
 }
 
 /// And(Raw(,), Id(element))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ElementItem {
     pub comma_token: Token,
     pub element: Element,
@@ -3438,7 +3439,7 @@ impl RuleModel for ElementItem {
 }
 
 /// And(Id(element), Modified(*,And(Raw(,), Id(element))), Modified(?,Raw(,)))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Elements {
     pub element: Element,
     pub element_item: Vec<ElementItem>,
@@ -3462,7 +3463,7 @@ impl RuleModel for Elements {
 }
 
 /// Or( Id(expressionElement), Id(mapElement), Id(spreadElement), Id(ifElement), Id(forElement), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum ElementInner {
     ExpressionElement(ExpressionElement),
     MapElement(MapElement),
@@ -3492,7 +3493,7 @@ impl RuleModel for Element {
 pub type ExpressionElement = Expression;
 
 /// And(Id(expression), Raw(:), Id(expression))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct MapElement {
     pub expression: Expression,
     pub colon_token: Token,
@@ -3512,7 +3513,7 @@ impl RuleModel for MapElement {
 }
 
 /// Or( Raw(...), Raw(...?), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum SpreadElementType {
     PointsExpand(Token),
     PointsExpandQuestion(Token),
@@ -3533,7 +3534,7 @@ impl RuleModel for SpreadElementType {
 }
 
 /// And(Or( Raw(...), Raw(...?), ), Id(expression))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct SpreadElement {
     pub spread_element_type: SpreadElementType,
     pub expression: Expression,
@@ -3551,7 +3552,7 @@ impl RuleModel for SpreadElement {
 }
 
 /// And(Raw(else), Id(element))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ElementElse {
     pub else_token: Token,
     pub element: Element,
@@ -3569,7 +3570,7 @@ impl RuleModel for ElementElse {
 }
 
 /// And(Raw(if), Raw((), Id(expression), Raw()), Id(element), Modified(?,And(Raw(else), Id(element))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct IfElement {
     pub if_token: Token,
     pub open_paren_token: Token,
@@ -3595,7 +3596,7 @@ impl RuleModel for IfElement {
 }
 
 /// And(Modified(?,Raw(await)), Raw(for), Raw((), Id(forLoopParts), Raw()), Id(element))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ForElement {
     pub await_token: Option<Token>,
     pub for_token: Token,
@@ -3625,7 +3626,7 @@ impl RuleModel for ForElement {
 }
 
 /// And(Raw(throw), Id(expression))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ThrowExpression {
     pub throw_token: Token,
     pub expression: Expression,
@@ -3643,7 +3644,7 @@ impl RuleModel for ThrowExpression {
 }
 
 /// And(Raw(throw), Id(expressionWithoutCascade))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ThrowExpressionWithoutCascade {
     pub throw_token: Token,
     pub expression_without_cascade: ExpressionWithoutCascade,
@@ -3661,7 +3662,7 @@ impl RuleModel for ThrowExpressionWithoutCascade {
 }
 
 /// And(Id(formalParameterPart), Id(functionExpressionBody))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct FunctionExpression {
     pub formal_parameter_part: FormalParameterPart,
     pub function_expression_body: FunctionExpressionBody,
@@ -3679,7 +3680,7 @@ impl RuleModel for FunctionExpression {
 }
 
 /// And(Modified(?,Raw(async)), Raw(=>), Id(expression))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct FunctionExpressionBodyArrowToken {
     pub async_token: Option<Token>,
     pub arrow_token: Token,
@@ -3703,7 +3704,7 @@ impl RuleModel for FunctionExpressionBodyArrowToken {
 }
 
 /// And(Raw(async), Modified(?,Raw(*)))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct FunctionExpressionGeneratorAsyncToken {
     pub async_token: Token,
     pub asterisk_token: Option<Token>,
@@ -3725,7 +3726,7 @@ impl RuleModel for FunctionExpressionGeneratorAsyncToken {
 }
 
 /// And(Raw(sync), Raw(*))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct FunctionExpressionGeneratorSyncToken {
     pub sync_token: Token,
     pub asterisk_token: Token,
@@ -3743,7 +3744,7 @@ impl RuleModel for FunctionExpressionGeneratorSyncToken {
 }
 
 /// Or( And(Raw(async), Modified(?,Raw(*))), And(Raw(sync), Raw(*)), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum FunctionExpressionGenerator {
     Async(FunctionExpressionGeneratorAsyncToken),
     Sync(FunctionExpressionGeneratorSyncToken),
@@ -3766,7 +3767,7 @@ impl RuleModel for FunctionExpressionGenerator {
 }
 
 /// And(Modified(?,Or( And(Raw(async), Modified(?,Raw(*))), And(Raw(sync), Raw(*)), )), Id(block))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct FunctionExpressionBodyBlock {
     pub function_expression_generator: Option<FunctionExpressionGenerator>,
     pub block: Block,
@@ -3784,7 +3785,7 @@ impl RuleModel for FunctionExpressionBodyBlock {
 }
 
 /// Or( And(Modified(?,Raw(async)), Raw(=>), Id(expression)), And(Modified(?,Or( And(Raw(async), Modified(?,Raw(*))), And(Raw(sync), Raw(*)), )), Id(block)), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum FunctionExpressionBody {
     Arrow(FunctionExpressionBodyArrowToken),
     Block(FunctionExpressionBodyBlock),
@@ -3808,7 +3809,7 @@ impl RuleModel for FunctionExpressionBody {
 pub type ThisExpression = Token;
 
 /// And(Raw(new), Id(constructorDesignation), Id(arguments))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct NewExpression {
     pub new_token: Token,
     pub constructor_designation: ConstructorDesignation,
@@ -3828,7 +3829,7 @@ impl RuleModel for NewExpression {
 }
 
 /// And(Raw(const), Id(constructorDesignation), Id(arguments))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ConstObjectExpression {
     pub const_token: Token,
     pub constructor_designation: ConstructorDesignation,
@@ -3848,7 +3849,7 @@ impl RuleModel for ConstObjectExpression {
 }
 
 /// And(Id(argumentList), Modified(?,Raw(,)))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ArgumentsArgumentList {
     pub argument_list: ArgumentList,
     pub comma_token: Option<Token>,
@@ -3870,7 +3871,7 @@ impl RuleModel for ArgumentsArgumentList {
 }
 
 /// And(Raw((), Modified(?,And(Id(argumentList), Modified(?,Raw(,)))), Raw()))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Arguments {
     pub open_paren_token: Token,
     pub argument_list: Option<ArgumentsArgumentList>,
@@ -3890,7 +3891,7 @@ impl RuleModel for Arguments {
 }
 
 /// And(Raw(,), Id(namedArgument))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct NamedArgumentItem {
     pub comma_token: Token,
     pub named_argument: NamedArgument,
@@ -3908,7 +3909,7 @@ impl RuleModel for NamedArgumentItem {
 }
 
 /// And(Id(namedArgument), Modified(*,And(Raw(,), Id(namedArgument))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ArgumentListNamedArgument {
     pub named_argument: NamedArgument,
     pub named_argument_item: Vec<NamedArgumentItem>,
@@ -3926,7 +3927,7 @@ impl RuleModel for ArgumentListNamedArgument {
 }
 
 /// And(Id(expressionList), Modified(*,And(Raw(,), Id(namedArgument))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ArgumentListExpressionList {
     pub expression_list: ExpressionList,
     pub named_argument_item: Vec<NamedArgumentItem>,
@@ -3944,7 +3945,7 @@ impl RuleModel for ArgumentListExpressionList {
 }
 
 /// Or( And(Id(namedArgument), Modified(*,And(Raw(,), Id(namedArgument)))), And(Id(expressionList), Modified(*,And(Raw(,), Id(namedArgument)))), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum ArgumentList {
     NamedArgument(ArgumentListNamedArgument),
     ExpressionList(ArgumentListExpressionList),
@@ -3963,7 +3964,7 @@ impl RuleModel for ArgumentList {
 }
 
 /// And(Id(label), Id(expression))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct NamedArgument {
     pub label: Label,
     pub expression: Expression,
@@ -3981,7 +3982,7 @@ impl RuleModel for NamedArgument {
 }
 
 /// And(Raw(..), Id(cascadeSection), Modified(?,Id(cascadeRight)))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct CascadeRightInner {
     pub points_id_token: Token,
     pub cascade_section: CascadeSection,
@@ -4003,7 +4004,7 @@ impl RuleModel for CascadeRight {
 }
 
 /// Or( Raw(?..), Raw(..), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum CascadePrefixType {
     PointsIdQuestion(Token),
     PointsId(Token),
@@ -4024,7 +4025,7 @@ impl RuleModel for CascadePrefixType {
 }
 
 /// And(Id(conditionalExpression), Or( Raw(?..), Raw(..), ), Id(cascadeSection))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct CascadeLeft {
     pub conditional_expression: ConditionalExpression,
     pub cascade_prefix_type: CascadePrefixType,
@@ -4044,7 +4045,7 @@ impl RuleModel for CascadeLeft {
 }
 
 /// And(Id(cascadeLeft), Modified(?,Id(cascadeRight)))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Cascade {
     pub cascade_left: CascadeLeft,
     pub cascade_right: Option<CascadeRight>,
@@ -4062,7 +4063,7 @@ impl RuleModel for Cascade {
 }
 
 /// And(Id(cascadeSelector), Id(cascadeSectionTail))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct CascadeSection {
     pub cascade_selector: CascadeSelector,
     pub cascade_section_tail: CascadeSectionTail,
@@ -4080,7 +4081,7 @@ impl RuleModel for CascadeSection {
 }
 
 /// And(Raw([), Id(expression), Raw(]))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct CascadeSelectorExpression {
     pub open_square_bracket_token: Token,
     pub expression: Expression,
@@ -4100,7 +4101,7 @@ impl RuleModel for CascadeSelectorExpression {
 }
 
 /// Or( And(Raw([), Id(expression), Raw(])), Id(identifier), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum CascadeSelector {
     Expression(CascadeSelectorExpression),
     Identifier(Identifier),
@@ -4119,7 +4120,7 @@ impl RuleModel for CascadeSelector {
 }
 
 /// And(Id(assignableSelector), Id(cascadeAssignment))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct SelectedCascadeAssignment {
     pub assignable_selector: AssignableSelector,
     pub cascade_assignment: CascadeAssignment,
@@ -4137,7 +4138,7 @@ impl RuleModel for SelectedCascadeAssignment {
 }
 
 /// And(Modified(*,Id(selector)), Modified(?,And(Id(assignableSelector), Id(cascadeAssignment))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct SelectedCascade {
     pub selector: Vec<Selector>,
     pub assignment: Option<SelectedCascadeAssignment>,
@@ -4155,7 +4156,7 @@ impl RuleModel for SelectedCascade {
 }
 
 /// Or( Id(cascadeAssignment), And(Modified(*,Id(selector)), Modified(?,And(Id(assignableSelector), Id(cascadeAssignment)))), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum CascadeSectionTail {
     CascadeAssignment(CascadeAssignment),
     SelectedCascade(SelectedCascade),
@@ -4174,7 +4175,7 @@ impl RuleModel for CascadeSectionTail {
 }
 
 /// And(Id(assignmentOperator), Id(expressionWithoutCascade))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct CascadeAssignment {
     pub assignment_operator: AssignmentOperator,
     pub expression_without_cascade: ExpressionWithoutCascade,
@@ -4192,7 +4193,7 @@ impl RuleModel for CascadeAssignment {
 }
 
 /// Or( Raw(=), Id(compoundAssignmentOperator), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum AssignmentOperator {
     Equal(Token),
     CompoundAssignmentOperator(CompoundAssignmentOperator),
@@ -4213,7 +4214,7 @@ impl RuleModel for AssignmentOperator {
 }
 
 /// Or( Raw(*=), Raw(/=), Raw(~/=), Raw(%=), Raw(+=), Raw(-=), Raw(<<=), Raw(>>>=), Raw(>>=), Raw(&=), Raw(^=), Raw(|=), Raw(??=), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum CompoundAssignmentOperator {
     TimesEqual(Token),
     DivEqual(Token),
@@ -4264,7 +4265,7 @@ impl RuleModel for CompoundAssignmentOperator {
 }
 
 /// And(Raw(?), Id(expressionWithoutCascade), Raw(:), Id(expressionWithoutCascade))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ConditionalExpressionExpressionWithoutCascade {
     pub question_token: Token,
     pub expression_without_cascade: ExpressionWithoutCascade,
@@ -4286,7 +4287,7 @@ impl RuleModel for ConditionalExpressionExpressionWithoutCascade {
 }
 
 /// And(Id(ifNullExpression), Modified(?,And(Raw(?), Id(expressionWithoutCascade), Raw(:), Id(expressionWithoutCascade))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ConditionalExpression {
     pub if_null_expression: IfNullExpression,
     pub expression_without_cascade: Option<ConditionalExpressionExpressionWithoutCascade>,
@@ -4304,7 +4305,7 @@ impl RuleModel for ConditionalExpression {
 }
 
 /// And(Raw(??), Id(logicalOrExpression))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct LogicalOrExpressionQuestionQuestion {
     pub question_question_token: Token,
     pub logical_or_expression: LogicalOrExpression,
@@ -4322,7 +4323,7 @@ impl RuleModel for LogicalOrExpressionQuestionQuestion {
 }
 
 /// And(Id(logicalOrExpression), Modified(*,And(Raw(??), Id(logicalOrExpression))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct IfNullExpression {
     pub logical_or_expression: LogicalOrExpression,
     pub logical_or_expression_question_question: Vec<LogicalOrExpressionQuestionQuestion>,
@@ -4340,7 +4341,7 @@ impl RuleModel for IfNullExpression {
 }
 
 /// And(Raw(||), Id(logicalAndExpression))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct LogicalAndExpressionOr {
     pub or_token: Token,
     pub logical_and_expression: LogicalAndExpression,
@@ -4358,7 +4359,7 @@ impl RuleModel for LogicalAndExpressionOr {
 }
 
 /// And(Id(logicalAndExpression), Modified(*,And(Raw(||), Id(logicalAndExpression))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct LogicalOrExpression {
     pub logical_and_expression: LogicalAndExpression,
     pub logical_and_expression_or: Vec<LogicalAndExpressionOr>,
@@ -4376,7 +4377,7 @@ impl RuleModel for LogicalOrExpression {
 }
 
 /// And(Raw(&&), Id(equalityExpression))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct EqualityExpressionAnd {
     pub and_token: Token,
     pub equality_expression: EqualityExpression,
@@ -4394,7 +4395,7 @@ impl RuleModel for EqualityExpressionAnd {
 }
 
 /// And(Id(equalityExpression), Modified(*,And(Raw(&&), Id(equalityExpression))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct LogicalAndExpression {
     pub equality_expression: EqualityExpression,
     pub equality_expression_and: Vec<EqualityExpressionAnd>,
@@ -4412,7 +4413,7 @@ impl RuleModel for LogicalAndExpression {
 }
 
 /// And(Id(equalityOperator), Id(relationalExpression))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct EqualityExpressionInner {
     pub equality_operator: EqualityOperator,
     pub relational_expression: RelationalExpression,
@@ -4430,7 +4431,7 @@ impl RuleModel for EqualityExpressionInner {
 }
 
 /// And(Id(relationalExpression), Modified(?,And(Id(equalityOperator), Id(relationalExpression))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct EqualityExpressionRelationalExpression {
     pub relational_expression: RelationalExpression,
     pub equality_expression_inner: Option<EqualityExpressionInner>,
@@ -4448,7 +4449,7 @@ impl RuleModel for EqualityExpressionRelationalExpression {
 }
 
 /// And(Raw(super), Id(equalityOperator), Id(relationalExpression))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct EqualityExpressionEqualityOperator {
     pub super_token: Token,
     pub equality_operator: EqualityOperator,
@@ -4468,7 +4469,7 @@ impl RuleModel for EqualityExpressionEqualityOperator {
 }
 
 /// Or( And(Id(relationalExpression), Modified(?,And(Id(equalityOperator), Id(relationalExpression)))), And(Raw(super), Id(equalityOperator), Id(relationalExpression)), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum EqualityExpression {
     RelationalExpression(EqualityExpressionRelationalExpression),
     EqualityOperator(EqualityExpressionEqualityOperator),
@@ -4491,7 +4492,7 @@ impl RuleModel for EqualityExpression {
 }
 
 /// Or( Raw(==), Raw(!=), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum EqualityOperator {
     DoubleEqual(Token),
     NotEqual(Token),
@@ -4510,7 +4511,7 @@ impl RuleModel for EqualityOperator {
 }
 
 /// And(Id(relationalOperator), Id(bitwiseOrExpression))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct BitwiseOrExpressionInterRelationalOperator {
     pub relational_operator: RelationalOperator,
     pub bitwise_or_expression: BitwiseOrExpression,
@@ -4528,7 +4529,7 @@ impl RuleModel for BitwiseOrExpressionInterRelationalOperator {
 }
 
 /// Or( Id(typeTest), Id(typeCast), And(Id(relationalOperator), Id(bitwiseOrExpression)), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum BitwiseOrExpressionInter {
     TypeTest(TypeTest),
     TypeCast(TypeCast),
@@ -4551,7 +4552,7 @@ impl RuleModel for BitwiseOrExpressionInter {
 }
 
 /// And(Id(bitwiseOrExpression), Modified(?,Or( Id(typeTest), Id(typeCast), And(Id(relationalOperator), Id(bitwiseOrExpression)), )))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct RelationalExpressionBitwiseOrExpression {
     pub bitwise_or_expression: BitwiseOrExpression,
     pub bitwise_or_expression_inter: Option<BitwiseOrExpressionInter>,
@@ -4569,7 +4570,7 @@ impl RuleModel for RelationalExpressionBitwiseOrExpression {
 }
 
 /// And(Raw(super), Id(relationalOperator), Id(bitwiseOrExpression))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct RelationalExpressionRelationalOperator {
     pub super_token: Token,
     pub relational_operator: RelationalOperator,
@@ -4589,7 +4590,7 @@ impl RuleModel for RelationalExpressionRelationalOperator {
 }
 
 /// Or( And(Id(bitwiseOrExpression), Modified(?,Or( Id(typeTest), Id(typeCast), And(Id(relationalOperator), Id(bitwiseOrExpression)), ))), And(Raw(super), Id(relationalOperator), Id(bitwiseOrExpression)), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum RelationalExpression {
     BitwiseOrExpression(RelationalExpressionBitwiseOrExpression),
     RelationalOperator(RelationalExpressionRelationalOperator),
@@ -4612,7 +4613,7 @@ impl RuleModel for RelationalExpression {
 }
 
 /// Or( Raw(>=), Raw(>), Raw(<=), Raw(<), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum RelationalOperator {
     MoreOrEqual(Token),
     More(Token),
@@ -4635,7 +4636,7 @@ impl RuleModel for RelationalOperator {
 }
 
 /// And(Raw(|), Id(bitwiseXorExpression))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct BitwiseXorExpressionBitXor {
     pub bit_xor_token: Token,
     pub bitwise_xor_expression: BitwiseXorExpression,
@@ -4653,7 +4654,7 @@ impl RuleModel for BitwiseXorExpressionBitXor {
 }
 
 /// And(Id(bitwiseXorExpression), Modified(*,And(Raw(|), Id(bitwiseXorExpression))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct BitwiseOrExpressionBitwiseXorExpression {
     pub bitwise_xor_expression: BitwiseXorExpression,
     pub bitwise_xor_expression_bit_xor: Vec<BitwiseXorExpressionBitXor>,
@@ -4671,7 +4672,7 @@ impl RuleModel for BitwiseOrExpressionBitwiseXorExpression {
 }
 
 /// And(Raw(super), Modified(+,And(Raw(|), Id(bitwiseXorExpression))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct BitwiseOrExpressionSuperToken {
     pub super_token: Token,
     pub bitwise_xor_expression_bit_xor: Vec<BitwiseXorExpressionBitXor>,
@@ -4689,7 +4690,7 @@ impl RuleModel for BitwiseOrExpressionSuperToken {
 }
 
 /// Or( And(Id(bitwiseXorExpression), Modified(*,And(Raw(|), Id(bitwiseXorExpression)))), And(Raw(super), Modified(+,And(Raw(|), Id(bitwiseXorExpression)))), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum BitwiseOrExpression {
     BitwiseXorExpression(BitwiseOrExpressionBitwiseXorExpression),
     Super(BitwiseOrExpressionSuperToken),
@@ -4710,7 +4711,7 @@ impl RuleModel for BitwiseOrExpression {
 }
 
 /// And(Raw(^), Id(bitwiseAndExpression))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct BitwiseAndExpressionBitNeg {
     pub bit_neg_token: Token,
     pub bitwise_and_expression: BitwiseAndExpression,
@@ -4728,7 +4729,7 @@ impl RuleModel for BitwiseAndExpressionBitNeg {
 }
 
 /// And(Id(bitwiseAndExpression), Modified(*,And(Raw(^), Id(bitwiseAndExpression))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct BitwiseXorExpressionBitwiseAndExpression {
     pub bitwise_and_expression: BitwiseAndExpression,
     pub bitwise_and_expression_bit_neg: Vec<BitwiseAndExpressionBitNeg>,
@@ -4746,7 +4747,7 @@ impl RuleModel for BitwiseXorExpressionBitwiseAndExpression {
 }
 
 /// And(Raw(super), Modified(+,And(Raw(^), Id(bitwiseAndExpression))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct BitwiseXorExpressionSuperToken {
     pub super_token: Token,
     pub bitwise_and_expression_bit_neg: Vec<BitwiseAndExpressionBitNeg>,
@@ -4764,7 +4765,7 @@ impl RuleModel for BitwiseXorExpressionSuperToken {
 }
 
 /// Or( And(Id(bitwiseAndExpression), Modified(*,And(Raw(^), Id(bitwiseAndExpression)))), And(Raw(super), Modified(+,And(Raw(^), Id(bitwiseAndExpression)))), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum BitwiseXorExpression {
     BitwiseAndExpression(BitwiseXorExpressionBitwiseAndExpression),
     Super(BitwiseXorExpressionSuperToken),
@@ -4785,7 +4786,7 @@ impl RuleModel for BitwiseXorExpression {
 }
 
 /// And(Raw(&), Id(shiftExpression))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ShiftExpressionBitAnd {
     pub bit_and_token: Token,
     pub shift_expression: ShiftExpression,
@@ -4803,7 +4804,7 @@ impl RuleModel for ShiftExpressionBitAnd {
 }
 
 /// And(Id(shiftExpression), Modified(*,And(Raw(&), Id(shiftExpression))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct BitwiseAndExpressionShiftExpression {
     pub shift_expression: ShiftExpression,
     pub shift_expression_bit_and: Vec<ShiftExpressionBitAnd>,
@@ -4821,7 +4822,7 @@ impl RuleModel for BitwiseAndExpressionShiftExpression {
 }
 
 /// And(Raw(super), Modified(+,And(Raw(&), Id(shiftExpression))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct BitwiseAndExpressionSuperToken {
     pub super_token: Token,
     pub shift_expression_bit_and: Vec<ShiftExpressionBitAnd>,
@@ -4839,7 +4840,7 @@ impl RuleModel for BitwiseAndExpressionSuperToken {
 }
 
 /// Or( And(Id(shiftExpression), Modified(*,And(Raw(&), Id(shiftExpression)))), And(Raw(super), Modified(+,And(Raw(&), Id(shiftExpression)))), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum BitwiseAndExpression {
     ShiftExpression(BitwiseAndExpressionShiftExpression),
     Super(BitwiseAndExpressionSuperToken),
@@ -4860,7 +4861,7 @@ impl RuleModel for BitwiseAndExpression {
 }
 
 /// Or( Raw(&), Raw(^), Raw(|), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum BitwiseOperator {
     BitAnd(Token),
     BitNeg(Token),
@@ -4881,7 +4882,7 @@ impl RuleModel for BitwiseOperator {
 }
 
 /// And(Id(shiftOperator), Id(additiveExpression))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ShiftExpressionInner {
     pub shift_operator: ShiftOperator,
     pub additive_expression: AdditiveExpression,
@@ -4899,7 +4900,7 @@ impl RuleModel for ShiftExpressionInner {
 }
 
 /// And(Id(additiveExpression), Modified(*,And(Id(shiftOperator), Id(additiveExpression))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ShiftExpressionAdditiveExpression {
     pub additive_expression: AdditiveExpression,
     pub shift_expression_inner: Vec<ShiftExpressionInner>,
@@ -4917,7 +4918,7 @@ impl RuleModel for ShiftExpressionAdditiveExpression {
 }
 
 /// And(Raw(super), Modified(+,And(Id(shiftOperator), Id(additiveExpression))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ShiftExpressionSuperToken {
     pub super_token: Token,
     pub shift_expression_inner: Vec<ShiftExpressionInner>,
@@ -4935,7 +4936,7 @@ impl RuleModel for ShiftExpressionSuperToken {
 }
 
 /// Or( And(Id(additiveExpression), Modified(*,And(Id(shiftOperator), Id(additiveExpression)))), And(Raw(super), Modified(+,And(Id(shiftOperator), Id(additiveExpression)))), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum ShiftExpression {
     AdditiveExpression(ShiftExpressionAdditiveExpression),
     Super(ShiftExpressionSuperToken),
@@ -4956,7 +4957,7 @@ impl RuleModel for ShiftExpression {
 }
 
 /// Or( Raw(<<), Raw(>>>), Raw(>>), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum ShiftOperator {
     BitLeft(Token),
     BitRight0(Token),
@@ -4977,7 +4978,7 @@ impl RuleModel for ShiftOperator {
 }
 
 /// And(Id(additiveOperator), Id(multiplicativeExpression))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct AdditiveExpressionInner {
     pub additive_operator: AdditiveOperator,
     pub multiplicative_expression: MultiplicativeExpression,
@@ -4995,7 +4996,7 @@ impl RuleModel for AdditiveExpressionInner {
 }
 
 /// And(Id(multiplicativeExpression), Modified(*,And(Id(additiveOperator), Id(multiplicativeExpression))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct AdditiveExpressionMultiplicativeExpression {
     pub multiplicative_expression: MultiplicativeExpression,
     pub additive_expression_inner: Vec<AdditiveExpressionInner>,
@@ -5013,7 +5014,7 @@ impl RuleModel for AdditiveExpressionMultiplicativeExpression {
 }
 
 /// And(Raw(super), Modified(+,And(Id(additiveOperator), Id(multiplicativeExpression))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct AdditiveExpressionSuperToken {
     pub super_token: Token,
     pub additive_expression_inner: Vec<AdditiveExpressionInner>,
@@ -5031,7 +5032,7 @@ impl RuleModel for AdditiveExpressionSuperToken {
 }
 
 /// Or( And(Id(multiplicativeExpression), Modified(*,And(Id(additiveOperator), Id(multiplicativeExpression)))), And(Raw(super), Modified(+,And(Id(additiveOperator), Id(multiplicativeExpression)))), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum AdditiveExpression {
     MultiplicativeExpression(AdditiveExpressionMultiplicativeExpression),
     Super(AdditiveExpressionSuperToken),
@@ -5052,7 +5053,7 @@ impl RuleModel for AdditiveExpression {
 }
 
 /// Or( Raw(+), Raw(-), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum AdditiveOperator {
     Plus(Token),
     Minus(Token),
@@ -5071,7 +5072,7 @@ impl RuleModel for AdditiveOperator {
 }
 
 /// And(Id(multiplicativeOperator), Id(unaryExpression))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct MultiplicativeExpressionInner {
     pub multiplicative_operator: MultiplicativeOperator,
     pub unary_expression: UnaryExpression,
@@ -5089,7 +5090,7 @@ impl RuleModel for MultiplicativeExpressionInner {
 }
 
 /// And(Id(unaryExpression), Modified(*,And(Id(multiplicativeOperator), Id(unaryExpression))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct MultiplicativeExpressionUnaryExpression {
     pub unary_expression: UnaryExpression,
     pub multiplicative_expression_inner: Vec<MultiplicativeExpressionInner>,
@@ -5107,7 +5108,7 @@ impl RuleModel for MultiplicativeExpressionUnaryExpression {
 }
 
 /// And(Raw(super), Modified(+,And(Id(multiplicativeOperator), Id(unaryExpression))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct MultiplicativeExpressionSuperToken {
     pub super_token: Token,
     pub multiplicative_expression_inner: Vec<MultiplicativeExpressionInner>,
@@ -5125,7 +5126,7 @@ impl RuleModel for MultiplicativeExpressionSuperToken {
 }
 
 /// Or( And(Id(unaryExpression), Modified(*,And(Id(multiplicativeOperator), Id(unaryExpression)))), And(Raw(super), Modified(+,And(Id(multiplicativeOperator), Id(unaryExpression)))), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum MultiplicativeExpression {
     UnaryExpression(MultiplicativeExpressionUnaryExpression),
     Super(MultiplicativeExpressionSuperToken),
@@ -5148,7 +5149,7 @@ impl RuleModel for MultiplicativeExpression {
 }
 
 /// Or( Raw(*), Raw(/), Raw(%), Raw(~/), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum MultiplicativeOperator {
     Asterisk(Token),
     Divide(Token),
@@ -5171,7 +5172,7 @@ impl RuleModel for MultiplicativeOperator {
 }
 
 /// And(Id(prefixOperator), Id(unaryExpression))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct UnaryExpressionPrefixOperator {
     pub prefix_operator: PrefixOperator,
     pub unary_expression: UnaryExpression,
@@ -5189,7 +5190,7 @@ impl RuleModel for UnaryExpressionPrefixOperator {
 }
 
 /// Or( Id(minusOperator), Id(tildeOperator), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum UnaryOperator {
     MinusOperator(MinusOperator),
     TildeOperator(TildeOperator),
@@ -5208,7 +5209,7 @@ impl RuleModel for UnaryOperator {
 }
 
 /// And(Or( Id(minusOperator), Id(tildeOperator), ), Raw(super))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct UnaryExpressionSuperToken {
     pub unary_operator: UnaryOperator,
     pub super_token: Token,
@@ -5226,7 +5227,7 @@ impl RuleModel for UnaryExpressionSuperToken {
 }
 
 /// And(Id(incrementOperator), Id(assignableExpression))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct UnaryExpressionIncrementOperator {
     pub increment_operator: IncrementOperator,
     pub assignable_expression: AssignableExpression,
@@ -5244,7 +5245,7 @@ impl RuleModel for UnaryExpressionIncrementOperator {
 }
 
 /// Or( And(Id(prefixOperator), Id(unaryExpression)), Id(awaitExpression), Id(postfixExpression), And(Or( Id(minusOperator), Id(tildeOperator), ), Raw(super)), And(Id(incrementOperator), Id(assignableExpression)), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum UnaryExpressionInner {
     PrefixOperator(UnaryExpressionPrefixOperator),
     AwaitExpression(AwaitExpression),
@@ -5275,7 +5276,7 @@ impl RuleModel for UnaryExpression {
 }
 
 /// Or( Id(minusOperator), Id(negationOperator), Id(tildeOperator), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum PrefixOperator {
     MinusOperator(MinusOperator),
     NegationOperator(NegationOperator),
@@ -5305,7 +5306,7 @@ pub type NegationOperator = Token;
 pub type TildeOperator = Token;
 
 /// And(Raw(await), Id(unaryExpression))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct AwaitExpression {
     pub await_token: Token,
     pub unary_expression: UnaryExpression,
@@ -5323,7 +5324,7 @@ impl RuleModel for AwaitExpression {
 }
 
 /// And(Id(assignableExpression), Id(postfixOperator))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct PostfixExpressionAssignableExpression {
     pub assignable_expression: AssignableExpression,
     pub postfix_operator: PostfixOperator,
@@ -5341,7 +5342,7 @@ impl RuleModel for PostfixExpressionAssignableExpression {
 }
 
 /// And(Id(primary), Modified(*,Id(selector)))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct PostfixExpressionPrimary {
     pub primary: Primary,
     pub selector: Vec<Selector>,
@@ -5359,7 +5360,7 @@ impl RuleModel for PostfixExpressionPrimary {
 }
 
 /// Or( And(Id(assignableExpression), Id(postfixOperator)), And(Id(primary), Modified(*,Id(selector))), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum PostfixExpression {
     AssignableExpression(PostfixExpressionAssignableExpression),
     Primary(PostfixExpressionPrimary),
@@ -5383,7 +5384,7 @@ impl RuleModel for PostfixExpression {
 pub type PostfixOperator = IncrementOperator;
 
 /// And(Id(typeName), Id(typeArguments), Raw(.), Id(identifier), Id(arguments))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ConstructorInvocation {
     pub type_name: TypeName,
     pub type_arguments: TypeArguments,
@@ -5407,7 +5408,7 @@ impl RuleModel for ConstructorInvocation {
 }
 
 /// Or( Raw(!), Id(assignableSelector), Id(argumentPart), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum Selector {
     Exclamation(Token),
     AssignableSelector(AssignableSelector),
@@ -5428,7 +5429,7 @@ impl RuleModel for Selector {
 }
 
 /// And(Modified(?,Id(typeArguments)), Id(arguments))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ArgumentPart {
     pub type_arguments: Option<TypeArguments>,
     pub arguments: Arguments,
@@ -5446,7 +5447,7 @@ impl RuleModel for ArgumentPart {
 }
 
 /// Or( Raw(++), Raw(--), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum IncrementOperator {
     PlusPlus(Token),
     MinusMinus(Token),
@@ -5465,7 +5466,7 @@ impl RuleModel for IncrementOperator {
 }
 
 /// And(Id(primary), Id(assignableSelectorPart))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct AssignableExpressionPrimary {
     pub primary: Primary,
     pub assignable_selector_part: AssignableSelectorPart,
@@ -5483,7 +5484,7 @@ impl RuleModel for AssignableExpressionPrimary {
 }
 
 /// And(Raw(super), Id(unconditionalAssignableSelector))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct AssignableExpressionUnconditionalAssignableSelector {
     pub super_token: Token,
     pub unconditional_assignable_selector: UnconditionalAssignableSelector,
@@ -5501,7 +5502,7 @@ impl RuleModel for AssignableExpressionUnconditionalAssignableSelector {
 }
 
 /// Or( And(Id(primary), Id(assignableSelectorPart)), And(Raw(super), Id(unconditionalAssignableSelector)), Id(identifier), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum AssignableExpression {
     Primary(AssignableExpressionPrimary),
     UnconditionalAssignableSelector(AssignableExpressionUnconditionalAssignableSelector),
@@ -5524,7 +5525,7 @@ impl RuleModel for AssignableExpression {
 }
 
 /// And(Modified(*,Id(selector)), Id(assignableSelector))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct AssignableSelectorPart {
     pub selector: Vec<Selector>,
     pub assignable_selector: AssignableSelector,
@@ -5542,7 +5543,7 @@ impl RuleModel for AssignableSelectorPart {
 }
 
 /// And(Raw([), Id(expression), Raw(]))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct UnconditionalAssignableSelectorExpression {
     pub open_square_bracket_token: Token,
     pub expression: Expression,
@@ -5562,7 +5563,7 @@ impl RuleModel for UnconditionalAssignableSelectorExpression {
 }
 
 /// And(Raw(.), Id(identifier))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct UnconditionalAssignableSelectorIdentifier {
     pub period_token: Token,
     pub identifier: Identifier,
@@ -5580,7 +5581,7 @@ impl RuleModel for UnconditionalAssignableSelectorIdentifier {
 }
 
 /// Or( And(Raw([), Id(expression), Raw(])), And(Raw(.), Id(identifier)), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum UnconditionalAssignableSelector {
     Expression(UnconditionalAssignableSelectorExpression),
     Identifier(UnconditionalAssignableSelectorIdentifier),
@@ -5603,7 +5604,7 @@ impl RuleModel for UnconditionalAssignableSelector {
 }
 
 /// And(Raw(?.), Id(identifier))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct AssignableSelectorIdentifier {
     pub question_id_token: Token,
     pub identifier: Identifier,
@@ -5621,7 +5622,7 @@ impl RuleModel for AssignableSelectorIdentifier {
 }
 
 /// And(Raw(?), Raw([), Id(expression), Raw(]))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct AssignableSelectorQuestionToken {
     pub question_token: Token,
     pub open_square_bracket_token: Token,
@@ -5643,7 +5644,7 @@ impl RuleModel for AssignableSelectorQuestionToken {
 }
 
 /// Or( Id(unconditionalAssignableSelector), And(Raw(?.), Id(identifier)), And(Raw(?), Raw([), Id(expression), Raw(])), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum AssignableSelector {
     UnconditionalAssignableSelector(UnconditionalAssignableSelector),
     Identifier(AssignableSelectorIdentifier),
@@ -5666,7 +5667,7 @@ impl RuleModel for AssignableSelector {
 }
 
 /// Or( Id(IDENTIFIER), Id(BUILT_IN_IDENTIFIER), Id(OTHER_IDENTIFIER), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum Identifier {
     Identifier(Token),
     BuiltInIdentifier(Token),
@@ -5687,7 +5688,7 @@ impl RuleModel for Identifier {
 }
 
 /// Or( Id(IDENTIFIER), Id(OTHER_IDENTIFIER), Raw(dynamic), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum TypeIdentifier {
     Identifier(Token),
     OtherIdentifier(Token),
@@ -5708,7 +5709,7 @@ impl RuleModel for TypeIdentifier {
 }
 
 /// And(Id(typeIdentifier), Raw(.), Id(identifier))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct QualifiedNameSingle {
     pub type_identifier: TypeIdentifier,
     pub period_token: Token,
@@ -5728,7 +5729,7 @@ impl RuleModel for QualifiedNameSingle {
 }
 
 /// And(Id(typeIdentifier), Raw(.), Id(typeIdentifier), Raw(.), Id(identifier))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct QualifiedNameDouble {
     pub type_identifier: TypeIdentifier,
     pub period_token: Token,
@@ -5752,7 +5753,7 @@ impl RuleModel for QualifiedNameDouble {
 }
 
 /// Or( And(Id(typeIdentifier), Raw(.), Id(identifier)), And(Id(typeIdentifier), Raw(.), Id(typeIdentifier), Raw(.), Id(identifier)), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum QualifiedName {
     QualifiedNameSingle(QualifiedNameSingle),
     QualifiedNameDouble(QualifiedNameDouble),
@@ -5771,7 +5772,7 @@ impl RuleModel for QualifiedName {
 }
 
 /// And(Id(isOperator), Id(typeNotVoid))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TypeTest {
     pub is_operator: IsOperator,
     pub type_not_void: TypeNotVoid,
@@ -5789,7 +5790,7 @@ impl RuleModel for TypeTest {
 }
 
 /// And(Raw(is), Modified(?,Raw(!)))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct IsOperator {
     pub is_token: Token,
     pub exclamation_token: Option<Token>,
@@ -5811,7 +5812,7 @@ impl RuleModel for IsOperator {
 }
 
 /// And(Id(asOperator), Id(typeNotVoid))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TypeCast {
     pub as_operator: AsOperator,
     pub type_not_void: TypeNotVoid,
@@ -5843,7 +5844,7 @@ impl RuleModel for Statements {
 }
 
 /// And(Modified(*,Id(label)), Id(nonLabelledStatement))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct StatementInner {
     pub label: Vec<Label>,
     pub non_labelled_statement: NonLabelledStatement,
@@ -5863,7 +5864,7 @@ impl RuleModel for Statement {
 }
 
 /// Or( Id(block), Id(localVariableDeclaration), Id(forStatement), Id(whileStatement), Id(doStatement), Id(switchStatement), Id(ifStatement), Id(rethrowStatement), Id(tryStatement), Id(breakStatement), Id(continueStatement), Id(returnStatement), Id(yieldStatement), Id(yieldEachStatement), Id(expressionStatement), Id(assertStatement), Id(localFunctionDeclaration), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum NonLabelledStatement {
     Block(Block),
     LocalVariableDeclaration(LocalVariableDeclaration),
@@ -5916,7 +5917,7 @@ impl RuleModel for NonLabelledStatement {
 }
 
 /// And(Modified(?,Id(expression)), Raw(;))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ExpressionStatement {
     pub expression: Option<Expression>,
     pub semicolon_token: Token,
@@ -5934,7 +5935,7 @@ impl RuleModel for ExpressionStatement {
 }
 
 /// And(Id(metadata), Id(initializedVariableDeclaration), Raw(;))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct LocalVariableDeclaration {
     pub metadata: Metadata,
     pub initialized_variable_declaration: InitializedVariableDeclaration,
@@ -5954,7 +5955,7 @@ impl RuleModel for LocalVariableDeclaration {
 }
 
 /// And(Id(metadata), Id(functionSignature), Id(functionBody))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct LocalFunctionDeclaration {
     pub metadata: Metadata,
     pub function_signature: FunctionSignature,
@@ -5974,7 +5975,7 @@ impl RuleModel for LocalFunctionDeclaration {
 }
 
 /// And(Raw(else), Id(statement))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct StatementElse {
     pub else_token: Token,
     pub statement: Statement,
@@ -5992,7 +5993,7 @@ impl RuleModel for StatementElse {
 }
 
 /// And(Raw(if), Raw((), Id(expression), Raw()), Id(statement), Modified(?,And(Raw(else), Id(statement))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct IfStatement {
     pub if_token: Token,
     pub open_paren_token: Token,
@@ -6018,7 +6019,7 @@ impl RuleModel for IfStatement {
 }
 
 /// And(Modified(?,Raw(await)), Raw(for), Raw((), Id(forLoopParts), Raw()), Id(statement))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ForStatement {
     pub await_token: Option<Token>,
     pub for_token: Token,
@@ -6048,7 +6049,7 @@ impl RuleModel for ForStatement {
 }
 
 /// And(Id(forInitializerStatement), Modified(?,Id(expression)), Raw(;), Modified(?,Id(expressionList)))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ForLoopPartsSemicolonToken {
     pub for_initializer_statement: ForInitializerStatement,
     pub expression: Option<Expression>,
@@ -6070,7 +6071,7 @@ impl RuleModel for ForLoopPartsSemicolonToken {
 }
 
 /// And(Id(metadata), Id(declaredIdentifier), Raw(in), Id(expression))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ForLoopPartsMetadata {
     pub metadata: Metadata,
     pub declared_identifier: DeclaredIdentifier,
@@ -6092,7 +6093,7 @@ impl RuleModel for ForLoopPartsMetadata {
 }
 
 /// And(Id(identifier), Raw(in), Id(expression))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ForLoopPartsInToken {
     pub identifier: Identifier,
     pub in_token: Token,
@@ -6112,7 +6113,7 @@ impl RuleModel for ForLoopPartsInToken {
 }
 
 /// Or( And(Id(forInitializerStatement), Modified(?,Id(expression)), Raw(;), Modified(?,Id(expressionList))), And(Id(metadata), Id(declaredIdentifier), Raw(in), Id(expression)), And(Id(identifier), Raw(in), Id(expression)), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum ForLoopParts {
     Semicolon(ForLoopPartsSemicolonToken),
     Metadata(ForLoopPartsMetadata),
@@ -6133,7 +6134,7 @@ impl RuleModel for ForLoopParts {
 }
 
 /// And(Modified(?,Id(expression)), Raw(;))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ForInitializerStatementSemicolonToken {
     pub expression: Option<Expression>,
     pub semicolon_token: Token,
@@ -6151,7 +6152,7 @@ impl RuleModel for ForInitializerStatementSemicolonToken {
 }
 
 /// Or( Id(localVariableDeclaration), And(Modified(?,Id(expression)), Raw(;)), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum ForInitializerStatement {
     LocalVariableDeclaration(LocalVariableDeclaration),
     Semicolon(ForInitializerStatementSemicolonToken),
@@ -6174,7 +6175,7 @@ impl RuleModel for ForInitializerStatement {
 }
 
 /// And(Raw(while), Raw((), Id(expression), Raw()), Id(statement))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct WhileStatement {
     pub while_token: Token,
     pub open_paren_token: Token,
@@ -6198,7 +6199,7 @@ impl RuleModel for WhileStatement {
 }
 
 /// And(Raw(do), Id(statement), Raw(while), Raw((), Id(expression), Raw()), Raw(;))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct DoStatement {
     pub do_token: Token,
     pub statement: Statement,
@@ -6226,7 +6227,7 @@ impl RuleModel for DoStatement {
 }
 
 /// And(Raw(switch), Raw((), Id(expression), Raw()), Raw({), Modified(*,Id(switchCase)), Modified(?,Id(defaultCase)), Raw(}))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct SwitchStatement {
     pub switch_token: Token,
     pub open_paren_token: Token,
@@ -6256,7 +6257,7 @@ impl RuleModel for SwitchStatement {
 }
 
 /// And(Modified(*,Id(label)), Raw(case), Id(expression), Raw(:), Id(statements))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct SwitchCase {
     pub label: Vec<Label>,
     pub case_token: Token,
@@ -6280,7 +6281,7 @@ impl RuleModel for SwitchCase {
 }
 
 /// And(Modified(*,Id(label)), Raw(default), Raw(:), Id(statements))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct DefaultCase {
     pub label: Vec<Label>,
     pub default_token: Token,
@@ -6302,7 +6303,7 @@ impl RuleModel for DefaultCase {
 }
 
 /// And(Raw(rethrow), Raw(;))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct RethrowStatement {
     pub rethrow_token: Token,
     pub semicolon_token: Token,
@@ -6320,7 +6321,7 @@ impl RuleModel for RethrowStatement {
 }
 
 /// And(Modified(+,Id(onPart)), Modified(?,Id(finallyPart)))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TryStatementOnPart {
     pub on_part: Vec<OnPart>,
     pub finally_part: Option<FinallyPart>,
@@ -6338,7 +6339,7 @@ impl RuleModel for TryStatementOnPart {
 }
 
 /// Or( And(Modified(+,Id(onPart)), Modified(?,Id(finallyPart))), Id(finallyPart), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum TryStatementCatchFinally {
     TryStatementOnPart(TryStatementOnPart),
     FinallyPart(FinallyPart),
@@ -6359,7 +6360,7 @@ impl RuleModel for TryStatementCatchFinally {
 }
 
 /// And(Raw(try), Id(block), Or( And(Modified(+,Id(onPart)), Modified(?,Id(finallyPart))), Id(finallyPart), ))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TryStatement {
     pub try_token: Token,
     pub block: Block,
@@ -6379,7 +6380,7 @@ impl RuleModel for TryStatement {
 }
 
 /// And(Id(catchPart), Id(block))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct OnPartCatchPart {
     pub catch_part: CatchPart,
     pub block: Block,
@@ -6397,7 +6398,7 @@ impl RuleModel for OnPartCatchPart {
 }
 
 /// And(Raw(on), Id(typeNotVoid), Modified(?,Id(catchPart)), Id(block))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct OnPartTypeNotVoid {
     pub on_token: Token,
     pub type_not_void: TypeNotVoid,
@@ -6419,7 +6420,7 @@ impl RuleModel for OnPartTypeNotVoid {
 }
 
 /// Or( And(Id(catchPart), Id(block)), And(Raw(on), Id(typeNotVoid), Modified(?,Id(catchPart)), Id(block)), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum OnPart {
     CatchPart(OnPartCatchPart),
     TypeNotVoid(OnPartTypeNotVoid),
@@ -6438,7 +6439,7 @@ impl RuleModel for OnPart {
 }
 
 /// And(Raw(,), Id(identifier))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct IdentifierItem {
     pub comma_token: Token,
     pub identifier: Identifier,
@@ -6456,7 +6457,7 @@ impl RuleModel for IdentifierItem {
 }
 
 /// And(Raw(catch), Raw((), Id(identifier), Modified(?,And(Raw(,), Id(identifier))), Raw()))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct CatchPart {
     pub catch_token: Token,
     pub open_paren_token: Token,
@@ -6480,7 +6481,7 @@ impl RuleModel for CatchPart {
 }
 
 /// And(Raw(finally), Id(block))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct FinallyPart {
     pub finally_token: Token,
     pub block: Block,
@@ -6498,7 +6499,7 @@ impl RuleModel for FinallyPart {
 }
 
 /// And(Raw(return), Modified(?,Id(expression)), Raw(;))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ReturnStatement {
     pub return_token: Token,
     pub expression: Option<Expression>,
@@ -6518,7 +6519,7 @@ impl RuleModel for ReturnStatement {
 }
 
 /// And(Id(identifier), Raw(:))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Label {
     pub identifier: Identifier,
     pub colon_token: Token,
@@ -6536,7 +6537,7 @@ impl RuleModel for Label {
 }
 
 /// And(Raw(break), Modified(?,Id(identifier)), Raw(;))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct BreakStatement {
     pub break_token: Token,
     pub identifier: Option<Identifier>,
@@ -6556,7 +6557,7 @@ impl RuleModel for BreakStatement {
 }
 
 /// And(Raw(continue), Modified(?,Id(identifier)), Raw(;))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ContinueStatement {
     pub continue_token: Token,
     pub identifier: Option<Identifier>,
@@ -6576,7 +6577,7 @@ impl RuleModel for ContinueStatement {
 }
 
 /// And(Raw(yield), Id(expression), Raw(;))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct YieldStatement {
     pub yield_token: Token,
     pub expression: Expression,
@@ -6596,7 +6597,7 @@ impl RuleModel for YieldStatement {
 }
 
 /// And(Raw(yield), Raw(*), Id(expression), Raw(;))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct YieldEachStatement {
     pub yield_token: Token,
     pub asterisk_token: Token,
@@ -6618,7 +6619,7 @@ impl RuleModel for YieldEachStatement {
 }
 
 /// And(Id(assertion), Raw(;))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct AssertStatement {
     pub assertion: Assertion,
     pub semicolon_token: Token,
@@ -6636,7 +6637,7 @@ impl RuleModel for AssertStatement {
 }
 
 /// And(Raw(assert), Raw((), Id(expression), Modified(?,And(Raw(,), Id(expression))), Modified(?,Raw(,)), Raw()))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Assertion {
     pub assert_token: Token,
     pub open_paren_token: Token,
@@ -6666,7 +6667,7 @@ impl RuleModel for Assertion {
 }
 
 /// And(Raw(external), Id(functionSignature), Raw(;))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ExternalFunctionSignature {
     pub external_token: Token,
     pub function_signature: FunctionSignature,
@@ -6686,7 +6687,7 @@ impl RuleModel for ExternalFunctionSignature {
 }
 
 /// And(Raw(external), Id(getterSignature), Raw(;))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ExternalGetterSignature {
     pub external_token: Token,
     pub getter_signature: GetterSignature,
@@ -6706,7 +6707,7 @@ impl RuleModel for ExternalGetterSignature {
 }
 
 /// And(Raw(external), Id(setterSignature), Raw(;))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ExternalSetterSignature {
     pub external_token: Token,
     pub setter_signature: SetterSignature,
@@ -6726,7 +6727,7 @@ impl RuleModel for ExternalSetterSignature {
 }
 
 /// And(Id(functionSignature), Id(functionBody))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TopLevelDeclarationFunctionSignature {
     pub function_signature: FunctionSignature,
     pub function_body: FunctionBody,
@@ -6744,7 +6745,7 @@ impl RuleModel for TopLevelDeclarationFunctionSignature {
 }
 
 /// And(Id(getterSignature), Id(functionBody))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TopLevelDeclarationGetterSignature {
     pub getter_signature: GetterSignature,
     pub function_body: FunctionBody,
@@ -6762,7 +6763,7 @@ impl RuleModel for TopLevelDeclarationGetterSignature {
 }
 
 /// And(Id(setterSignature), Id(functionBody))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TopLevelDeclarationSetterSignature {
     pub setter_signature: SetterSignature,
     pub function_body: FunctionBody,
@@ -6780,7 +6781,7 @@ impl RuleModel for TopLevelDeclarationSetterSignature {
 }
 
 /// Or( Raw(final), Raw(const), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum FinalOrConst {
     Final(Token),
     Const(Token),
@@ -6799,7 +6800,7 @@ impl RuleModel for FinalOrConst {
 }
 
 /// And(Or( Raw(final), Raw(const), ), Modified(?,Id(type)), Id(staticFinalDeclarationList), Raw(;))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TopLevelDeclarationSemicolonToken {
     pub final_or_const: FinalOrConst,
     pub dart_type: Option<Type>,
@@ -6821,7 +6822,7 @@ impl RuleModel for TopLevelDeclarationSemicolonToken {
 }
 
 /// And(Raw(late), Raw(final), Modified(?,Id(type)), Id(initializedIdentifierList), Raw(;))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TopLevelDeclarationLateToken {
     pub late_token: Token,
     pub final_token: Token,
@@ -6845,7 +6846,7 @@ impl RuleModel for TopLevelDeclarationLateToken {
 }
 
 /// And(Modified(?,Raw(late)), Id(varOrType), Id(initializedIdentifierList), Raw(;))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TopLevelDeclarationVarOrType {
     pub late_token: Option<Token>,
     pub var_or_type: VarOrType,
@@ -6871,7 +6872,7 @@ impl RuleModel for TopLevelDeclarationVarOrType {
 }
 
 /// Or( Id(classDeclaration), Id(mixinDeclaration), Id(extensionDeclaration), Id(enumType), Id(typeAlias), And(Raw(external), Id(functionSignature), Raw(;)), And(Raw(external), Id(getterSignature), Raw(;)), And(Raw(external), Id(setterSignature), Raw(;)), And(Id(functionSignature), Id(functionBody)), And(Id(getterSignature), Id(functionBody)), And(Id(setterSignature), Id(functionBody)), And(Or( Raw(final), Raw(const), ), Modified(?,Id(type)), Id(staticFinalDeclarationList), Raw(;)), And(Raw(late), Raw(final), Modified(?,Id(type)), Id(initializedIdentifierList), Raw(;)), And(Modified(?,Raw(late)), Id(varOrType), Id(initializedIdentifierList), Raw(;)), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum TopLevelDeclaration {
     ClassDeclaration(ClassDeclaration),
     MixinDeclaration(MixinDeclaration),
@@ -6930,7 +6931,7 @@ impl RuleModel for TopLevelDeclaration {
 }
 
 /// And(Id(metadata), Id(topLevelDeclaration))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct LibraryDeclarationMetadata {
     pub metadata: Metadata,
     pub top_level_declaration: TopLevelDeclaration,
@@ -6948,7 +6949,7 @@ impl RuleModel for LibraryDeclarationMetadata {
 }
 
 /// And(Modified(?,Id(scriptTag)), Modified(?,Id(libraryName)), Modified(*,Id(importOrExport)), Modified(*,Id(partDirective)), Modified(*,And(Id(metadata), Id(topLevelDeclaration))), Id(EOF))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct LibraryDeclaration {
     pub script_tag: Option<ScriptTag>,
     pub library_name: Option<LibraryName>,
@@ -6974,7 +6975,7 @@ impl RuleModel for LibraryDeclaration {
 }
 
 /// And(Raw(#!), Id(SCRIPT_TAG_CONTENT), Id(NEWLINE))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ScriptTag {
     pub hash_exclamation_token: Token,
     pub script_tag_content: Token,
@@ -6994,7 +6995,7 @@ impl RuleModel for ScriptTag {
 }
 
 /// And(Id(metadata), Raw(library), Id(dottedIdentifierList), Raw(;))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct LibraryName {
     pub metadata: Metadata,
     pub library_token: Token,
@@ -7016,7 +7017,7 @@ impl RuleModel for LibraryName {
 }
 
 /// Or( Id(libraryImport), Id(libraryExport), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum ImportOrExport {
     LibraryImport(LibraryImport),
     LibraryExport(LibraryExport),
@@ -7035,7 +7036,7 @@ impl RuleModel for ImportOrExport {
 }
 
 /// And(Id(identifier), Modified(*,And(Raw(.), Id(identifier))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct DottedIdentifierList {
     pub identifier: Identifier,
     pub identifier_selector: Vec<IdentifierSelector>,
@@ -7053,7 +7054,7 @@ impl RuleModel for DottedIdentifierList {
 }
 
 /// And(Id(metadata), Id(importSpecification))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct LibraryImport {
     pub metadata: Metadata,
     pub import_specification: ImportSpecification,
@@ -7071,7 +7072,7 @@ impl RuleModel for LibraryImport {
 }
 
 /// And(Modified(?,Raw(deferred)), Raw(as), Id(identifier))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ImportSpecificationAsToken {
     pub deferred_token: Option<Token>,
     pub as_token: Token,
@@ -7095,7 +7096,7 @@ impl RuleModel for ImportSpecificationAsToken {
 }
 
 /// And(Raw(import), Id(configurableUri), Modified(?,And(Modified(?,Raw(deferred)), Raw(as), Id(identifier))), Modified(*,Id(combinator)), Raw(;))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ImportSpecification {
     pub import_token: Token,
     pub configurable_uri: ConfigurableUri,
@@ -7119,7 +7120,7 @@ impl RuleModel for ImportSpecification {
 }
 
 /// And(Id(metadata), Raw(export), Id(configurableUri), Modified(*,Id(combinator)), Raw(;))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct LibraryExport {
     pub metadata: Metadata,
     pub export_token: Token,
@@ -7143,7 +7144,7 @@ impl RuleModel for LibraryExport {
 }
 
 /// And(Raw(show), Id(identifierList))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ShowCombinator {
     pub show_token: Token,
     pub identifier_list: IdentifierList,
@@ -7161,7 +7162,7 @@ impl RuleModel for ShowCombinator {
 }
 
 /// And(Raw(hide), Id(identifierList))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct HideCombinator {
     pub hide_token: Token,
     pub identifier_list: IdentifierList,
@@ -7179,7 +7180,7 @@ impl RuleModel for HideCombinator {
 }
 
 /// Or( And(Raw(show), Id(identifierList)), And(Raw(hide), Id(identifierList)), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum Combinator {
     ShowCombinator(ShowCombinator),
     HideCombinator(HideCombinator),
@@ -7198,7 +7199,7 @@ impl RuleModel for Combinator {
 }
 
 /// And(Id(identifier), Modified(*,And(Raw(,), Id(identifier))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct IdentifierList {
     pub identifier: Identifier,
     pub identifier_item: Vec<IdentifierItem>,
@@ -7216,7 +7217,7 @@ impl RuleModel for IdentifierList {
 }
 
 /// And(Id(metadata), Raw(part), Id(uri), Raw(;))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct PartDirective {
     pub metadata: Metadata,
     pub part_token: Token,
@@ -7238,7 +7239,7 @@ impl RuleModel for PartDirective {
 }
 
 /// Or( Id(dottedIdentifierList), Id(uri), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum DottedIdentifierListOrUri {
     DottedIdentifierList(DottedIdentifierList),
     Uri(Uri),
@@ -7259,7 +7260,7 @@ impl RuleModel for DottedIdentifierListOrUri {
 }
 
 /// And(Id(metadata), Raw(part), Raw(of), Or( Id(dottedIdentifierList), Id(uri), ), Raw(;))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct PartHeader {
     pub metadata: Metadata,
     pub part_token: Token,
@@ -7283,7 +7284,7 @@ impl RuleModel for PartHeader {
 }
 
 /// And(Id(metadata), Id(topLevelDeclaration))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct PartDeclarationMetadata {
     pub metadata: Metadata,
     pub top_level_declaration: TopLevelDeclaration,
@@ -7301,7 +7302,7 @@ impl RuleModel for PartDeclarationMetadata {
 }
 
 /// And(Id(partHeader), Modified(*,And(Id(metadata), Id(topLevelDeclaration))), Id(EOF))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct PartDeclaration {
     pub part_header: PartHeader,
     pub metadata: Vec<PartDeclarationMetadata>,
@@ -7324,7 +7325,7 @@ impl RuleModel for PartDeclaration {
 pub type Uri = StringLiteral;
 
 /// And(Id(uri), Modified(*,Id(configurationUri)))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ConfigurableUri {
     pub uri: Uri,
     pub configuration_uri: Vec<ConfigurationUri>,
@@ -7342,7 +7343,7 @@ impl RuleModel for ConfigurableUri {
 }
 
 /// And(Raw(if), Raw((), Id(uriTest), Raw()), Id(uri))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ConfigurationUri {
     pub if_token: Token,
     pub open_paren_token: Token,
@@ -7366,7 +7367,7 @@ impl RuleModel for ConfigurationUri {
 }
 
 /// And(Raw(==), Id(stringLiteral))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct StringLiteralDoubleEqual {
     pub double_equal_token: Token,
     pub string_literal: StringLiteral,
@@ -7384,7 +7385,7 @@ impl RuleModel for StringLiteralDoubleEqual {
 }
 
 /// And(Id(dottedIdentifierList), Modified(?,And(Raw(==), Id(stringLiteral))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct UriTest {
     pub dotted_identifier_list: DottedIdentifierList,
     pub string_literal_double_equal: Option<StringLiteralDoubleEqual>,
@@ -7402,7 +7403,7 @@ impl RuleModel for UriTest {
 }
 
 /// And(Id(functionType), Modified(?,Raw(?)))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TypeFunctionType {
     pub function_type: FunctionType,
     pub question_token: Option<Token>,
@@ -7424,7 +7425,7 @@ impl RuleModel for TypeFunctionType {
 }
 
 /// Or( And(Id(functionType), Modified(?,Raw(?))), Id(typeNotFunction), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum Type {
     FunctionType(TypeFunctionType),
     TypeNotFunction(TypeNotFunction),
@@ -7443,7 +7444,7 @@ impl RuleModel for Type {
 }
 
 /// And(Id(functionType), Modified(?,Raw(?)))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TypeNotVoidFunctionType {
     pub function_type: FunctionType,
     pub question_token: Option<Token>,
@@ -7465,7 +7466,7 @@ impl RuleModel for TypeNotVoidFunctionType {
 }
 
 /// Or( And(Id(functionType), Modified(?,Raw(?))), Id(typeNotVoidNotFunction), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum TypeNotVoid {
     FunctionType(TypeNotVoidFunctionType),
     TypeNotVoidNotFunction(TypeNotVoidNotFunction),
@@ -7484,7 +7485,7 @@ impl RuleModel for TypeNotVoid {
 }
 
 /// Or( Raw(void), Id(typeNotVoidNotFunction), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum TypeNotFunction {
     Void(Token),
     TypeNotVoidNotFunction(TypeNotVoidNotFunction),
@@ -7505,7 +7506,7 @@ impl RuleModel for TypeNotFunction {
 }
 
 /// And(Id(typeName), Modified(?,Id(typeArguments)), Modified(?,Raw(?)))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TypeNotVoidNotFunctionTypeName {
     pub type_name: TypeName,
     pub type_arguments: Option<TypeArguments>,
@@ -7529,7 +7530,7 @@ impl RuleModel for TypeNotVoidNotFunctionTypeName {
 }
 
 /// And(Raw(Function), Modified(?,Raw(?)))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TypeNotVoidNotFunctionFunctionToken {
     pub function_token: Token,
     pub question_token: Option<Token>,
@@ -7551,7 +7552,7 @@ impl RuleModel for TypeNotVoidNotFunctionFunctionToken {
 }
 
 /// Or( And(Id(typeName), Modified(?,Id(typeArguments)), Modified(?,Raw(?))), And(Raw(Function), Modified(?,Raw(?))), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum TypeNotVoidNotFunction {
     TypeName(TypeNotVoidNotFunctionTypeName),
     Function(TypeNotVoidNotFunctionFunctionToken),
@@ -7574,7 +7575,7 @@ impl RuleModel for TypeNotVoidNotFunction {
 }
 
 /// And(Raw(.), Id(typeIdentifier))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TypeIdentifierSelector {
     pub period_token: Token,
     pub type_identifier: TypeIdentifier,
@@ -7592,7 +7593,7 @@ impl RuleModel for TypeIdentifierSelector {
 }
 
 /// And(Id(typeIdentifier), Modified(?,And(Raw(.), Id(typeIdentifier))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TypeName {
     pub type_identifier: TypeIdentifier,
     pub type_identifier_selector: Option<TypeIdentifierSelector>,
@@ -7610,7 +7611,7 @@ impl RuleModel for TypeName {
 }
 
 /// And(Raw(<), Id(typeList), Raw(>))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TypeArgumentsInner {
     pub less_token: Token,
     pub type_list: TypeList,
@@ -7632,7 +7633,7 @@ impl RuleModel for TypeArguments {
 }
 
 /// And(Raw(,), Id(type))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TypeItem {
     pub comma_token: Token,
     pub dart_type: Type,
@@ -7650,7 +7651,7 @@ impl RuleModel for TypeItem {
 }
 
 /// And(Id(type), Modified(*,And(Raw(,), Id(type))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TypeList {
     pub dart_type: Type,
     pub type_item: Vec<TypeItem>,
@@ -7668,7 +7669,7 @@ impl RuleModel for TypeList {
 }
 
 /// And(Raw(,), Id(typeNotVoidNotFunction))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TypeNotVoidNotFunctionItem {
     pub comma_token: Token,
     pub type_not_void_not_function: TypeNotVoidNotFunction,
@@ -7686,7 +7687,7 @@ impl RuleModel for TypeNotVoidNotFunctionItem {
 }
 
 /// And(Id(typeNotVoidNotFunction), Modified(*,And(Raw(,), Id(typeNotVoidNotFunction))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TypeNotVoidNotFunctionList {
     pub type_not_void_not_function: TypeNotVoidNotFunction,
     pub type_not_void_not_function_item: Vec<TypeNotVoidNotFunctionItem>,
@@ -7704,7 +7705,7 @@ impl RuleModel for TypeNotVoidNotFunctionList {
 }
 
 /// And(Id(typeNotFunction), Id(functionTypeTails))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct FunctionTypeTypeNotFunction {
     pub type_not_function: TypeNotFunction,
     pub function_type_tails: FunctionTypeTails,
@@ -7722,7 +7723,7 @@ impl RuleModel for FunctionTypeTypeNotFunction {
 }
 
 /// Or( Id(functionTypeTails), And(Id(typeNotFunction), Id(functionTypeTails)), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum FunctionType {
     FunctionTypeTails(FunctionTypeTails),
     TypeNotFunction(FunctionTypeTypeNotFunction),
@@ -7741,7 +7742,7 @@ impl RuleModel for FunctionType {
 }
 
 /// And(Id(functionTypeTail), Modified(?,Raw(?)), Id(functionTypeTails))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct FunctionTypeTailsMany {
     pub function_type_tail: FunctionTypeTail,
     pub question_token: Option<Token>,
@@ -7765,7 +7766,7 @@ impl RuleModel for FunctionTypeTailsMany {
 }
 
 /// Or( And(Id(functionTypeTail), Modified(?,Raw(?)), Id(functionTypeTails)), Id(functionTypeTail), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum FunctionTypeTailsInner {
     FunctionTypeTailsMany(FunctionTypeTailsMany),
     FunctionTypeTail(FunctionTypeTail),
@@ -7788,7 +7789,7 @@ impl RuleModel for FunctionTypeTails {
 }
 
 /// And(Raw(Function), Modified(?,Id(typeParameters)), Id(parameterTypeList))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct FunctionTypeTail {
     pub function_token: Token,
     pub type_parameters: Option<TypeParameters>,
@@ -7808,7 +7809,7 @@ impl RuleModel for FunctionTypeTail {
 }
 
 /// And(Raw((), Id(normalParameterTypes), Raw(,), Id(optionalParameterTypes), Raw()))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct NormalWithOptionalParameters {
     pub open_paren_token: Token,
     pub normal_parameter_types: NormalParameterTypes,
@@ -7832,7 +7833,7 @@ impl RuleModel for NormalWithOptionalParameters {
 }
 
 /// And(Raw((), Id(normalParameterTypes), Modified(?,Raw(,)), Raw()))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ParameterTypeListNormalParameterTypes {
     pub open_paren_token: Token,
     pub normal_parameter_types: NormalParameterTypes,
@@ -7858,7 +7859,7 @@ impl RuleModel for ParameterTypeListNormalParameterTypes {
 }
 
 /// And(Raw((), Id(optionalParameterTypes), Raw()))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ParameterTypeListOptionalParameterTypes {
     pub open_paren_token: Token,
     pub optional_parameter_types: OptionalParameterTypes,
@@ -7878,7 +7879,7 @@ impl RuleModel for ParameterTypeListOptionalParameterTypes {
 }
 
 /// Or( And(Raw((), Raw())), And(Raw((), Id(normalParameterTypes), Raw(,), Id(optionalParameterTypes), Raw())), And(Raw((), Id(normalParameterTypes), Modified(?,Raw(,)), Raw())), And(Raw((), Id(optionalParameterTypes), Raw())), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum ParameterTypeListInner {
     EmptyParameters(EmptyParameters),
     NormalWithOptionalParameters(NormalWithOptionalParameters),
@@ -7909,7 +7910,7 @@ impl RuleModel for ParameterTypeList {
 }
 
 /// And(Raw(,), Id(normalParameterType))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct NormalParameterTypeItem {
     pub comma_token: Token,
     pub normal_parameter_type: NormalParameterType,
@@ -7927,7 +7928,7 @@ impl RuleModel for NormalParameterTypeItem {
 }
 
 /// And(Id(normalParameterType), Modified(*,And(Raw(,), Id(normalParameterType))))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct NormalParameterTypes {
     pub normal_parameter_type: NormalParameterType,
     pub normal_parameter_type_item: Vec<NormalParameterTypeItem>,
@@ -7945,7 +7946,7 @@ impl RuleModel for NormalParameterTypes {
 }
 
 /// And(Id(metadata), Id(typedIdentifier))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct IdentifierParameterType {
     pub metadata: Metadata,
     pub typed_identifier: TypedIdentifier,
@@ -7963,7 +7964,7 @@ impl RuleModel for IdentifierParameterType {
 }
 
 /// And(Id(metadata), Id(type))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TypeParameterType {
     pub metadata: Metadata,
     pub dart_type: Type,
@@ -7981,7 +7982,7 @@ impl RuleModel for TypeParameterType {
 }
 
 /// Or( And(Id(metadata), Id(typedIdentifier)), And(Id(metadata), Id(type)), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum NormalParameterType {
     IdentifierParameterType(IdentifierParameterType),
     TypeParameterType(TypeParameterType),
@@ -8002,7 +8003,7 @@ impl RuleModel for NormalParameterType {
 }
 
 /// Or( Id(optionalPositionalParameterTypes), Id(namedParameterTypes), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum OptionalParameterTypes {
     OptionalPositionalParameterTypes(OptionalPositionalParameterTypes),
     NamedParameterTypes(NamedParameterTypes),
@@ -8025,7 +8026,7 @@ impl RuleModel for OptionalParameterTypes {
 }
 
 /// And(Raw([), Id(normalParameterTypes), Modified(?,Raw(,)), Raw(]))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct OptionalPositionalParameterTypes {
     pub open_square_bracket_token: Token,
     pub normal_parameter_types: NormalParameterTypes,
@@ -8051,7 +8052,7 @@ impl RuleModel for OptionalPositionalParameterTypes {
 }
 
 /// And(Raw(,), Id(namedParameterType))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct NamedParameterTypeItem {
     pub comma_token: Token,
     pub named_parameter_type: NamedParameterType,
@@ -8069,7 +8070,7 @@ impl RuleModel for NamedParameterTypeItem {
 }
 
 /// And(Raw({), Id(namedParameterType), Modified(*,And(Raw(,), Id(namedParameterType))), Modified(?,Raw(,)), Raw(}))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct NamedParameterTypes {
     pub open_curly_bracket_token: Token,
     pub named_parameter_type: NamedParameterType,
@@ -8097,7 +8098,7 @@ impl RuleModel for NamedParameterTypes {
 }
 
 /// And(Id(metadata), Modified(?,Raw(required)), Id(typedIdentifier))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct NamedParameterType {
     pub metadata: Metadata,
     pub required_token: Option<Token>,
@@ -8121,7 +8122,7 @@ impl RuleModel for NamedParameterType {
 }
 
 /// And(Id(type), Id(identifier))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TypedIdentifier {
     pub dart_type: Type,
     pub identifier: Identifier,
@@ -8139,7 +8140,7 @@ impl RuleModel for TypedIdentifier {
 }
 
 /// And(Raw(typedef), Id(typeIdentifier), Modified(?,Id(typeParameters)), Raw(=), Id(type), Raw(;))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TypeAliasTypeIdentifier {
     pub typedef_token: Token,
     pub type_identifier: TypeIdentifier,
@@ -8165,7 +8166,7 @@ impl RuleModel for TypeAliasTypeIdentifier {
 }
 
 /// And(Raw(typedef), Id(functionTypeAlias))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TypeAliasFunctionTypeAlias {
     pub typedef_token: Token,
     pub function_type_alias: FunctionTypeAlias,
@@ -8183,7 +8184,7 @@ impl RuleModel for TypeAliasFunctionTypeAlias {
 }
 
 /// Or( And(Raw(typedef), Id(typeIdentifier), Modified(?,Id(typeParameters)), Raw(=), Id(type), Raw(;)), And(Raw(typedef), Id(functionTypeAlias)), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum TypeAlias {
     TypeIdentifier(TypeAliasTypeIdentifier),
     FunctionTypeAlias(TypeAliasFunctionTypeAlias),
@@ -8202,7 +8203,7 @@ impl RuleModel for TypeAlias {
 }
 
 /// And(Id(functionPrefix), Id(formalParameterPart), Raw(;))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct FunctionTypeAlias {
     pub function_prefix: FunctionPrefix,
     pub formal_parameter_part: FormalParameterPart,
@@ -8222,7 +8223,7 @@ impl RuleModel for FunctionTypeAlias {
 }
 
 /// And(Modified(?,Id(type)), Id(identifier))
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct FunctionPrefix {
     pub dart_type: Option<Type>,
     pub identifier: Identifier,
@@ -8240,7 +8241,7 @@ impl RuleModel for FunctionPrefix {
 }
 
 /// Or( Id(SINGLE_LINE_COMMENT), Id(MULTI_LINE_COMMENT), )
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum Comment {
     SingleLineComment(Token),
     MultiLineComment(Token),
