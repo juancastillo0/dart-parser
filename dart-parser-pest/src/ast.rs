@@ -720,13 +720,14 @@ impl RuleModel for NormalFormalParameter {
     }
 }
 
-/// Or( Id(functionFormalParameter), Id(fieldFormalParameter), Id(simpleFormalParameter), )
+/// Or( Id(functionFormalParameter), Id(fieldFormalParameter), Id(simpleFormalParameter), Id(superFormalParameter), )
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum NormalFormalParameterNoMetadata {
     FunctionFormalParameter(FunctionFormalParameter),
     FieldFormalParameter(FieldFormalParameter),
     SimpleFormalParameter(SimpleFormalParameter),
+    SuperFormalParameter(SuperFormalParameter),
 }
 impl RuleModel for NormalFormalParameterNoMetadata {
     fn rule() -> Rule {
@@ -742,6 +743,9 @@ impl RuleModel for NormalFormalParameterNoMetadata {
             }
             Rule::SimpleFormalParameter => {
                 NormalFormalParameterNoMetadata::SimpleFormalParameter(ctx.parse_ast())
+            }
+            Rule::SuperFormalParameter => {
+                NormalFormalParameterNoMetadata::SuperFormalParameter(ctx.parse_ast())
             }
             _ => unreachable!(),
         }
@@ -892,6 +896,54 @@ impl RuleModel for FieldFormalParameter {
         Self {
             final_const_var_or_type: ctx.try_parse_ast(),
             this_token: ctx.parse_token(),
+            period_token: ctx.parse_token(),
+            identifier: ctx.parse_ast(),
+            formal_parameter_part: ctx.try_parse_ast(),
+        }
+    }
+}
+
+/// And(Id(formalParameterPart), Modified(?,Raw(?)))
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SuperFormalParameterFormalParameterPart {
+    pub formal_parameter_part: FormalParameterPart,
+    pub question_token: Option<Token>,
+}
+impl RuleModel for SuperFormalParameterFormalParameterPart {
+    fn rule() -> Rule {
+        Rule::SuperFormalParameterFormalParameterPart
+    }
+    fn parse(ctx: &mut ParseCtx) -> Self {
+        Self {
+            formal_parameter_part: ctx.parse_ast(),
+            question_token: if ctx.is_rule_next(Rule::QUESTION_TOKEN) {
+                Some(ctx.parse_token())
+            } else {
+                None
+            },
+        }
+    }
+}
+
+/// And(Modified(?,Id(finalConstVarOrType)), Raw(super), Raw(.), Id(identifier), Modified(?,And(Id(formalParameterPart), Modified(?,Raw(?)))))
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SuperFormalParameter {
+    pub final_const_var_or_type: Option<FinalConstVarOrType>,
+    pub super_token: Token,
+    pub period_token: Token,
+    pub identifier: Identifier,
+    pub formal_parameter_part: Option<SuperFormalParameterFormalParameterPart>,
+}
+impl RuleModel for SuperFormalParameter {
+    fn rule() -> Rule {
+        Rule::SuperFormalParameter
+    }
+    fn parse(ctx: &mut ParseCtx) -> Self {
+        Self {
+            final_const_var_or_type: ctx.try_parse_ast(),
+            super_token: ctx.parse_token(),
             period_token: ctx.parse_token(),
             identifier: ctx.parse_ast(),
             formal_parameter_part: ctx.try_parse_ast(),

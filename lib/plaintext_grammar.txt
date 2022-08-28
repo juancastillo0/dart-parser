@@ -48,6 +48,7 @@ normalFormalParameter ::=
 normalFormalParameterNoMetadata ::= functionFormalParameter
   | fieldFormalParameter
   | simpleFormalParameter
+  | superFormalParameter
 
 functionFormalParameter ::=
   'covariant'? type? identifier formalParameterPart '?'?
@@ -59,6 +60,9 @@ declaredIdentifier ::= 'covariant'? finalConstVarOrType identifier
 
 fieldFormalParameter ::=
   finalConstVarOrType? 'this' '.' identifier (formalParameterPart '?'?)?
+
+superFormalParameter ::=
+  finalConstVarOrType? 'super' '.' identifier (formalParameterPart '?'?)?
 
 defaultFormalParameter ::= normalFormalParameter ('=' expression)?
 
