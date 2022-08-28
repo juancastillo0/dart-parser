@@ -183,10 +183,13 @@ extensionDeclaration ::=
   'extension' identifier? typeParameters? 'on' type
   '{' (metadata classMemberDeclaration)* '}'
 
-enumType ::= 'enum' identifier
-  '{' enumEntry (',' enumEntry)* (',')? '}'
+enumType ::= 'enum' typeIdentifier typeParameters? mixins? interfaces?
+  '{' enumEntry (',' enumEntry)* (',')?
+  (<EnumTypeMembers>';' (metadata classMemberDeclaration)*)?
+  '}'
 
-enumEntry ::= metadata identifier
+enumEntry ::= (<NamedEnumEntry>metadata identifier typeArguments? '.' identifier arguments)
+  |(<UnnamedEnumEntry>metadata identifier argumentPart?)
 
 typeParameter ::= metadata identifier ('extends' typeNotVoid)?
 
@@ -408,10 +411,9 @@ constObjectExpression ::= 'const' constructorDesignation arguments
 
 arguments ::= '(' (argumentList ','?)? ')'
 
-argumentList ::= namedArgument (',' namedArgument)*
-  | expressionList (',' namedArgument)*
+argumentList ::= argument (',' argument)*
 
-namedArgument ::= label expression
+argument ::= label? expression
 
 cascadeRight ::= '..' cascadeSection cascadeRight?
 

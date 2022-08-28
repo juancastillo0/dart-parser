@@ -250,3 +250,36 @@ class Model {
     println!("{:?}", comments);
     println!("{:?}", serde_json::to_string_pretty(&library).unwrap());
 }
+
+#[test]
+fn test_enum() {
+    let args = DartParser::parse(Rule::ArgumentPart, "('v1', named: true)")
+        .unwrap()
+        .next()
+        .unwrap();
+
+    println!("{:?}", args);
+    let enumEntry = DartParser::parse(Rule::EnumEntry, "variant('v1', named: true)")
+        .unwrap()
+        .next()
+        .unwrap();
+
+    println!("{:?}", enumEntry);
+
+    let (library, comments) = ParseCtx::parse_str::<ast::LibraryDeclaration>(
+        "
+enum ComplexEnum {
+    variant('v1', named: true),
+    variant2('v2', named: false);
+    
+    final String value;
+    /// Comment
+    final bool named;
+    const ComplexEnum(this.value, {required this.named});
+}",
+    )
+    .unwrap();
+
+    println!("{:?}", library);
+    println!("{:?}", comments);
+}

@@ -2662,16 +2662,58 @@ impl RuleModel for EnumEntryItem {
     }
 }
 
-/// And(Raw(enum), Id(identifier), Raw({), Id(enumEntry), Modified(*,And(Raw(,), Id(enumEntry))), Modified(?,Raw(,)), Raw(}))
+/// And(Id(metadata), Id(classMemberDeclaration))
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EnumTypeMembersMetadata {
+    pub metadata: Metadata,
+    pub class_member_declaration: ClassMemberDeclaration,
+}
+impl RuleModel for EnumTypeMembersMetadata {
+    fn rule() -> Rule {
+        Rule::EnumTypeMembersMetadata
+    }
+    fn parse(ctx: &mut ParseCtx) -> Self {
+        Self {
+            metadata: ctx.parse_ast(),
+            class_member_declaration: ctx.parse_ast(),
+        }
+    }
+}
+
+/// And(Raw(;), Modified(*,And(Id(metadata), Id(classMemberDeclaration))))
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EnumTypeMembers {
+    pub semicolon_token: Token,
+    pub metadata: Vec<EnumTypeMembersMetadata>,
+}
+impl RuleModel for EnumTypeMembers {
+    fn rule() -> Rule {
+        Rule::EnumTypeMembers
+    }
+    fn parse(ctx: &mut ParseCtx) -> Self {
+        Self {
+            semicolon_token: ctx.parse_token(),
+            metadata: ctx.parse_list(),
+        }
+    }
+}
+
+/// And(Raw(enum), Id(typeIdentifier), Modified(?,Id(typeParameters)), Modified(?,Id(mixins)), Modified(?,Id(interfaces)), Raw({), Id(enumEntry), Modified(*,And(Raw(,), Id(enumEntry))), Modified(?,Raw(,)), Modified(?,And(Raw(;), Modified(*,And(Id(metadata), Id(classMemberDeclaration))))), Raw(}))
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EnumType {
     pub enum_token: Token,
-    pub identifier: Identifier,
+    pub type_identifier: TypeIdentifier,
+    pub type_parameters: Option<TypeParameters>,
+    pub mixins: Option<Mixins>,
+    pub interfaces: Option<Interfaces>,
     pub open_curly_bracket_token: Token,
     pub enum_entry: EnumEntry,
     pub enum_entry_item: Vec<EnumEntryItem>,
     pub comma_token: Option<Token>,
+    pub enum_type_members: Option<EnumTypeMembers>,
     pub close_curly_bracket_token: Token,
 }
 impl RuleModel for EnumType {
@@ -2681,7 +2723,10 @@ impl RuleModel for EnumType {
     fn parse(ctx: &mut ParseCtx) -> Self {
         Self {
             enum_token: ctx.parse_token(),
-            identifier: ctx.parse_ast(),
+            type_identifier: ctx.parse_ast(),
+            type_parameters: ctx.try_parse_ast(),
+            mixins: ctx.try_parse_ast(),
+            interfaces: ctx.try_parse_ast(),
             open_curly_bracket_token: ctx.parse_token(),
             enum_entry: ctx.parse_ast(),
             enum_entry_item: ctx.parse_list(),
@@ -2690,26 +2735,76 @@ impl RuleModel for EnumType {
             } else {
                 None
             },
+            enum_type_members: ctx.try_parse_ast(),
             close_curly_bracket_token: ctx.parse_token(),
         }
     }
 }
 
-/// And(Id(metadata), Id(identifier))
+/// And(Id(metadata), Id(identifier), Modified(?,Id(typeArguments)), Raw(.), Id(identifier), Id(arguments))
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct EnumEntry {
+pub struct NamedEnumEntry {
     pub metadata: Metadata,
     pub identifier: Identifier,
+    pub type_arguments: Option<TypeArguments>,
+    pub period_token: Token,
+    pub identifier2: Identifier,
+    pub arguments: Arguments,
+}
+impl RuleModel for NamedEnumEntry {
+    fn rule() -> Rule {
+        Rule::NamedEnumEntry
+    }
+    fn parse(ctx: &mut ParseCtx) -> Self {
+        Self {
+            metadata: ctx.parse_ast(),
+            identifier: ctx.parse_ast(),
+            type_arguments: ctx.try_parse_ast(),
+            period_token: ctx.parse_token(),
+            identifier2: ctx.parse_ast(),
+            arguments: ctx.parse_ast(),
+        }
+    }
+}
+
+/// And(Id(metadata), Id(identifier), Modified(?,Id(argumentPart)))
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UnnamedEnumEntry {
+    pub metadata: Metadata,
+    pub identifier: Identifier,
+    pub argument_part: Option<ArgumentPart>,
+}
+impl RuleModel for UnnamedEnumEntry {
+    fn rule() -> Rule {
+        Rule::UnnamedEnumEntry
+    }
+    fn parse(ctx: &mut ParseCtx) -> Self {
+        Self {
+            metadata: ctx.parse_ast(),
+            identifier: ctx.parse_ast(),
+            argument_part: ctx.try_parse_ast(),
+        }
+    }
+}
+
+/// Or( And(Id(metadata), Id(identifier), Modified(?,Id(typeArguments)), Raw(.), Id(identifier), Id(arguments)), And(Id(metadata), Id(identifier), Modified(?,Id(argumentPart))), )
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum EnumEntry {
+    NamedEnumEntry(NamedEnumEntry),
+    UnnamedEnumEntry(UnnamedEnumEntry),
 }
 impl RuleModel for EnumEntry {
     fn rule() -> Rule {
         Rule::EnumEntry
     }
     fn parse(ctx: &mut ParseCtx) -> Self {
-        Self {
-            metadata: ctx.parse_ast(),
-            identifier: ctx.parse_ast(),
+        match ctx.next_rule() {
+            Rule::NamedEnumEntry => EnumEntry::NamedEnumEntry(ctx.parse_ast()),
+            Rule::UnnamedEnumEntry => EnumEntry::UnnamedEnumEntry(ctx.parse_ast()),
+            _ => unreachable!(),
         }
     }
 }
@@ -4145,97 +4240,58 @@ impl RuleModel for Arguments {
     }
 }
 
-/// And(Raw(,), Id(namedArgument))
+/// And(Raw(,), Id(argument))
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct NamedArgumentItem {
+pub struct ArgumentItem {
     pub comma_token: Token,
-    pub named_argument: NamedArgument,
+    pub argument: Argument,
 }
-impl RuleModel for NamedArgumentItem {
+impl RuleModel for ArgumentItem {
     fn rule() -> Rule {
-        Rule::NamedArgumentItem
+        Rule::ArgumentItem
     }
     fn parse(ctx: &mut ParseCtx) -> Self {
         Self {
             comma_token: ctx.parse_token(),
-            named_argument: ctx.parse_ast(),
+            argument: ctx.parse_ast(),
         }
     }
 }
 
-/// And(Id(namedArgument), Modified(*,And(Raw(,), Id(namedArgument))))
+/// And(Id(argument), Modified(*,And(Raw(,), Id(argument))))
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ArgumentListNamedArgument {
-    pub named_argument: NamedArgument,
-    pub named_argument_item: Vec<NamedArgumentItem>,
-}
-impl RuleModel for ArgumentListNamedArgument {
-    fn rule() -> Rule {
-        Rule::ArgumentListNamedArgument
-    }
-    fn parse(ctx: &mut ParseCtx) -> Self {
-        Self {
-            named_argument: ctx.parse_ast(),
-            named_argument_item: ctx.parse_list(),
-        }
-    }
-}
-
-/// And(Id(expressionList), Modified(*,And(Raw(,), Id(namedArgument))))
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ArgumentListExpressionList {
-    pub expression_list: ExpressionList,
-    pub named_argument_item: Vec<NamedArgumentItem>,
-}
-impl RuleModel for ArgumentListExpressionList {
-    fn rule() -> Rule {
-        Rule::ArgumentListExpressionList
-    }
-    fn parse(ctx: &mut ParseCtx) -> Self {
-        Self {
-            expression_list: ctx.parse_ast(),
-            named_argument_item: ctx.parse_list(),
-        }
-    }
-}
-
-/// Or( And(Id(namedArgument), Modified(*,And(Raw(,), Id(namedArgument)))), And(Id(expressionList), Modified(*,And(Raw(,), Id(namedArgument)))), )
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub enum ArgumentList {
-    NamedArgument(ArgumentListNamedArgument),
-    ExpressionList(ArgumentListExpressionList),
+pub struct ArgumentList {
+    pub argument: Argument,
+    pub argument_item: Vec<ArgumentItem>,
 }
 impl RuleModel for ArgumentList {
     fn rule() -> Rule {
         Rule::ArgumentList
     }
     fn parse(ctx: &mut ParseCtx) -> Self {
-        match ctx.next_rule() {
-            Rule::ArgumentListNamedArgument => ArgumentList::NamedArgument(ctx.parse_ast()),
-            Rule::ArgumentListExpressionList => ArgumentList::ExpressionList(ctx.parse_ast()),
-            _ => unreachable!(),
+        Self {
+            argument: ctx.parse_ast(),
+            argument_item: ctx.parse_list(),
         }
     }
 }
 
-/// And(Id(label), Id(expression))
+/// And(Modified(?,Id(label)), Id(expression))
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct NamedArgument {
-    pub label: Label,
+pub struct Argument {
+    pub label: Option<Label>,
     pub expression: Expression,
 }
-impl RuleModel for NamedArgument {
+impl RuleModel for Argument {
     fn rule() -> Rule {
-        Rule::NamedArgument
+        Rule::Argument
     }
     fn parse(ctx: &mut ParseCtx) -> Self {
         Self {
-            label: ctx.parse_ast(),
+            label: ctx.try_parse_ast(),
             expression: ctx.parse_ast(),
         }
     }

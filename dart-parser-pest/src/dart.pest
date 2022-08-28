@@ -232,9 +232,17 @@ ExtensionDeclaration = {(EXTENSION_TOKEN ~ (Identifier)? ~ (TypeParameters)? ~ O
 
 EnumEntryItem = {(COMMA_TOKEN ~ EnumEntry)}
 
-EnumType = {(ENUM_TOKEN ~ Identifier ~ OPEN_CURLY_BRACKET_TOKEN ~ EnumEntry ~ (EnumEntryItem)* ~ (COMMA_TOKEN)? ~ CLOSE_CURLY_BRACKET_TOKEN)}
+EnumTypeMembersMetadata = {(Metadata ~ ClassMemberDeclaration)}
 
-EnumEntry = {(Metadata ~ Identifier)}
+EnumTypeMembers = {(SEMICOLON_TOKEN ~ (EnumTypeMembersMetadata)*)}
+
+EnumType = {(ENUM_TOKEN ~ TypeIdentifier ~ (TypeParameters)? ~ (Mixins)? ~ (Interfaces)? ~ OPEN_CURLY_BRACKET_TOKEN ~ EnumEntry ~ (EnumEntryItem)* ~ (COMMA_TOKEN)? ~ (EnumTypeMembers)? ~ CLOSE_CURLY_BRACKET_TOKEN)}
+
+NamedEnumEntry = {(Metadata ~ Identifier ~ (TypeArguments)? ~ PERIOD_TOKEN ~ Identifier ~ Arguments)}
+
+UnnamedEnumEntry = {(Metadata ~ Identifier ~ (ArgumentPart)?)}
+
+EnumEntry = {(NamedEnumEntry | UnnamedEnumEntry)}
 
 TypeNotVoidExtends = {(EXTENDS_TOKEN ~ TypeNotVoid)}
 
@@ -370,15 +378,11 @@ ArgumentsArgumentList = {(ArgumentList ~ (COMMA_TOKEN)?)}
 
 Arguments = {(OPEN_PAREN_TOKEN ~ (ArgumentsArgumentList)? ~ CLOSE_PAREN_TOKEN)}
 
-NamedArgumentItem = {(COMMA_TOKEN ~ NamedArgument)}
+ArgumentItem = {(COMMA_TOKEN ~ Argument)}
 
-ArgumentListNamedArgument = {(NamedArgument ~ (NamedArgumentItem)*)}
+ArgumentList = {(Argument ~ (ArgumentItem)*)}
 
-ArgumentListExpressionList = {(ExpressionList ~ ((COMMA_TOKEN ~ NamedArgument))*)}
-
-ArgumentList = {(ArgumentListNamedArgument | ArgumentListExpressionList)}
-
-NamedArgument = {(Label ~ Expression)}
+Argument = {((Label)? ~ Expression)}
 
 CascadeRight = {(POINTS_ID_TOKEN ~ CascadeSection ~ (CascadeRight)?)}
 
