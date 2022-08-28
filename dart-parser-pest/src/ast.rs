@@ -2044,31 +2044,31 @@ impl RuleModel for ConstructorSignature {
     }
 }
 
-/// And(Raw(.), Id(identifier))
+/// And(Raw(.), Id(identifierOrNew))
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct IdentifierSelector {
+pub struct IdentifierOrNewSelector {
     pub period_token: Token,
-    pub identifier: Identifier,
+    pub identifier_or_new: IdentifierOrNew,
 }
-impl RuleModel for IdentifierSelector {
+impl RuleModel for IdentifierOrNewSelector {
     fn rule() -> Rule {
-        Rule::IdentifierSelector
+        Rule::IdentifierOrNewSelector
     }
     fn parse(ctx: &mut ParseCtx) -> Self {
         Self {
             period_token: ctx.parse_token(),
-            identifier: ctx.parse_ast(),
+            identifier_or_new: ctx.parse_ast(),
         }
     }
 }
 
-/// And(Id(typeIdentifier), Modified(?,And(Raw(.), Id(identifier))))
+/// And(Id(typeIdentifier), Modified(?,And(Raw(.), Id(identifierOrNew))))
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ConstructorName {
     pub type_identifier: TypeIdentifier,
-    pub identifier_selector: Option<IdentifierSelector>,
+    pub identifier_or_new_selector: Option<IdentifierOrNewSelector>,
 }
 impl RuleModel for ConstructorName {
     fn rule() -> Rule {
@@ -2077,18 +2077,18 @@ impl RuleModel for ConstructorName {
     fn parse(ctx: &mut ParseCtx) -> Self {
         Self {
             type_identifier: ctx.parse_ast(),
-            identifier_selector: ctx.try_parse_ast(),
+            identifier_or_new_selector: ctx.try_parse_ast(),
         }
     }
 }
 
-/// And(Raw(:), Raw(this), Modified(?,And(Raw(.), Id(identifier))), Id(arguments))
+/// And(Raw(:), Raw(this), Modified(?,And(Raw(.), Id(identifierOrNew))), Id(arguments))
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Redirection {
     pub colon_token: Token,
     pub this_token: Token,
-    pub identifier_selector: Option<IdentifierSelector>,
+    pub identifier_or_new_selector: Option<IdentifierOrNewSelector>,
     pub arguments: Arguments,
 }
 impl RuleModel for Redirection {
@@ -2099,7 +2099,7 @@ impl RuleModel for Redirection {
         Self {
             colon_token: ctx.parse_token(),
             this_token: ctx.parse_token(),
-            identifier_selector: ctx.try_parse_ast(),
+            identifier_or_new_selector: ctx.try_parse_ast(),
             arguments: ctx.parse_ast(),
         }
     }
@@ -2164,13 +2164,13 @@ impl RuleModel for InitializerListEntryArguments {
     }
 }
 
-/// And(Raw(super), Raw(.), Id(identifier), Id(arguments))
+/// And(Raw(super), Raw(.), Id(identifierOrNew), Id(arguments))
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct InitializerListEntrySuperToken {
     pub super_token: Token,
     pub period_token: Token,
-    pub identifier: Identifier,
+    pub identifier_or_new: IdentifierOrNew,
     pub arguments: Arguments,
 }
 impl RuleModel for InitializerListEntrySuperToken {
@@ -2181,13 +2181,13 @@ impl RuleModel for InitializerListEntrySuperToken {
         Self {
             super_token: ctx.parse_token(),
             period_token: ctx.parse_token(),
-            identifier: ctx.parse_ast(),
+            identifier_or_new: ctx.parse_ast(),
             arguments: ctx.parse_ast(),
         }
     }
 }
 
-/// Or( And(Raw(super), Id(arguments)), And(Raw(super), Raw(.), Id(identifier), Id(arguments)), Id(fieldInitializer), Id(assertion), )
+/// Or( And(Raw(super), Id(arguments)), And(Raw(super), Raw(.), Id(identifierOrNew), Id(arguments)), Id(fieldInitializer), Id(assertion), )
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum InitializerListEntry {
@@ -2333,13 +2333,13 @@ impl RuleModel for RedirectingFactoryConstructorSignature {
     }
 }
 
-/// And(Id(typeName), Id(typeArguments), Modified(?,And(Raw(.), Id(identifier))))
+/// And(Id(typeName), Id(typeArguments), Modified(?,And(Raw(.), Id(identifierOrNew))))
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ConstructorDesignationTypeName {
     pub type_name: TypeName,
     pub type_arguments: TypeArguments,
-    pub identifier_selector: Option<IdentifierSelector>,
+    pub identifier_or_new_selector: Option<IdentifierOrNewSelector>,
 }
 impl RuleModel for ConstructorDesignationTypeName {
     fn rule() -> Rule {
@@ -2349,12 +2349,12 @@ impl RuleModel for ConstructorDesignationTypeName {
         Self {
             type_name: ctx.parse_ast(),
             type_arguments: ctx.parse_ast(),
-            identifier_selector: ctx.try_parse_ast(),
+            identifier_or_new_selector: ctx.try_parse_ast(),
         }
     }
 }
 
-/// Or( Id(typeIdentifier), Id(qualifiedName), And(Id(typeName), Id(typeArguments), Modified(?,And(Raw(.), Id(identifier)))), )
+/// Or( Id(typeIdentifier), Id(qualifiedName), And(Id(typeName), Id(typeArguments), Modified(?,And(Raw(.), Id(identifierOrNew)))), )
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum ConstructorDesignation {
@@ -3068,7 +3068,7 @@ impl RuleModel for PrimaryExpression {
     }
 }
 
-/// Or( Id(thisExpression), And(Raw(super), Id(unconditionalAssignableSelector)), And(Raw(super), Id(argumentPart)), Id(functionExpression), Id(literal), Id(identifier), Id(newExpression), Id(constObjectExpression), Id(constructorInvocation), And(Raw((), Id(expression), Raw())), )
+/// Or( Id(thisExpression), And(Raw(super), Id(unconditionalAssignableSelector)), And(Raw(super), Id(argumentPart)), Id(functionExpression), Id(newExpression), Id(constObjectExpression), Id(constructorInvocation), Id(constructorTearoff), And(Raw((), Id(expression), Raw())), Id(literal), Id(identifier), )
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum Primary {
@@ -3076,12 +3076,13 @@ pub enum Primary {
     UnconditionalAssignableSelector(PrimaryUnconditionalAssignableSelector),
     ArgumentPart(PrimaryArgumentPart),
     FunctionExpression(FunctionExpression),
-    Literal(Literal),
-    Identifier(Identifier),
     NewExpression(NewExpression),
     ConstObjectExpression(ConstObjectExpression),
     ConstructorInvocation(ConstructorInvocation),
+    ConstructorTearoff(ConstructorTearoff),
     Expression(PrimaryExpression),
+    Literal(Literal),
+    Identifier(Identifier),
 }
 impl RuleModel for Primary {
     fn rule() -> Rule {
@@ -3095,12 +3096,13 @@ impl RuleModel for Primary {
             }
             Rule::PrimaryArgumentPart => Primary::ArgumentPart(ctx.parse_ast()),
             Rule::FunctionExpression => Primary::FunctionExpression(ctx.parse_ast()),
-            Rule::Literal => Primary::Literal(ctx.parse_ast()),
-            Rule::Identifier => Primary::Identifier(ctx.parse_ast()),
             Rule::NewExpression => Primary::NewExpression(ctx.parse_ast()),
             Rule::ConstObjectExpression => Primary::ConstObjectExpression(ctx.parse_ast()),
             Rule::ConstructorInvocation => Primary::ConstructorInvocation(ctx.parse_ast()),
+            Rule::ConstructorTearoff => Primary::ConstructorTearoff(ctx.parse_ast()),
             Rule::PrimaryExpression => Primary::Expression(ctx.parse_ast()),
+            Rule::Literal => Primary::Literal(ctx.parse_ast()),
+            Rule::Identifier => Primary::Identifier(ctx.parse_ast()),
             _ => unreachable!(),
         }
     }
@@ -3838,6 +3840,29 @@ impl RuleModel for ForElement {
             for_loop_parts: ctx.parse_ast(),
             close_paren_token: ctx.parse_token(),
             element: ctx.parse_ast(),
+        }
+    }
+}
+
+/// And(Id(typeName), Modified(?,Id(typeArguments)), Raw(.), Raw(new))
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConstructorTearoff {
+    pub type_name: TypeName,
+    pub type_arguments: Option<TypeArguments>,
+    pub period_token: Token,
+    pub new_token: Token,
+}
+impl RuleModel for ConstructorTearoff {
+    fn rule() -> Rule {
+        Rule::ConstructorTearoff
+    }
+    fn parse(ctx: &mut ParseCtx) -> Self {
+        Self {
+            type_name: ctx.parse_ast(),
+            type_arguments: ctx.try_parse_ast(),
+            period_token: ctx.parse_token(),
+            new_token: ctx.parse_token(),
         }
     }
 }
@@ -5688,38 +5713,84 @@ impl RuleModel for PostfixExpression {
 /// Id(incrementOperator)
 pub type PostfixOperator = IncrementOperator;
 
-/// And(Id(typeName), Id(typeArguments), Raw(.), Id(identifier), Id(arguments))
+/// And(Id(typeName), Id(typeArguments), Raw(.), Raw(new), Id(arguments))
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ConstructorInvocation {
+pub struct ConstructorInvocationTypeName {
     pub type_name: TypeName,
     pub type_arguments: TypeArguments,
     pub period_token: Token,
-    pub identifier: Identifier,
+    pub new_token: Token,
     pub arguments: Arguments,
 }
-impl RuleModel for ConstructorInvocation {
+impl RuleModel for ConstructorInvocationTypeName {
     fn rule() -> Rule {
-        Rule::ConstructorInvocation
+        Rule::ConstructorInvocationTypeName
     }
     fn parse(ctx: &mut ParseCtx) -> Self {
         Self {
             type_name: ctx.parse_ast(),
             type_arguments: ctx.parse_ast(),
             period_token: ctx.parse_token(),
-            identifier: ctx.parse_ast(),
+            new_token: ctx.parse_token(),
             arguments: ctx.parse_ast(),
         }
     }
 }
 
-/// Or( Raw(!), Id(assignableSelector), Id(argumentPart), )
+/// And(Id(typeName), Raw(.), Raw(new), Id(arguments))
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConstructorInvocationPeriodToken {
+    pub type_name: TypeName,
+    pub period_token: Token,
+    pub new_token: Token,
+    pub arguments: Arguments,
+}
+impl RuleModel for ConstructorInvocationPeriodToken {
+    fn rule() -> Rule {
+        Rule::ConstructorInvocationPeriodToken
+    }
+    fn parse(ctx: &mut ParseCtx) -> Self {
+        Self {
+            type_name: ctx.parse_ast(),
+            period_token: ctx.parse_token(),
+            new_token: ctx.parse_token(),
+            arguments: ctx.parse_ast(),
+        }
+    }
+}
+
+/// Or( And(Id(typeName), Id(typeArguments), Raw(.), Raw(new), Id(arguments)), And(Id(typeName), Raw(.), Raw(new), Id(arguments)), )
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum ConstructorInvocation {
+    TypeName(ConstructorInvocationTypeName),
+    Period(ConstructorInvocationPeriodToken),
+}
+impl RuleModel for ConstructorInvocation {
+    fn rule() -> Rule {
+        Rule::ConstructorInvocation
+    }
+    fn parse(ctx: &mut ParseCtx) -> Self {
+        match ctx.next_rule() {
+            Rule::ConstructorInvocationTypeName => ConstructorInvocation::TypeName(ctx.parse_ast()),
+            Rule::ConstructorInvocationPeriodToken => {
+                ConstructorInvocation::Period(ctx.parse_ast())
+            }
+            _ => unreachable!(),
+        }
+    }
+}
+
+/// Or( Raw(!), Id(assignableSelector), Id(argumentPart), Id(typeArguments), )
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum Selector {
     Exclamation(Token),
     AssignableSelector(AssignableSelector),
     ArgumentPart(ArgumentPart),
+    TypeArguments(TypeArguments),
 }
 impl RuleModel for Selector {
     fn rule() -> Rule {
@@ -5730,6 +5801,7 @@ impl RuleModel for Selector {
             Rule::EXCLAMATION_TOKEN => Selector::Exclamation(ctx.parse_token()),
             Rule::AssignableSelector => Selector::AssignableSelector(ctx.parse_ast()),
             Rule::ArgumentPart => Selector::ArgumentPart(ctx.parse_ast()),
+            Rule::TypeArguments => Selector::TypeArguments(ctx.parse_ast()),
             _ => unreachable!(),
         }
     }
@@ -6029,13 +6101,33 @@ impl RuleModel for TypeIdentifier {
     }
 }
 
-/// And(Id(typeIdentifier), Raw(.), Id(identifier))
+/// Or( Id(identifier), Raw(new), )
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum IdentifierOrNew {
+    Identifier(Identifier),
+    New(Token),
+}
+impl RuleModel for IdentifierOrNew {
+    fn rule() -> Rule {
+        Rule::IdentifierOrNew
+    }
+    fn parse(ctx: &mut ParseCtx) -> Self {
+        match ctx.next_rule() {
+            Rule::Identifier => IdentifierOrNew::Identifier(ctx.parse_ast()),
+            Rule::NEW_TOKEN => IdentifierOrNew::New(ctx.parse_token()),
+            _ => unreachable!(),
+        }
+    }
+}
+
+/// And(Id(typeIdentifier), Raw(.), Id(identifierOrNew))
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct QualifiedNameSingle {
     pub type_identifier: TypeIdentifier,
     pub period_token: Token,
-    pub identifier: Identifier,
+    pub identifier_or_new: IdentifierOrNew,
 }
 impl RuleModel for QualifiedNameSingle {
     fn rule() -> Rule {
@@ -6045,12 +6137,12 @@ impl RuleModel for QualifiedNameSingle {
         Self {
             type_identifier: ctx.parse_ast(),
             period_token: ctx.parse_token(),
-            identifier: ctx.parse_ast(),
+            identifier_or_new: ctx.parse_ast(),
         }
     }
 }
 
-/// And(Id(typeIdentifier), Raw(.), Id(typeIdentifier), Raw(.), Id(identifier))
+/// And(Id(typeIdentifier), Raw(.), Id(typeIdentifier), Raw(.), Id(identifierOrNew))
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct QualifiedNameDouble {
@@ -6058,7 +6150,7 @@ pub struct QualifiedNameDouble {
     pub period_token: Token,
     pub type_identifier2: TypeIdentifier,
     pub period_token2: Token,
-    pub identifier: Identifier,
+    pub identifier_or_new: IdentifierOrNew,
 }
 impl RuleModel for QualifiedNameDouble {
     fn rule() -> Rule {
@@ -6070,12 +6162,12 @@ impl RuleModel for QualifiedNameDouble {
             period_token: ctx.parse_token(),
             type_identifier2: ctx.parse_ast(),
             period_token2: ctx.parse_token(),
-            identifier: ctx.parse_ast(),
+            identifier_or_new: ctx.parse_ast(),
         }
     }
 }
 
-/// Or( And(Id(typeIdentifier), Raw(.), Id(identifier)), And(Id(typeIdentifier), Raw(.), Id(typeIdentifier), Raw(.), Id(identifier)), )
+/// Or( And(Id(typeIdentifier), Raw(.), Id(identifierOrNew)), And(Id(typeIdentifier), Raw(.), Id(typeIdentifier), Raw(.), Id(identifierOrNew)), )
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum QualifiedName {
@@ -7411,6 +7503,25 @@ impl RuleModel for ImportOrExport {
             Rule::LibraryImport => ImportOrExport::LibraryImport(ctx.parse_ast()),
             Rule::LibraryExport => ImportOrExport::LibraryExport(ctx.parse_ast()),
             _ => unreachable!(),
+        }
+    }
+}
+
+/// And(Raw(.), Id(identifier))
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IdentifierSelector {
+    pub period_token: Token,
+    pub identifier: Identifier,
+}
+impl RuleModel for IdentifierSelector {
+    fn rule() -> Rule {
+        Rule::IdentifierSelector
+    }
+    fn parse(ctx: &mut ParseCtx) -> Self {
+        Self {
+            period_token: ctx.parse_token(),
+            identifier: ctx.parse_ast(),
         }
     }
 }

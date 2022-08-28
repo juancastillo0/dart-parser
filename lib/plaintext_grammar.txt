@@ -133,14 +133,14 @@ setterSignature ::= type? 'set' identifier formalParameterList
 
 constructorSignature ::= constructorName formalParameterList
 
-constructorName ::= typeIdentifier ('.' identifier)?
+constructorName ::= typeIdentifier ('.' identifierOrNew)?
 
-redirection ::= ':' 'this' ('.' identifier)? arguments
+redirection ::= ':' 'this' ('.' identifierOrNew)? arguments
 
 initializers ::= ':' initializerListEntry (',' initializerListEntry)*
 
 initializerListEntry ::= 'super' arguments
-  | 'super' '.' identifier arguments
+  | 'super' '.' identifierOrNew arguments
   | fieldInitializer
   | assertion
 
@@ -158,7 +158,7 @@ redirectingFactoryConstructorSignature ::=
 
 constructorDesignation ::= typeIdentifier
   | qualifiedName
-  | typeName typeArguments ('.' identifier)?
+  | typeName typeArguments ('.' identifierOrNew)?
 
 constantConstructorSignature ::=
   'const' constructorName formalParameterList
@@ -213,12 +213,13 @@ primary ::= thisExpression
   | 'super' unconditionalAssignableSelector
   | 'super' argumentPart
   | functionExpression
-  | literal
-  | identifier
   | newExpression
   | constObjectExpression
   | constructorInvocation
+  | constructorTearoff
   | '(' expression ')'
+  | literal
+  | identifier
 
 literal ::= nullLiteral
   | booleanLiteral
@@ -388,6 +389,8 @@ ifElement ::= 'if' '(' expression ')' element ('else' element)?
 
 forElement ::= 'await'? 'for' '(' forLoopParts ')' element
 
+constructorTearoff ::= typeName typeArguments? '.' 'new'
+
 throwExpression ::= 'throw' expression
 
 throwExpressionWithoutCascade ::= 'throw' expressionWithoutCascade
@@ -531,12 +534,13 @@ postfixExpression ::= assignableExpression postfixOperator
 
 postfixOperator ::= incrementOperator
 
-constructorInvocation ::=
-  typeName typeArguments '.' identifier arguments
+constructorInvocation ::= typeName typeArguments '.' 'new' arguments
+  | typeName '.' 'new' arguments
 
 selector ::= '!'
   | assignableSelector
   | argumentPart
+  | typeArguments
 
 argumentPart ::=
   typeArguments? arguments
@@ -566,8 +570,10 @@ typeIdentifier ::= IDENTIFIER
   | OTHER_IDENTIFIER
   | 'dynamic'
 
-qualifiedName ::= (<QualifiedNameSingle>typeIdentifier '.' identifier)
-  | (<QualifiedNameDouble>typeIdentifier '.' typeIdentifier '.' identifier)
+identifierOrNew ::= identifier | 'new'
+
+qualifiedName ::= (<QualifiedNameSingle>typeIdentifier '.' identifierOrNew)
+  | (<QualifiedNameDouble>typeIdentifier '.' typeIdentifier '.' identifierOrNew)
 
 BUILT_IN_IDENTIFIER ::= 'abstract' | 'as' | 'covariant' | 'deferred'
   | 'dynamic' | 'export' | 'external' | 'extension' |

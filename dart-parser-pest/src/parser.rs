@@ -177,6 +177,12 @@ fn test_parser() {
         .unwrap();
 
     println!("{:?}", type_args);
+    let postfix_new = DartParser::parse(Rule::PostfixExpression, "B.new()")
+        .unwrap()
+        .next()
+        .unwrap();
+
+    println!("{:?}", postfix_new);
 
     let library_declaration: Pair<Rule> = DartParser::parse(
         Rule::LibraryDeclaration,
@@ -186,6 +192,13 @@ final str = '''
 String? func2() {
 }
 ''';
+
+B bFunc(bool named) {
+    return named ? B.named(
+        md: [2],
+    ) : B.new();
+}
+
 class B extends Other {
     final int? v;
     final String value;
@@ -195,6 +208,8 @@ class B extends Other {
         super.md = const [],
         required this.value,
     });
+
+    static B create() => B(value: \"text\");
 }",
         //         "
         // import './daw.dart' hide String show May, July;

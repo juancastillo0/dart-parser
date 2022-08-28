@@ -64,7 +64,7 @@ NamedFormalParameters = {(OPEN_CURLY_BRACKET_TOKEN ~ DefaultNamedParameter ~ (De
 
 NormalFormalParameter = {(Metadata ~ NormalFormalParameterNoMetadata)}
 
-NormalFormalParameterNoMetadata = {(FunctionFormalParameter | FieldFormalParameter | SimpleFormalParameter)}
+NormalFormalParameterNoMetadata = {(FunctionFormalParameter | FieldFormalParameter | SimpleFormalParameter | SuperFormalParameter)}
 
 FunctionFormalParameter = {((COVARIANT_TOKEN)? ~ (Type)? ~ Identifier ~ FormalParameterPart ~ (QUESTION_TOKEN)?)}
 
@@ -77,6 +77,10 @@ DeclaredIdentifier = {((COVARIANT_TOKEN)? ~ FinalConstVarOrType ~ Identifier)}
 FieldFormalParameterFormalParameterPart = {(FormalParameterPart ~ (QUESTION_TOKEN)?)}
 
 FieldFormalParameter = {((FinalConstVarOrType)? ~ THIS_TOKEN ~ PERIOD_TOKEN ~ Identifier ~ (FieldFormalParameterFormalParameterPart)?)}
+
+SuperFormalParameterFormalParameterPart = {(FormalParameterPart ~ (QUESTION_TOKEN)?)}
+
+SuperFormalParameter = {((FinalConstVarOrType)? ~ SUPER_TOKEN ~ PERIOD_TOKEN ~ Identifier ~ (SuperFormalParameterFormalParameterPart)?)}
 
 DefaultFormalParameter = {(NormalFormalParameter ~ ((EQUAL_TOKEN ~ Expression))?)}
 
@@ -172,11 +176,11 @@ SetterSignature = {((Type)? ~ SET_TOKEN ~ Identifier ~ FormalParameterList)}
 
 ConstructorSignature = {(ConstructorName ~ FormalParameterList)}
 
-IdentifierSelector = {(PERIOD_TOKEN ~ Identifier)}
+IdentifierOrNewSelector = {(PERIOD_TOKEN ~ IdentifierOrNew)}
 
-ConstructorName = {(TypeIdentifier ~ (IdentifierSelector)?)}
+ConstructorName = {(TypeIdentifier ~ (IdentifierOrNewSelector)?)}
 
-Redirection = {(COLON_TOKEN ~ THIS_TOKEN ~ ((PERIOD_TOKEN ~ Identifier))? ~ Arguments)}
+Redirection = {(COLON_TOKEN ~ THIS_TOKEN ~ ((PERIOD_TOKEN ~ IdentifierOrNew))? ~ Arguments)}
 
 InitializerListEntryItem = {(COMMA_TOKEN ~ InitializerListEntry)}
 
@@ -184,7 +188,7 @@ Initializers = {(COLON_TOKEN ~ InitializerListEntry ~ (InitializerListEntryItem)
 
 InitializerListEntryArguments = {(SUPER_TOKEN ~ Arguments)}
 
-InitializerListEntrySuperToken = {(SUPER_TOKEN ~ PERIOD_TOKEN ~ Identifier ~ Arguments)}
+InitializerListEntrySuperToken = {(SUPER_TOKEN ~ PERIOD_TOKEN ~ IdentifierOrNew ~ Arguments)}
 
 InitializerListEntry = {(InitializerListEntryArguments | InitializerListEntrySuperToken | FieldInitializer | Assertion)}
 
@@ -198,7 +202,7 @@ FactoryConstructorSignature = {((CONST_TOKEN)? ~ FACTORY_TOKEN ~ ConstructorName
 
 RedirectingFactoryConstructorSignature = {((CONST_TOKEN)? ~ FACTORY_TOKEN ~ ConstructorName ~ FormalParameterList ~ EQUAL_TOKEN ~ ConstructorDesignation)}
 
-ConstructorDesignationTypeName = {(TypeName ~ TypeArguments ~ ((PERIOD_TOKEN ~ Identifier))?)}
+ConstructorDesignationTypeName = {(TypeName ~ TypeArguments ~ ((PERIOD_TOKEN ~ IdentifierOrNew))?)}
 
 ConstructorDesignation = {(TypeIdentifier | QualifiedName | ConstructorDesignationTypeName)}
 
@@ -266,7 +270,7 @@ PrimaryArgumentPart = {(SUPER_TOKEN ~ ArgumentPart)}
 
 PrimaryExpression = {(OPEN_PAREN_TOKEN ~ Expression ~ CLOSE_PAREN_TOKEN)}
 
-Primary = {(ThisExpression | PrimaryUnconditionalAssignableSelector | PrimaryArgumentPart | FunctionExpression | Literal | Identifier | NewExpression | ConstObjectExpression | ConstructorInvocation | PrimaryExpression)}
+Primary = {(ThisExpression | PrimaryUnconditionalAssignableSelector | PrimaryArgumentPart | FunctionExpression | NewExpression | ConstObjectExpression | ConstructorInvocation | ConstructorTearoff | PrimaryExpression | Literal | Identifier)}
 
 Literal = {(NullLiteral | BooleanLiteral | NumericLiteral | StringLiteral | SymbolLiteral | ListLiteral | SetOrMapLiteral)}
 
@@ -335,6 +339,8 @@ ElementElse = {(ELSE_TOKEN ~ Element)}
 IfElement = {(IF_TOKEN ~ OPEN_PAREN_TOKEN ~ Expression ~ CLOSE_PAREN_TOKEN ~ Element ~ (ElementElse)?)}
 
 ForElement = {((AWAIT_TOKEN)? ~ FOR_TOKEN ~ OPEN_PAREN_TOKEN ~ ForLoopParts ~ CLOSE_PAREN_TOKEN ~ Element)}
+
+ConstructorTearoff = {(TypeName ~ (TypeArguments)? ~ PERIOD_TOKEN ~ NEW_TOKEN)}
 
 ThrowExpression = {(THROW_TOKEN ~ Expression)}
 
@@ -522,9 +528,13 @@ PostfixExpression = {(PostfixExpressionAssignableExpression | PostfixExpressionP
 
 PostfixOperator = {IncrementOperator}
 
-ConstructorInvocation = {(TypeName ~ TypeArguments ~ PERIOD_TOKEN ~ Identifier ~ Arguments)}
+ConstructorInvocationTypeName = {(TypeName ~ TypeArguments ~ PERIOD_TOKEN ~ NEW_TOKEN ~ Arguments)}
 
-Selector = {(EXCLAMATION_TOKEN | AssignableSelector | ArgumentPart)}
+ConstructorInvocationPeriodToken = {(TypeName ~ PERIOD_TOKEN ~ NEW_TOKEN ~ Arguments)}
+
+ConstructorInvocation = {(ConstructorInvocationTypeName | ConstructorInvocationPeriodToken)}
+
+Selector = {(EXCLAMATION_TOKEN | AssignableSelector | ArgumentPart | TypeArguments)}
 
 ArgumentPart = {((TypeArguments)? ~ Arguments)}
 
@@ -554,9 +564,11 @@ Identifier = {(IDENTIFIER | BUILT_IN_IDENTIFIER | OTHER_IDENTIFIER)}
 
 TypeIdentifier = {(IDENTIFIER | OTHER_IDENTIFIER | DYNAMIC_TOKEN)}
 
-QualifiedNameSingle = {(TypeIdentifier ~ PERIOD_TOKEN ~ Identifier)}
+IdentifierOrNew = {(Identifier | NEW_TOKEN)}
 
-QualifiedNameDouble = {(TypeIdentifier ~ PERIOD_TOKEN ~ TypeIdentifier ~ PERIOD_TOKEN ~ Identifier)}
+QualifiedNameSingle = {(TypeIdentifier ~ PERIOD_TOKEN ~ IdentifierOrNew)}
+
+QualifiedNameDouble = {(TypeIdentifier ~ PERIOD_TOKEN ~ TypeIdentifier ~ PERIOD_TOKEN ~ IdentifierOrNew)}
 
 QualifiedName = {(QualifiedNameSingle | QualifiedNameDouble)}
 
@@ -676,7 +688,9 @@ LibraryName = {(Metadata ~ LIBRARY_TOKEN ~ DottedIdentifierList ~ SEMICOLON_TOKE
 
 ImportOrExport = {(LibraryImport | LibraryExport)}
 
-DottedIdentifierList = {(Identifier ~ ((PERIOD_TOKEN ~ Identifier))*)}
+IdentifierSelector = {(PERIOD_TOKEN ~ Identifier)}
+
+DottedIdentifierList = {(Identifier ~ (IdentifierSelector)*)}
 
 LibraryImport = {(Metadata ~ ImportSpecification)}
 
@@ -938,6 +952,8 @@ THIS_TOKEN = @{"this"}
 
 PERIOD_TOKEN = @{"."}
 
+SUPER_TOKEN = @{"super"}
+
 COLON_TOKEN = @{":"}
 
 REQUIRED_TOKEN = @{"required"}
@@ -963,8 +979,6 @@ DOUBLE_EQUAL_TOKEN = @{"=="}
 GET_TOKEN = @{"get"}
 
 SET_TOKEN = @{"set"}
-
-SUPER_TOKEN = @{"super"}
 
 FACTORY_TOKEN = @{"factory"}
 
@@ -1012,9 +1026,9 @@ AWAIT_TOKEN = @{"await"}
 
 FOR_TOKEN = @{"for"}
 
-THROW_TOKEN = @{"throw"}
-
 NEW_TOKEN = @{"new"}
+
+THROW_TOKEN = @{"throw"}
 
 POINTS_ID_TOKEN = @{".."}
 
