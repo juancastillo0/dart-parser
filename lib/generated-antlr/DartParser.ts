@@ -1,9 +1,6 @@
 // Generated from /Users/juanmanuelcastillo/Desktop/flutter/dart_fixer_test/lib/Dart.g by ANTLR 4.9.0-SNAPSHOT
 
 
-import java.util.Stack;
-
-
 import { ATN } from "antlr4ts/atn/ATN";
 import { ATNDeserializer } from "antlr4ts/atn/ATNDeserializer";
 import { FailedPredicateException } from "antlr4ts/FailedPredicateException";
@@ -525,44 +522,43 @@ export class DartParser extends Parser {
 	}
 
 
-	  static String filePath = null;
-	  static boolean errorHasOccurred = false;
+	  static filePath: string | null = null;
+	  static errorHasOccurred: boolean = false;
 
 	  /// Must be invoked before the first error is reported for a library.
 	  /// Will print the name of the library and indicate that it has errors.
-	  static void prepareForErrors() {
-	    errorHasOccurred = true;
-	    System.err.println("Syntax error in " + filePath + ":");
+	  static prepareForErrors(): void {
+	    DartParser.errorHasOccurred = true;
+	    console.error("Syntax error in " + DartParser.filePath + ":");
 	  }
 
 	  /// Parse library, return true if success, false if errors occurred.
-	  public boolean parseLibrary(String filePath) throws RecognitionException {
-	    this.filePath = filePath;
-	    errorHasOccurred = false;
-	    libraryDefinition();
-	    return !errorHasOccurred;
+	  public parseLibrary(filePath: string): boolean { // throws RecognitionException 
+	    DartParser.filePath = filePath;
+	    DartParser.errorHasOccurred = false;
+	    this.libraryDefinition();
+	    return !DartParser.errorHasOccurred;
 	  }
 
 	  // Enable the parser to treat AWAIT/YIELD as keywords in the body of an
 	  // `async`, `async*`, or `sync*` function. Access via methods below.
-	  private Stack<Boolean> asyncEtcAreKeywords = new Stack<Boolean>();
-	  { asyncEtcAreKeywords.push(false); }
+	  private asyncEtcAreKeywords: Array<boolean> = [false];
 
 	  // Use this to indicate that we are now entering an `async`, `async*`,
 	  // or `sync*` function.
-	  void startAsyncFunction() { asyncEtcAreKeywords.push(true); }
+	  private startAsyncFunction(): void { this.asyncEtcAreKeywords.push(true); }
 
 	  // Use this to indicate that we are now entering a function which is
 	  // neither `async`, `async*`, nor `sync*`.
-	  void startNonAsyncFunction() { asyncEtcAreKeywords.push(false); }
+	  private startNonAsyncFunction(): void { this.asyncEtcAreKeywords.push(false); }
 
 	  // Use this to indicate that we are now leaving any funciton.
-	  void endFunction() { asyncEtcAreKeywords.pop(); }
+	  private endFunction(): void { this.asyncEtcAreKeywords.pop(); }
 
 	  // Whether we can recognize AWAIT/YIELD as an identifier/typeIdentifier.
-	  boolean asyncEtcPredicate(int tokenId) {
-	    if (tokenId == AWAIT || tokenId == YIELD) {
-	      return !asyncEtcAreKeywords.peek();
+	  private asyncEtcPredicate(tokenId: number): boolean {
+	    if (tokenId === DartParser.AWAIT || tokenId === DartParser.YIELD) {
+	      return !this.asyncEtcAreKeywords[this.asyncEtcAreKeywords.length - 1];
 	    }
 	    return false;
 	  }

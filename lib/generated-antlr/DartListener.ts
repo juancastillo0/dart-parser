@@ -1,9 +1,6 @@
 // Generated from /Users/juanmanuelcastillo/Desktop/flutter/dart_fixer_test/lib/Dart.g by ANTLR 4.9.0-SNAPSHOT
 
 
-import java.util.Stack;
-
-
 import { ParseTreeListener } from "antlr4ts/tree/ParseTreeListener";
 
 import { LibraryDefinitionContext } from "./DartParser";

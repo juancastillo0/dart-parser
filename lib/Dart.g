@@ -70,64 +70,55 @@
 
 grammar Dart;
 
-@parser::header{
-import java.util.Stack;
-}
-
-@lexer::header{
-import java.util.Stack;
-}
-
 @parser::members {
-  static String filePath = null;
-  static boolean errorHasOccurred = false;
+  static filePath: string | null = null;
+  static errorHasOccurred: boolean = false;
 
   /// Must be invoked before the first error is reported for a library.
   /// Will print the name of the library and indicate that it has errors.
-  static void prepareForErrors() {
-    errorHasOccurred = true;
-    System.err.println("Syntax error in " + filePath + ":");
+  static prepareForErrors(): void {
+    DartParser.errorHasOccurred = true;
+    console.error("Syntax error in " + DartParser.filePath + ":");
   }
 
   /// Parse library, return true if success, false if errors occurred.
-  public boolean parseLibrary(String filePath) throws RecognitionException {
-    this.filePath = filePath;
-    errorHasOccurred = false;
-    libraryDefinition();
-    return !errorHasOccurred;
+  public parseLibrary(filePath: string): boolean { // throws RecognitionException 
+    DartParser.filePath = filePath;
+    DartParser.errorHasOccurred = false;
+    this.libraryDefinition();
+    return !DartParser.errorHasOccurred;
   }
 
   // Enable the parser to treat AWAIT/YIELD as keywords in the body of an
   // `async`, `async*`, or `sync*` function. Access via methods below.
-  private Stack<Boolean> asyncEtcAreKeywords = new Stack<Boolean>();
-  { asyncEtcAreKeywords.push(false); }
+  private asyncEtcAreKeywords: Array<boolean> = [false];
 
   // Use this to indicate that we are now entering an `async`, `async*`,
   // or `sync*` function.
-  void startAsyncFunction() { asyncEtcAreKeywords.push(true); }
+  private startAsyncFunction(): void { this.asyncEtcAreKeywords.push(true); }
 
   // Use this to indicate that we are now entering a function which is
   // neither `async`, `async*`, nor `sync*`.
-  void startNonAsyncFunction() { asyncEtcAreKeywords.push(false); }
+  private startNonAsyncFunction(): void { this.asyncEtcAreKeywords.push(false); }
 
   // Use this to indicate that we are now leaving any funciton.
-  void endFunction() { asyncEtcAreKeywords.pop(); }
+  private endFunction(): void { this.asyncEtcAreKeywords.pop(); }
 
   // Whether we can recognize AWAIT/YIELD as an identifier/typeIdentifier.
-  boolean asyncEtcPredicate(int tokenId) {
-    if (tokenId == AWAIT || tokenId == YIELD) {
-      return !asyncEtcAreKeywords.peek();
+  private asyncEtcPredicate(tokenId: number): boolean {
+    if (tokenId === DartParser.AWAIT || tokenId === DartParser.YIELD) {
+      return !this.asyncEtcAreKeywords[this.asyncEtcAreKeywords.length - 1];
     }
     return false;
   }
 }
 
 @lexer::members{
-  public static final int BRACE_NORMAL = 1;
-  public static final int BRACE_SINGLE = 2;
-  public static final int BRACE_DOUBLE = 3;
-  public static final int BRACE_THREE_SINGLE = 4;
-  public static final int BRACE_THREE_DOUBLE = 5;
+  public static readonly BRACE_NORMAL: number = 1;
+  public static readonly BRACE_SINGLE: number = 2;
+  public static readonly BRACE_DOUBLE: number = 3;
+  public static readonly BRACE_THREE_SINGLE: number = 4;
+  public static readonly BRACE_THREE_DOUBLE: number = 5;
 
   // Enable the parser to handle string interpolations via brace matching.
   // The top of the `braceLevels` stack describes the most recent unmatched
@@ -140,40 +131,40 @@ import java.util.Stack;
   //   THREE_DOUBLE: Most recent unmatched '{' was `"""...${`.
   //
   // Access via functions below.
-  private Stack<Integer> braceLevels = new Stack<Integer>();
+  private braceLevels: Array<number> = [];
 
   // Whether we are currently in a string literal context, and which one.
-  boolean currentBraceLevel(int braceLevel) {
-    if (braceLevels.empty()) return false;
-    return braceLevels.peek() == braceLevel;
+  private currentBraceLevel(braceLevel: number): boolean {
+    if (this.braceLevels.length === 0) return false;
+    return this.braceLevels[this.braceLevels.length - 1] === braceLevel;
   }
 
   // Use this to indicate that we are now entering a specific '{...}'.
   // Call it after accepting the '{'.
-  void enterBrace() {
-    braceLevels.push(BRACE_NORMAL);
+  private enterBrace(): void {
+    this.braceLevels.push(DartLexer.BRACE_NORMAL);
   }
-  void enterBraceSingleQuote() {
-    braceLevels.push(BRACE_SINGLE);
+  private enterBraceSingleQuote(): void {
+    this.braceLevels.push(DartLexer.BRACE_SINGLE);
   }
-  void enterBraceDoubleQuote() {
-    braceLevels.push(BRACE_DOUBLE);
+  private enterBraceDoubleQuote(): void {
+    this.braceLevels.push(DartLexer.BRACE_DOUBLE);
   }
-  void enterBraceThreeSingleQuotes() {
-    braceLevels.push(BRACE_THREE_SINGLE);
+  private enterBraceThreeSingleQuotes(): void {
+    this.braceLevels.push(DartLexer.BRACE_THREE_SINGLE);
   }
-  void enterBraceThreeDoubleQuotes() {
-    braceLevels.push(BRACE_THREE_DOUBLE);
+  private enterBraceThreeDoubleQuotes(): void {
+    this.braceLevels.push(DartLexer.BRACE_THREE_DOUBLE);
   }
 
   // Use this to indicate that we are now exiting a specific '{...}',
   // no matter which kind. Call it before accepting the '}'.
-  void exitBrace() {
+  private exitBrace(): void {
       // We might raise a parse error here if the stack is empty, but the
       // parsing rules should ensure that we get a parse error anyway, and
       // it is not a big problem for the spec parser even if it misinterprets
       // the brace structure of some programs with syntax errors.
-      if (!braceLevels.empty()) braceLevels.pop();
+      if (this.braceLevels.length !== 0) this.braceLevels.pop();
   }
 }
 
@@ -1739,18 +1730,18 @@ SINGLE_LINE_STRING_SQ_BEGIN_END
     ;
 
 SINGLE_LINE_STRING_SQ_BEGIN_MID
-    :    '\'' STRING_CONTENT_SQ* '${' { enterBraceSingleQuote(); }
+    :    '\'' STRING_CONTENT_SQ* '${' { this.enterBraceSingleQuote(); }
     ;
 
 SINGLE_LINE_STRING_SQ_MID_MID
-    :    { currentBraceLevel(BRACE_SINGLE) }?
-         { exitBrace(); } '}' STRING_CONTENT_SQ* '${'
-         { enterBraceSingleQuote(); }
+    :    { this.currentBraceLevel(DartLexer.BRACE_SINGLE) }?
+         { this.exitBrace(); } '}' STRING_CONTENT_SQ* '${'
+         { this.enterBraceSingleQuote(); }
     ;
 
 SINGLE_LINE_STRING_SQ_MID_END
-    :    { currentBraceLevel(BRACE_SINGLE) }?
-         { exitBrace(); } '}' STRING_CONTENT_SQ* '\''
+    :    { this.currentBraceLevel(DartLexer.BRACE_SINGLE) }?
+         { this.exitBrace(); } '}' STRING_CONTENT_SQ* '\''
     ;
 
 fragment
@@ -1764,18 +1755,18 @@ SINGLE_LINE_STRING_DQ_BEGIN_END
     ;
 
 SINGLE_LINE_STRING_DQ_BEGIN_MID
-    :    '"' STRING_CONTENT_DQ* '${' { enterBraceDoubleQuote(); }
+    :    '"' STRING_CONTENT_DQ* '${' { this.enterBraceDoubleQuote(); }
     ;
 
 SINGLE_LINE_STRING_DQ_MID_MID
-    :    { currentBraceLevel(BRACE_DOUBLE) }?
-         { exitBrace(); } '}' STRING_CONTENT_DQ* '${'
-         { enterBraceDoubleQuote(); }
+    :    { this.currentBraceLevel(DartLexer.BRACE_DOUBLE) }?
+         { this.exitBrace(); } '}' STRING_CONTENT_DQ* '${'
+         { this.enterBraceDoubleQuote(); }
     ;
 
 SINGLE_LINE_STRING_DQ_MID_END
-    :    { currentBraceLevel(BRACE_DOUBLE) }?
-         { exitBrace(); } '}' STRING_CONTENT_DQ* '"'
+    :    { this.currentBraceLevel(DartLexer.BRACE_DOUBLE) }?
+         { this.exitBrace(); } '}' STRING_CONTENT_DQ* '"'
     ;
 
 fragment
@@ -1801,18 +1792,18 @@ MULTI_LINE_STRING_SQ_BEGIN_END
 
 MULTI_LINE_STRING_SQ_BEGIN_MID
     :    '\'\'\'' STRING_CONTENT_TSQ* QUOTES_SQ '${'
-         { enterBraceThreeSingleQuotes(); }
+         { this.enterBraceThreeSingleQuotes(); }
     ;
 
 MULTI_LINE_STRING_SQ_MID_MID
-    :    { currentBraceLevel(BRACE_THREE_SINGLE) }?
-         { exitBrace(); } '}' STRING_CONTENT_TSQ* QUOTES_SQ '${'
-         { enterBraceThreeSingleQuotes(); }
+    :    { this.currentBraceLevel(DartLexer.BRACE_THREE_SINGLE) }?
+         { this.exitBrace(); } '}' STRING_CONTENT_TSQ* QUOTES_SQ '${'
+         { this.enterBraceThreeSingleQuotes(); }
     ;
 
 MULTI_LINE_STRING_SQ_MID_END
-    :    { currentBraceLevel(BRACE_THREE_SINGLE) }?
-         { exitBrace(); } '}' STRING_CONTENT_TSQ* '\'\'\''
+    :    { this.currentBraceLevel(DartLexer.BRACE_THREE_SINGLE) }?
+         { this.exitBrace(); } '}' STRING_CONTENT_TSQ* '\'\'\''
     ;
 
 fragment
@@ -1837,26 +1828,26 @@ MULTI_LINE_STRING_DQ_BEGIN_END
 
 MULTI_LINE_STRING_DQ_BEGIN_MID
     :    '"""' STRING_CONTENT_TDQ* QUOTES_DQ '${'
-         { enterBraceThreeDoubleQuotes(); }
+         { this.enterBraceThreeDoubleQuotes(); }
     ;
 
 MULTI_LINE_STRING_DQ_MID_MID
-    :    { currentBraceLevel(BRACE_THREE_DOUBLE) }?
-         { exitBrace(); } '}' STRING_CONTENT_TDQ* QUOTES_DQ '${'
-         { enterBraceThreeDoubleQuotes(); }
+    :    { this.currentBraceLevel(DartLexer.BRACE_THREE_DOUBLE) }?
+         { this.exitBrace(); } '}' STRING_CONTENT_TDQ* QUOTES_DQ '${'
+         { this.enterBraceThreeDoubleQuotes(); }
     ;
 
 MULTI_LINE_STRING_DQ_MID_END
-    :    { currentBraceLevel(BRACE_THREE_DOUBLE) }?
-         { exitBrace(); } '}' STRING_CONTENT_TDQ* '"""'
+    :    { this.currentBraceLevel(DartLexer.BRACE_THREE_DOUBLE) }?
+         { this.exitBrace(); } '}' STRING_CONTENT_TDQ* '"""'
     ;
 
 LBRACE
-    :    '{' { enterBrace(); }
+    :    '{' { this.enterBrace(); }
     ;
 
 RBRACE
-    :    { currentBraceLevel(BRACE_NORMAL) }? { exitBrace(); } '}'
+    :    { this.currentBraceLevel(DartLexer.BRACE_NORMAL) }? { this.exitBrace(); } '}'
     ;
 
 fragment
@@ -1898,12 +1889,12 @@ IDENTIFIER
 
 SINGLE_LINE_COMMENT
     :    '//' (~('\r' | '\n'))* NEWLINE?
-         { skip(); }
+         { this.skip(); }
     ;
 
 MULTI_LINE_COMMENT
     :    '/*' (MULTI_LINE_COMMENT | .)*? '*/'
-         { skip(); }
+         { this.skip(); }
     ;
 
 fragment
@@ -1917,5 +1908,5 @@ FEFF
 
 WS
     :    (' ' | '\t' | '\r' | '\n')+
-         { skip(); }
+         { this.skip(); }
     ;

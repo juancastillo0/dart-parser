@@ -1,9 +1,6 @@
 // Generated from /Users/juanmanuelcastillo/Desktop/flutter/dart_fixer_test/lib/Dart.g by ANTLR 4.9.0-SNAPSHOT
 
 
-import java.util.Stack;
-
-
 import { ATN } from "antlr4ts/atn/ATN";
 import { ATNDeserializer } from "antlr4ts/atn/ATNDeserializer";
 import { CharStream } from "antlr4ts/CharStream";
@@ -260,11 +257,11 @@ export class DartLexer extends Lexer {
 	// tslint:enable:no-trailing-whitespace
 
 
-	  public static final int BRACE_NORMAL = 1;
-	  public static final int BRACE_SINGLE = 2;
-	  public static final int BRACE_DOUBLE = 3;
-	  public static final int BRACE_THREE_SINGLE = 4;
-	  public static final int BRACE_THREE_DOUBLE = 5;
+	  public static readonly BRACE_NORMAL: number = 1;
+	  public static readonly BRACE_SINGLE: number = 2;
+	  public static readonly BRACE_DOUBLE: number = 3;
+	  public static readonly BRACE_THREE_SINGLE: number = 4;
+	  public static readonly BRACE_THREE_DOUBLE: number = 5;
 
 	  // Enable the parser to handle string interpolations via brace matching.
 	  // The top of the `braceLevels` stack describes the most recent unmatched
@@ -277,40 +274,40 @@ export class DartLexer extends Lexer {
 	  //   THREE_DOUBLE: Most recent unmatched '{' was `"""...${`.
 	  //
 	  // Access via functions below.
-	  private Stack<Integer> braceLevels = new Stack<Integer>();
+	  private braceLevels: Array<number> = [];
 
 	  // Whether we are currently in a string literal context, and which one.
-	  boolean currentBraceLevel(int braceLevel) {
-	    if (braceLevels.empty()) return false;
-	    return braceLevels.peek() == braceLevel;
+	  private currentBraceLevel(braceLevel: number): boolean {
+	    if (this.braceLevels.length === 0) return false;
+	    return this.braceLevels[this.braceLevels.length - 1] === braceLevel;
 	  }
 
 	  // Use this to indicate that we are now entering a specific '{...}'.
 	  // Call it after accepting the '{'.
-	  void enterBrace() {
-	    braceLevels.push(BRACE_NORMAL);
+	  private enterBrace(): void {
+	    this.braceLevels.push(DartLexer.BRACE_NORMAL);
 	  }
-	  void enterBraceSingleQuote() {
-	    braceLevels.push(BRACE_SINGLE);
+	  private enterBraceSingleQuote(): void {
+	    this.braceLevels.push(DartLexer.BRACE_SINGLE);
 	  }
-	  void enterBraceDoubleQuote() {
-	    braceLevels.push(BRACE_DOUBLE);
+	  private enterBraceDoubleQuote(): void {
+	    this.braceLevels.push(DartLexer.BRACE_DOUBLE);
 	  }
-	  void enterBraceThreeSingleQuotes() {
-	    braceLevels.push(BRACE_THREE_SINGLE);
+	  private enterBraceThreeSingleQuotes(): void {
+	    this.braceLevels.push(DartLexer.BRACE_THREE_SINGLE);
 	  }
-	  void enterBraceThreeDoubleQuotes() {
-	    braceLevels.push(BRACE_THREE_DOUBLE);
+	  private enterBraceThreeDoubleQuotes(): void {
+	    this.braceLevels.push(DartLexer.BRACE_THREE_DOUBLE);
 	  }
 
 	  // Use this to indicate that we are now exiting a specific '{...}',
 	  // no matter which kind. Call it before accepting the '}'.
-	  void exitBrace() {
+	  private exitBrace(): void {
 	      // We might raise a parse error here if the stack is empty, but the
 	      // parsing rules should ensure that we get a parse error anyway, and
 	      // it is not a big problem for the spec parser even if it misinterprets
 	      // the brace structure of some programs with syntax errors.
-	      if (!braceLevels.empty()) braceLevels.pop();
+	      if (this.braceLevels.length !== 0) this.braceLevels.pop();
 	  }
 
 
@@ -409,135 +406,135 @@ export class DartLexer extends Lexer {
 	private SINGLE_LINE_STRING_SQ_BEGIN_MID_action(_localctx: RuleContext, actionIndex: number): void {
 		switch (actionIndex) {
 		case 0:
-			 enterBraceSingleQuote(); 
+			 this.enterBraceSingleQuote(); 
 			break;
 		}
 	}
 	private SINGLE_LINE_STRING_SQ_MID_MID_action(_localctx: RuleContext, actionIndex: number): void {
 		switch (actionIndex) {
 		case 1:
-			 exitBrace(); 
+			 this.exitBrace(); 
 			break;
 
 		case 2:
-			 enterBraceSingleQuote(); 
+			 this.enterBraceSingleQuote(); 
 			break;
 		}
 	}
 	private SINGLE_LINE_STRING_SQ_MID_END_action(_localctx: RuleContext, actionIndex: number): void {
 		switch (actionIndex) {
 		case 3:
-			 exitBrace(); 
+			 this.exitBrace(); 
 			break;
 		}
 	}
 	private SINGLE_LINE_STRING_DQ_BEGIN_MID_action(_localctx: RuleContext, actionIndex: number): void {
 		switch (actionIndex) {
 		case 4:
-			 enterBraceDoubleQuote(); 
+			 this.enterBraceDoubleQuote(); 
 			break;
 		}
 	}
 	private SINGLE_LINE_STRING_DQ_MID_MID_action(_localctx: RuleContext, actionIndex: number): void {
 		switch (actionIndex) {
 		case 5:
-			 exitBrace(); 
+			 this.exitBrace(); 
 			break;
 
 		case 6:
-			 enterBraceDoubleQuote(); 
+			 this.enterBraceDoubleQuote(); 
 			break;
 		}
 	}
 	private SINGLE_LINE_STRING_DQ_MID_END_action(_localctx: RuleContext, actionIndex: number): void {
 		switch (actionIndex) {
 		case 7:
-			 exitBrace(); 
+			 this.exitBrace(); 
 			break;
 		}
 	}
 	private MULTI_LINE_STRING_SQ_BEGIN_MID_action(_localctx: RuleContext, actionIndex: number): void {
 		switch (actionIndex) {
 		case 8:
-			 enterBraceThreeSingleQuotes(); 
+			 this.enterBraceThreeSingleQuotes(); 
 			break;
 		}
 	}
 	private MULTI_LINE_STRING_SQ_MID_MID_action(_localctx: RuleContext, actionIndex: number): void {
 		switch (actionIndex) {
 		case 9:
-			 exitBrace(); 
+			 this.exitBrace(); 
 			break;
 
 		case 10:
-			 enterBraceThreeSingleQuotes(); 
+			 this.enterBraceThreeSingleQuotes(); 
 			break;
 		}
 	}
 	private MULTI_LINE_STRING_SQ_MID_END_action(_localctx: RuleContext, actionIndex: number): void {
 		switch (actionIndex) {
 		case 11:
-			 exitBrace(); 
+			 this.exitBrace(); 
 			break;
 		}
 	}
 	private MULTI_LINE_STRING_DQ_BEGIN_MID_action(_localctx: RuleContext, actionIndex: number): void {
 		switch (actionIndex) {
 		case 12:
-			 enterBraceThreeDoubleQuotes(); 
+			 this.enterBraceThreeDoubleQuotes(); 
 			break;
 		}
 	}
 	private MULTI_LINE_STRING_DQ_MID_MID_action(_localctx: RuleContext, actionIndex: number): void {
 		switch (actionIndex) {
 		case 13:
-			 exitBrace(); 
+			 this.exitBrace(); 
 			break;
 
 		case 14:
-			 enterBraceThreeDoubleQuotes(); 
+			 this.enterBraceThreeDoubleQuotes(); 
 			break;
 		}
 	}
 	private MULTI_LINE_STRING_DQ_MID_END_action(_localctx: RuleContext, actionIndex: number): void {
 		switch (actionIndex) {
 		case 15:
-			 exitBrace(); 
+			 this.exitBrace(); 
 			break;
 		}
 	}
 	private LBRACE_action(_localctx: RuleContext, actionIndex: number): void {
 		switch (actionIndex) {
 		case 16:
-			 enterBrace(); 
+			 this.enterBrace(); 
 			break;
 		}
 	}
 	private RBRACE_action(_localctx: RuleContext, actionIndex: number): void {
 		switch (actionIndex) {
 		case 17:
-			 exitBrace(); 
+			 this.exitBrace(); 
 			break;
 		}
 	}
 	private SINGLE_LINE_COMMENT_action(_localctx: RuleContext, actionIndex: number): void {
 		switch (actionIndex) {
 		case 18:
-			 skip(); 
+			 this.skip(); 
 			break;
 		}
 	}
 	private MULTI_LINE_COMMENT_action(_localctx: RuleContext, actionIndex: number): void {
 		switch (actionIndex) {
 		case 19:
-			 skip(); 
+			 this.skip(); 
 			break;
 		}
 	}
 	private WS_action(_localctx: RuleContext, actionIndex: number): void {
 		switch (actionIndex) {
 		case 20:
-			 skip(); 
+			 this.skip(); 
 			break;
 		}
 	}
@@ -576,63 +573,63 @@ export class DartLexer extends Lexer {
 	private SINGLE_LINE_STRING_SQ_MID_MID_sempred(_localctx: RuleContext, predIndex: number): boolean {
 		switch (predIndex) {
 		case 0:
-			return  currentBraceLevel(BRACE_SINGLE) ;
+			return  this.currentBraceLevel(DartLexer.BRACE_SINGLE) ;
 		}
 		return true;
 	}
 	private SINGLE_LINE_STRING_SQ_MID_END_sempred(_localctx: RuleContext, predIndex: number): boolean {
 		switch (predIndex) {
 		case 1:
-			return  currentBraceLevel(BRACE_SINGLE) ;
+			return  this.currentBraceLevel(DartLexer.BRACE_SINGLE) ;
 		}
 		return true;
 	}
 	private SINGLE_LINE_STRING_DQ_MID_MID_sempred(_localctx: RuleContext, predIndex: number): boolean {
 		switch (predIndex) {
 		case 2:
-			return  currentBraceLevel(BRACE_DOUBLE) ;
+			return  this.currentBraceLevel(DartLexer.BRACE_DOUBLE) ;
 		}
 		return true;
 	}
 	private SINGLE_LINE_STRING_DQ_MID_END_sempred(_localctx: RuleContext, predIndex: number): boolean {
 		switch (predIndex) {
 		case 3:
-			return  currentBraceLevel(BRACE_DOUBLE) ;
+			return  this.currentBraceLevel(DartLexer.BRACE_DOUBLE) ;
 		}
 		return true;
 	}
 	private MULTI_LINE_STRING_SQ_MID_MID_sempred(_localctx: RuleContext, predIndex: number): boolean {
 		switch (predIndex) {
 		case 4:
-			return  currentBraceLevel(BRACE_THREE_SINGLE) ;
+			return  this.currentBraceLevel(DartLexer.BRACE_THREE_SINGLE) ;
 		}
 		return true;
 	}
 	private MULTI_LINE_STRING_SQ_MID_END_sempred(_localctx: RuleContext, predIndex: number): boolean {
 		switch (predIndex) {
 		case 5:
-			return  currentBraceLevel(BRACE_THREE_SINGLE) ;
+			return  this.currentBraceLevel(DartLexer.BRACE_THREE_SINGLE) ;
 		}
 		return true;
 	}
 	private MULTI_LINE_STRING_DQ_MID_MID_sempred(_localctx: RuleContext, predIndex: number): boolean {
 		switch (predIndex) {
 		case 6:
-			return  currentBraceLevel(BRACE_THREE_DOUBLE) ;
+			return  this.currentBraceLevel(DartLexer.BRACE_THREE_DOUBLE) ;
 		}
 		return true;
 	}
 	private MULTI_LINE_STRING_DQ_MID_END_sempred(_localctx: RuleContext, predIndex: number): boolean {
 		switch (predIndex) {
 		case 7:
-			return  currentBraceLevel(BRACE_THREE_DOUBLE) ;
+			return  this.currentBraceLevel(DartLexer.BRACE_THREE_DOUBLE) ;
 		}
 		return true;
 	}
 	private RBRACE_sempred(_localctx: RuleContext, predIndex: number): boolean {
 		switch (predIndex) {
 		case 8:
-			return  currentBraceLevel(BRACE_NORMAL) ;
+			return  this.currentBraceLevel(DartLexer.BRACE_NORMAL) ;
 		}
 		return true;
 	}
