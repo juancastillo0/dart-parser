@@ -1,23 +1,43 @@
 pub mod ast;
 pub mod parser;
 
-// extern crate pest;
-// #[macro_use]
-// extern crate pest_derive;
-// extern crate wasm_bindgen;
-
 use parser::ParseOutput;
+use serde::{Deserialize, Serialize};
 
-pub fn parse(input: &str) -> String {
-    let output = ParseOutput::from_str(input);
-
-    match output {
-        Ok(value) => serde_json::to_string_pretty(&value),
-        Err(err) => serde_json::to_string_pretty(&serde_json::json!({"error": err.to_string()})),
-    }
-    .unwrap()
+pub fn parse_to_json(input: &str) -> String {
+    let output = parse_to_output(input);
+    serde_json::to_string(&output).unwrap()
 }
 
-pub fn parse_output(input: &str) -> Result<ParseOutput, pest::error::Error<parser::Rule>> {
-    ParseOutput::from_str(&input)
+pub fn parse_to_json_pretty(input: &str) -> String {
+    let output = parse_to_output(input);
+    serde_json::to_string_pretty(&output).unwrap()
+}
+
+pub fn parse_to_output(input: &str) -> ParseOutputResult {
+    match ParseOutput::from_str(&input) {
+        Ok(value) => ParseOutputResult::Ok(value),
+        Err(err) => ParseOutputResult::Err(err.into()),
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum ParseOutputResult {
+    Ok(ParseOutput),
+    Err(ParseOutputErr),
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ParseOutputErr {
+    pub string: String,
+}
+
+impl From<pest::error::Error<parser::Rule>> for ParseOutputErr {
+    fn from(err: pest::error::Error<parser::Rule>) -> Self {
+        Self {
+            string: err.to_string(),
+        }
+    }
 }

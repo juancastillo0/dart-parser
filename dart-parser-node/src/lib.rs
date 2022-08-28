@@ -9,6 +9,11 @@ pub fn sum(a: i32, b: i32) -> i32 {
 }
 
 #[napi]
-pub fn parse(input: String) -> String {
-    dart_parser_pest::parse(&input)
+pub fn parse_to_json(input: String) -> String {
+  dart_parser_pest::parse_to_json(&input)
+}
+
+#[napi]
+pub fn parse_to_json_pretty(input: String) -> String {
+  dart_parser_pest::parse_to_json_pretty(&input)
 }

@@ -7,62 +7,6 @@ use serde::{Deserialize, Serialize};
 #[grammar = "dart.pest"]
 pub struct DartParser;
 
-// (cascade ~ ".." ~ cascadeSection) |
-fn main() {
-    // let field = DartParser::parse(
-    //     Rule::fieldFormalParameter,
-    //     "this.oooo ",
-    // )
-    // .unwrap()
-    // .next()
-    // .unwrap();
-
-    // println!("{:?}", field);
-
-    let dart_type = DartParser::parse(Rule::Type, "List<int?>")
-        .unwrap()
-        .next()
-        .unwrap();
-
-    println!("{:?}", dart_type);
-
-    let type_args = DartParser::parse(Rule::TypeArguments, "<Int?>")
-        .unwrap()
-        .next()
-        .unwrap();
-
-    println!("{:?}", type_args);
-
-    let library_declaration: Pair<Rule> = DartParser::parse(
-        Rule::LibraryDeclaration,
-        "
-import './daw.dart' hide String show May, July;
-
-class B {
-    String field;
-final List<int?>
-        //  comment
-    dawdwa;
-
-    String current = '''
-int get value => 2;    
-''';
-
-    B.n(this.cc );
-}
-",
-    )
-    .unwrap()
-    .next()
-    .unwrap();
-
-    println!("{:?}", library_declaration);
-
-    // let mut pair = library_declaration;
-
-    // while (true) {}
-}
-
 pub struct ParseCtx<'a> {
     stack: Vec<pest::iterators::Pairs<'a, Rule>>,
     comments: Vec<ast::Comment>,
@@ -157,11 +101,14 @@ impl<'a> ParseCtx<'a> {
     }
 }
 
-fn parse<'a>(rule: Rule, input: &'a str) -> Pair<Rule> {
-    return DartParser::parse(rule, input).unwrap().next().unwrap();
+pub trait RuleModel {
+    fn rule() -> Rule;
+
+    fn parse(ctx: &mut ParseCtx) -> Self;
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ParseOutput {
     pub library: ast::LibraryDeclaration,
     pub comments: Vec<ast::Comment>,
@@ -172,33 +119,6 @@ impl ParseOutput {
         let (library, comments) = ParseCtx::parse_str(input)?;
         Ok(Self { library, comments })
     }
-}
-
-#[test]
-fn test_comment() {
-    parse(Rule::SINGLE_LINE_COMMENT, "// dawionodw");
-}
-
-#[test]
-fn test_parse_ctx() {
-    let (library, comments) = ParseCtx::parse_str::<ast::LibraryDeclaration>(
-        "
-class Model {
-    // The field
-    final String f;
-    const Model(this.f);
-}",
-    )
-    .unwrap();
-    println!("{:?}", library);
-    println!("{:?}", comments);
-    println!("{:?}", serde_json::to_string_pretty(&library).unwrap());
-}
-
-pub trait RuleModel: Sized + 'static {
-    fn rule() -> Rule;
-
-    fn parse(ctx: &mut ParseCtx) -> Self;
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -225,4 +145,93 @@ impl Token {
             string: pair.as_str().to_string(),
         }
     }
+}
+
+#[test]
+fn test_comment() {
+    DartParser::parse(Rule::SINGLE_LINE_COMMENT, "// dawionodw")
+        .unwrap()
+        .next()
+        .unwrap();
+}
+
+#[test]
+fn test_parser() {
+    let assignment = DartParser::parse(Rule::LibraryDeclaration, "final value = '''content ''';")
+        .unwrap()
+        .next()
+        .unwrap();
+
+    println!("{:?}", assignment);
+
+    let dart_type = DartParser::parse(Rule::Type, "List<int?>")
+        .unwrap()
+        .next()
+        .unwrap();
+
+    println!("{:?}", dart_type);
+
+    let type_args = DartParser::parse(Rule::TypeArguments, "<Int?>")
+        .unwrap()
+        .next()
+        .unwrap();
+
+    println!("{:?}", type_args);
+
+    let library_declaration: Pair<Rule> = DartParser::parse(
+        Rule::LibraryDeclaration,
+        "
+
+final str = '''
+String? func2() {
+}
+''';
+class B extends Other {
+    final int? v;
+    final String value;
+    
+    B({
+        this.v = 3,
+        super.md = const [],
+        required this.value,
+    });
+}",
+        //         "
+        // import './daw.dart' hide String show May, July;
+
+        // class B {
+        //     String field;
+        // final List<int?>
+        //         //  comment
+        //     dawdwa;
+
+        //     String current = '''
+        // int get value => 2;
+        // ''';
+
+        //     B.n(this.cc );
+        // }
+        // ",
+    )
+    .unwrap()
+    .next()
+    .unwrap();
+
+    println!("{:?}", library_declaration);
+}
+
+#[test]
+fn test_parse_ctx() {
+    let (library, comments) = ParseCtx::parse_str::<ast::LibraryDeclaration>(
+        "
+class Model {
+    // The field
+    final String f;
+    const Model(this.f);
+}",
+    )
+    .unwrap();
+    println!("{:?}", library);
+    println!("{:?}", comments);
+    println!("{:?}", serde_json::to_string_pretty(&library).unwrap());
 }
