@@ -297,26 +297,49 @@ Parser<List<Item>> document() => item()
 //
 // https://github.com/dart-lang/language/blob/master/specification/dartLangSpec.tex
 // commit a3b45ab2bc4e2442c909252858119ffd2e8c685a
-void main() async {
-  final content = await File('./lib/plaintext_grammar.txt').readAsString();
+void main(List<String> executableArguments) async {
   final r = document().end().parse(
     r"""expressionElement ::= expression""",
   );
   print(r);
 
-  final result = document().end().parse(content);
+  final plaintextFile = File('./lib/plaintext_grammar.txt');
+  await runCodeGen(plaintextFile);
+  print(executableArguments);
+  if (executableArguments.contains('--watch')) {
+    if (!FileSystemEntity.isWatchSupported) {
+      throw Exception('watch is not supported');
+    }
+    await for (final event in plaintextFile.watch()) {
+      switch (event.type) {
+        case FileSystemEvent.create:
+        case FileSystemEvent.modify:
+          await runCodeGen(plaintextFile);
+          break;
+        case FileSystemEvent.delete:
+        case FileSystemEvent.move:
+          return;
+      }
+    }
+  }
+}
 
-  if (result.isSuccess) {
+Future<void> runCodeGen(File plaintextFile) async {
+  exprNames.clear();
+  final content = await plaintextFile.readAsString();
+  final result = document().end().parse(content);
+  try {
     final items = result.value;
     final ctx = Ctx();
     final types = ctx.toRustTypes(items);
+    const rustParserDir = './dart-parser-pest/';
 
-    await File('./dart-parser-pest/src/ast.rs').writeAsString(types);
+    await File('${rustParserDir}src/ast.rs').writeAsString(types);
 
     // final grammar = LalrpopGrammar(items).toLalrpopGrammar();
     // await File('./dart-parser-lalrpop/src/dart_gen.lalrpop')
     //     .writeAsString(grammar);
-    await File('./dart-parser-pest/src/dart.pest').writeAsString(
+    await File('${rustParserDir}src/dart.pest').writeAsString(
       PestGrammar(ctx).toPestGrammar(ctx.typeDescriptions.values
           .map((e) => Item(ExprId(e.name), e.expr))
           .followedBy(items.where(
@@ -324,9 +347,34 @@ void main() async {
           ))
           .toList()),
     );
-  } else {
-    print(result);
+
+    await runCommand([
+      'cargo',
+      'fmt',
+      '--manifest-path',
+      '${rustParserDir}Cargo.toml',
+    ]);
+    await runCommand([
+      'cargo',
+      'check',
+      '--manifest-path',
+      '${rustParserDir}Cargo.toml',
+    ]);
+  } catch (e, s) {
+    print('Error\n$e\n$s');
   }
+}
+
+Future<int> runCommand(List<String> command) async {
+  print('Running "${command.join(' ')}"');
+  final format = await Process.start(
+    command.first,
+    command.sublist(1),
+    mode: ProcessStartMode.inheritStdio,
+  );
+  final exitCode = await format.exitCode;
+  print('Finished(exitCode: $exitCode) "${command.join(' ')}"');
+  return exitCode;
 }
 
 const pestExpressionMapper = {
@@ -439,7 +487,8 @@ class RustType {
   });
 
   String definitionCode() {
-    const derives = '#[derive(Debug, Serialize, Deserialize)]\n#[serde(rename_all = "camelCase")]\n';
+    const derives = '#[derive(Debug, Serialize, Deserialize)]\n'
+        '#[serde(rename_all = "camelCase")]\n';
     switch (kind) {
       case RustTypeKind.type:
         return 'pub type ${name} = ${isBoxed ? 'Box<${name}Inner>' : assignedType};';
@@ -602,9 +651,9 @@ class Ctx {
       }
     });
 
-    return ['use serde::{Serialize,Deserialize};\nuse crate::parser::{Rule, RuleModel, Token, ParseCtx};']
-        .followedBy(typeDescriptions.values.map(typeToString))
-        .join('\n\n');
+    return [
+      'use serde::{Serialize,Deserialize};\nuse crate::parser::{Rule, RuleModel, Token, ParseCtx};'
+    ].followedBy(typeDescriptions.values.map(typeToString)).join('\n\n');
   }
 
   Expr? previousExpr;
@@ -661,7 +710,9 @@ class Ctx {
         addType(
           RustType(
             expr: expr,
-            name: _name!.pascalCase,
+            name: _name == null
+                ? throw Exception(previousExpr)
+                : _name.pascalCase,
             kind: RustTypeKind.struct,
             fields: exprs.map((e) {
               final field = toRustStructGrammarExpr(e, null, parentName: name);
@@ -698,7 +749,7 @@ class Ctx {
         addType(
           RustType(
             expr: expr,
-            name: pascalCase(name)!,
+            name: name == null ? throw Exception(expr) : pascalCase(name)!,
             kind: RustTypeKind.enum$,
             fields: or.expressions.map((e) {
               final variant = 'V${i++}';
