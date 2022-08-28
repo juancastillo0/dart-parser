@@ -20,5 +20,5 @@ pub fn greet() {
 
 #[wasm_bindgen]
 pub fn parse(input: &str) -> String {
-    dart_parser_pest::parse(input)
+    dart_parser_pest::parse_to_json(input)
 }
