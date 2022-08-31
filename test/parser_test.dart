@@ -1,4 +1,5 @@
-import 'package:dart_fixer_test/test-file.dart';
+import 'dart:io';
+
 import 'package:dart_fixer_test/wasm/dart_parser_wasm.dart';
 import 'package:petitparser/petitparser.dart';
 import 'package:petitparser/reflection.dart';
