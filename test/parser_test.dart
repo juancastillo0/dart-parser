@@ -30,4 +30,12 @@ class ModelC {
 }
 """));
   });
+
+  test('greet from wasm', () async {
+    final moduleBinary =
+        await File('./lib/wasm/dart_parser_wasm.wasm').readAsBytes();
+    final parser = await DartParser.compile(moduleBinary);
+
+    parser.greet(); // this should print "alert Hello, dart-parser-wasm!"
+  });
 }
