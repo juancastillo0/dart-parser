@@ -147,6 +147,13 @@ class Expr {
   static String? indentation;
 
   @override
+  bool operator ==(Object? other) =>
+      identical(this, other) || toString() == this.toString();
+
+  @override
+  int get hashCode => toString().hashCode;
+
+  @override
   String toString() {
     bool resetIndentation = indentation == null;
     indentation ??= '';
@@ -324,6 +331,8 @@ void main(List<String> executableArguments) async {
   }
 }
 
+const larlpop = false;
+
 Future<void> runCodeGen(File plaintextFile) async {
   exprNames.clear();
   final content = await plaintextFile.readAsString();
@@ -332,21 +341,25 @@ Future<void> runCodeGen(File plaintextFile) async {
     final items = result.value;
     final ctx = Ctx();
     final types = ctx.toRustTypes(items);
-    const rustParserDir = './dart-parser-pest/';
+    const rustParserDir =
+        larlpop ? './dart-parser-lalrpop/' : './dart-parser-pest/';
 
     await File('${rustParserDir}src/ast.rs').writeAsString(types);
 
-    // final grammar = LalrpopGrammar(items).toLalrpopGrammar();
-    // await File('./dart-parser-lalrpop/src/dart_gen.lalrpop')
-    //     .writeAsString(grammar);
-    await File('${rustParserDir}src/dart.pest').writeAsString(
-      PestGrammar(ctx).toPestGrammar(ctx.typeDescriptions.values
-          .map((e) => Item(ExprId(e.name), e.expr))
-          .followedBy(items.where(
-            (element) => element.id.value.toUpperCase() == element.id.value,
-          ))
-          .toList()),
-    );
+    final mappedItems = ctx.typeDescriptions.values
+        .map((e) => Item(ExprId(e.name), e.expr))
+        .followedBy(items.where(
+          (element) => element.id.value.toUpperCase() == element.id.value,
+        ))
+        .toList();
+    if (larlpop) {
+      final grammar = LalrpopGrammar(ctx, mappedItems).toLalrpopGrammar();
+      await File('${rustParserDir}src/dart_gen.lalrpop').writeAsString(grammar);
+    } else {
+      await File('${rustParserDir}src/dart.pest').writeAsString(
+        PestGrammar(ctx).toPestGrammar(mappedItems),
+      );
+    }
 
     await runCommand([
       'cargo',
@@ -568,6 +581,8 @@ class Ctx {
   final Map<Expr, RustType> typeDescriptions = Map.identity();
   final Map<String, RustType> typeDescriptionsByName = {};
 
+  int GENERATED_ID = 1;
+
   static const boxedTypeNames = {
     'FormalParameterList',
     'TypeParameter',
@@ -589,12 +604,15 @@ class Ctx {
       if (other.name != rustType.name ||
           other.expr.toString() != rustType.expr.toString()) {
         throw Exception(
-          '${other.expr.toString()} != ${rustType.expr.toString()}',
+          '${other.name} != ${rustType.name}, ${other.expr.toString()} != ${rustType.expr.toString()}',
         );
       }
+      typeDescriptions[rustType.expr] = rustType;
+      typeDescriptionsByName[rustType.toString()] = rustType;
     } else {
       typeDescriptions[rustType.expr] = rustType;
       typeDescriptionsByName[rustType.name] = rustType;
+      typeDescriptionsByName[rustType.toString()] = rustType;
     }
   }
 
@@ -611,7 +629,7 @@ class Ctx {
       );
     }
     String impl = '';
-    if (rustType.expr is! ExprId && rustType.expr is! ExprRaw) {
+    if (!larlpop && rustType.expr is! ExprId && rustType.expr is! ExprRaw) {
       final ruleName = rustType.name == 'Comment' ? 'COMMENT' : rustType.name;
       impl =
           '\nimpl RuleModel for ${rustType.name} {fn rule()-> Rule{Rule::${ruleName}} ${rustType.parseCode(this)}}';
@@ -630,7 +648,7 @@ class Ctx {
         ]),
       )
     ]).forEach((e) {
-      if (e.id.value.toUpperCase() != e.id.value) {
+      if (larlpop || e.id.value.toUpperCase() != e.id.value) {
         final value = toRustStructGrammarExpr(e.expression, e.id.value);
         if (e.expression is ExprSimple) {
           final name = pascalCase(value.name);
@@ -652,8 +670,14 @@ class Ctx {
     });
 
     return [
-      'use serde::{Serialize,Deserialize};\nuse crate::parser::{Rule, RuleModel, Token, ParseCtx};'
-    ].followedBy(typeDescriptions.values.map(typeToString)).join('\n\n');
+      larlpop
+          ? 'use serde::{Serialize,Deserialize};\nuse crate::parser::Token;'
+          : 'use serde::{Serialize,Deserialize};\nuse crate::parser::{Rule, RuleModel, Token, ParseCtx};'
+    ]
+        .followedBy(typeDescriptions.values
+            .where((e) => !e.name.isUpperCase)
+            .map(typeToString))
+        .join('\n\n');
   }
 
   Expr? previousExpr;
@@ -698,6 +722,12 @@ class Ctx {
           }
           _name = '${pascalCase((exprs.last as ExprId).value)}$suffix';
         }
+
+        if (_name == null &&
+            larlpop &&
+            (parentName != null && parentName.isUpperCase)) {
+          _name = '${parentName}_GENERATED_${GENERATED_ID++}';
+        }
         if (_name == null && parentName != null) {
           final identifiers = exprs.whereType<ExprId>().toList();
           if (allRaw.isNotEmpty && (exprs.length < 2 || exprs[1] is! ExprId)) {
@@ -712,10 +742,12 @@ class Ctx {
             expr: expr,
             name: _name == null
                 ? throw Exception(previousExpr)
-                : _name.pascalCase,
+                : _name.isUpperCase
+                    ? _name
+                    : _name.pascalCase,
             kind: RustTypeKind.struct,
             fields: exprs.map((e) {
-              final field = toRustStructGrammarExpr(e, null, parentName: name);
+              final field = toRustStructGrammarExpr(e, null, parentName: _name);
               final fieldName = field.name;
               final count = addFieldName(fieldName ?? 'null');
               return count == 1
@@ -740,6 +772,11 @@ class Ctx {
       or: (or) {
         final allExprId = or.expressions.whereType<ExprId>().toList();
         final allRaw = or.expressions.whereType<ExprRaw>().toList();
+        if (name == null &&
+            larlpop &&
+            (parentName != null && parentName.isUpperCase)) {
+          name = '${parentName}_GENERATED_${GENERATED_ID++}';
+        }
         if (name == null && allExprId.length == or.expressions.length) {
           name = allExprId.map((e) => pascalCase(e.value)).join('Or');
         } else if (name == null && allRaw.length == or.expressions.length) {
@@ -749,7 +786,11 @@ class Ctx {
         addType(
           RustType(
             expr: expr,
-            name: name == null ? throw Exception(expr) : pascalCase(name)!,
+            name: name == null
+                ? throw Exception(expr)
+                : name!.isUpperCase
+                    ? name!
+                    : pascalCase(name)!,
             kind: RustTypeKind.enum$,
             fields: or.expressions.map((e) {
               final variant = 'V${i++}';

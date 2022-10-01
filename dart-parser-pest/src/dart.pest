@@ -672,15 +672,19 @@ TopLevelDeclarationGetterSignature = {(GetterSignature ~ FunctionBody)}
 
 TopLevelDeclarationSetterSignature = {(SetterSignature ~ FunctionBody)}
 
-FinalOrConst = {(FINAL_TOKEN | CONST_TOKEN)}
+FinalTokenOrConstToken = {(FINAL_TOKEN | CONST_TOKEN)}
 
-TopLevelDeclarationSemicolonToken = {(FinalOrConst ~ (Type)? ~ StaticFinalDeclarationList ~ SEMICOLON_TOKEN)}
+TopLevelDeclarationTopLevelStaticFinalDeclarations = {(FinalTokenOrConstToken ~ TopLevelStaticFinalDeclarations ~ SEMICOLON_TOKEN)}
 
 TopLevelDeclarationLateToken = {(LATE_TOKEN ~ FINAL_TOKEN ~ (Type)? ~ InitializedIdentifierList ~ SEMICOLON_TOKEN)}
 
 TopLevelDeclarationVarOrType = {((LATE_TOKEN)? ~ VarOrType ~ InitializedIdentifierList ~ SEMICOLON_TOKEN)}
 
-TopLevelDeclaration = {(ClassDeclaration | MixinDeclaration | ExtensionDeclaration | EnumType | TypeAlias | ExternalFunctionSignature | ExternalGetterSignature | ExternalSetterSignature | TopLevelDeclarationFunctionSignature | TopLevelDeclarationGetterSignature | TopLevelDeclarationSetterSignature | TopLevelDeclarationSemicolonToken | TopLevelDeclarationLateToken | TopLevelDeclarationVarOrType)}
+TopLevelDeclaration = {(ClassDeclaration | MixinDeclaration | ExtensionDeclaration | EnumType | TypeAlias | ExternalFunctionSignature | ExternalGetterSignature | ExternalSetterSignature | TopLevelDeclarationFunctionSignature | TopLevelDeclarationGetterSignature | TopLevelDeclarationSetterSignature | TopLevelDeclarationTopLevelStaticFinalDeclarations | TopLevelDeclarationLateToken | TopLevelDeclarationVarOrType)}
+
+TypedStaticFinalDeclarations = {(Type ~ StaticFinalDeclarationList)}
+
+TopLevelStaticFinalDeclarations = {(StaticFinalDeclarationList | TypedStaticFinalDeclarations)}
 
 LibraryDeclarationMetadata = {(Metadata ~ TopLevelDeclaration)}
 

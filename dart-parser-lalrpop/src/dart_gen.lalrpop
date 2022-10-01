@@ -1,885 +1,1278 @@
-pub letExpression : LetExpression = {<let_tokenStart:@L> "let" <let_tokenEnd:@R> <static_final_declaration_list:staticFinalDeclarationList> <in_tokenStart:@L> "in" <in_tokenEnd:@R> <expression:expression> => LetExpression{let_token:Token(let_tokenStart, let_tokenEnd), static_final_declaration_list, in_token:Token(in_tokenStart, in_tokenEnd), expression}}
+use ast;
+use parser::Token;
 
-pub finalConstVarOrType : FinalConstVarOrType = {FinalConstVarOrTypeFinalToken => FinalConstVarOrType::Final(FinalConstVarOrTypeFinalToken(<>)),
-  FinalConstVarOrTypeConstToken => FinalConstVarOrType::Const(FinalConstVarOrTypeConstToken(<>)),
-  FinalConstVarOrTypeVarOrType => FinalConstVarOrType::VarOrType(FinalConstVarOrTypeVarOrType(<>)),}
+grammar;
 
-pub varOrType : VarOrType = {<Start:@L> "var" <End:@R> => VarOrType::Var(Token(<>)),
-  dartType => VarOrType::Type(Type(<>)),}
+pub LetExpression: LetExpression = {<let_token:LET_TOKEN> <static_final_declaration_list:StaticFinalDeclarationList> <in_token:IN_TOKEN> <expression:Expression> => LetExpression{<>}};
 
-pub initializedVariableDeclaration : InitializedVariableDeclaration = {<declared_identifier:declaredIdentifier> <expression_equal:(ExpressionEqual)?> <initialized_identifier_item:(InitializedIdentifierItem)*> => InitializedVariableDeclaration{declared_identifier, expression_equal, initialized_identifier_item}}
+pub FinalConstVarOrTypeFinalToken: FinalConstVarOrTypeFinalToken = {<late_token:(LATE_TOKEN)?> <final_token:FINAL_TOKEN> <dart_type:(Type)?> => FinalConstVarOrTypeFinalToken{<>}};
 
-pub initializedIdentifier : InitializedIdentifier = {<identifier:identifier> <expression_equal:(ExpressionEqual)?> => InitializedIdentifier{identifier, expression_equal}}
+pub FinalConstVarOrTypeConstToken: FinalConstVarOrTypeConstToken = {<const_token:CONST_TOKEN> <dart_type:(Type)?> => FinalConstVarOrTypeConstToken{<>}};
 
-pub initializedIdentifierList : InitializedIdentifierList = {<initialized_identifier:initializedIdentifier> <initialized_identifier_item:(InitializedIdentifierItem)*> => InitializedIdentifierList{initialized_identifier, initialized_identifier_item}}
+pub FinalConstVarOrTypeVarOrType: FinalConstVarOrTypeVarOrType = {<late_token:(LATE_TOKEN)?> <var_or_type:VarOrType> => FinalConstVarOrTypeVarOrType{<>}};
 
-pub functionSignature : FunctionSignature = {<dart_type:(dartType)?> <identifier:identifier> <formal_parameter_part:formalParameterPart> => FunctionSignature{dart_type, identifier, formal_parameter_part}}
+pub FinalConstVarOrType: FinalConstVarOrType = {FinalConstVarOrTypeFinalToken => FinalConstVarOrType::Final(<>), FinalConstVarOrTypeConstToken => FinalConstVarOrType::Const(<>), FinalConstVarOrTypeVarOrType => FinalConstVarOrType::VarOrType(<>)};
 
-pub formalParameterPart : FormalParameterPart = {<type_parameters:(typeParameters)?> <formal_parameter_list:formalParameterList> => FormalParameterPart{type_parameters, formal_parameter_list}}
+pub VarOrType: VarOrType = {VAR_TOKEN => VarOrType::Var(<>), Type => VarOrType::Type(<>)};
 
-pub functionBody : FunctionBody = {FunctionBodyArrowToken => FunctionBody::Arrow(FunctionBodyArrowToken(<>)),
-  FunctionBodyBlock => FunctionBody::Block(FunctionBodyBlock(<>)),}
+pub ExpressionEqual: ExpressionEqual = {<equal_token:EQUAL_TOKEN> <expression:Expression> => ExpressionEqual{<>}};
 
-pub block : Block = {<open_curly_bracket_tokenStart:@L> "{" <open_curly_bracket_tokenEnd:@R> <statements:statements> <close_curly_bracket_tokenStart:@L> "}" <close_curly_bracket_tokenEnd:@R> => Block{open_curly_bracket_token:Token(open_curly_bracket_tokenStart, open_curly_bracket_tokenEnd), statements, close_curly_bracket_token:Token(close_curly_bracket_tokenStart, close_curly_bracket_tokenEnd)}}
+pub InitializedIdentifierItem: InitializedIdentifierItem = {<comma_token:COMMA_TOKEN> <initialized_identifier:InitializedIdentifier> => InitializedIdentifierItem{<>}};
 
-pub formalParameterList : FormalParameterList = {EmptyParameters => FormalParameterList::EmptyParameters(EmptyParameters(<>)),
-  FormalParameterListNormalFormalParameters => FormalParameterList::NormalFormalParameters(FormalParameterListNormalFormalParameters(<>)),
-  NormalWithOptionalOrNamedParameters => FormalParameterList::NormalWithOptionalOrNamedParameters(NormalWithOptionalOrNamedParameters(<>)),
-  FormalParameterListOptionalOrNamedFormalParameters => FormalParameterList::OptionalOrNamedFormalParameters(FormalParameterListOptionalOrNamedFormalParameters(<>)),}
+pub InitializedVariableDeclaration: InitializedVariableDeclaration = {<declared_identifier:DeclaredIdentifier> <expression_equal:(ExpressionEqual)?> <initialized_identifier_item:(InitializedIdentifierItem)*> => InitializedVariableDeclaration{<>}};
 
-pub normalFormalParameters : NormalFormalParameters = {<normal_formal_parameter:normalFormalParameter> <normal_formal_parameter_item:(NormalFormalParameterItem)*> => NormalFormalParameters{normal_formal_parameter, normal_formal_parameter_item}}
+pub ExpressionEqual: ExpressionEqual = {<equal_token:EQUAL_TOKEN> <expression:Expression> => ExpressionEqual{<>}};
 
-pub optionalOrNamedFormalParameters : OptionalOrNamedFormalParameters = {optionalPositionalFormalParameters => OptionalOrNamedFormalParameters::OptionalPositionalFormalParameters(OptionalPositionalFormalParameters(<>)),
-  namedFormalParameters => OptionalOrNamedFormalParameters::NamedFormalParameters(NamedFormalParameters(<>)),}
+pub InitializedIdentifier: InitializedIdentifier = {<identifier:Identifier> <expression_equal:(ExpressionEqual)?> => InitializedIdentifier{<>}};
 
-pub optionalPositionalFormalParameters : OptionalPositionalFormalParameters = {<open_square_bracket_tokenStart:@L> "[" <open_square_bracket_tokenEnd:@R> <default_formal_parameter:defaultFormalParameter> <default_formal_parameter_item:(DefaultFormalParameterItem)*> <comma_token:(<Start:@L> "," <End:@R>)?> <close_square_bracket_tokenStart:@L> "]" <close_square_bracket_tokenEnd:@R> => OptionalPositionalFormalParameters{open_square_bracket_token:Token(open_square_bracket_tokenStart, open_square_bracket_tokenEnd), default_formal_parameter, default_formal_parameter_item, comma_token, close_square_bracket_token:Token(close_square_bracket_tokenStart, close_square_bracket_tokenEnd)}}
+pub InitializedIdentifierItem: InitializedIdentifierItem = {<comma_token:COMMA_TOKEN> <initialized_identifier:InitializedIdentifier> => InitializedIdentifierItem{<>}};
 
-pub namedFormalParameters : NamedFormalParameters = {<open_curly_bracket_tokenStart:@L> "{" <open_curly_bracket_tokenEnd:@R> <default_named_parameter:defaultNamedParameter> <default_named_parameter_item:(DefaultNamedParameterItem)*> <comma_token:(<Start:@L> "," <End:@R>)?> <close_curly_bracket_tokenStart:@L> "}" <close_curly_bracket_tokenEnd:@R> => NamedFormalParameters{open_curly_bracket_token:Token(open_curly_bracket_tokenStart, open_curly_bracket_tokenEnd), default_named_parameter, default_named_parameter_item, comma_token, close_curly_bracket_token:Token(close_curly_bracket_tokenStart, close_curly_bracket_tokenEnd)}}
+pub InitializedIdentifierList: InitializedIdentifierList = {<initialized_identifier:InitializedIdentifier> <initialized_identifier_item:(InitializedIdentifierItem)*> => InitializedIdentifierList{<>}};
 
-pub normalFormalParameter : NormalFormalParameter = {<metadata:metadata> <normal_formal_parameter_no_metadata:normalFormalParameterNoMetadata> => NormalFormalParameter{metadata, normal_formal_parameter_no_metadata}}
+pub FunctionSignature: FunctionSignature = {<dart_type:(Type)?> <identifier:Identifier> <formal_parameter_part:FormalParameterPart> => FunctionSignature{<>}};
 
-pub normalFormalParameterNoMetadata : NormalFormalParameterNoMetadata = {functionFormalParameter => NormalFormalParameterNoMetadata::FunctionFormalParameter(FunctionFormalParameter(<>)),
-  fieldFormalParameter => NormalFormalParameterNoMetadata::FieldFormalParameter(FieldFormalParameter(<>)),
-  simpleFormalParameter => NormalFormalParameterNoMetadata::SimpleFormalParameter(SimpleFormalParameter(<>)),}
+pub FormalParameterPart: FormalParameterPart = {<type_parameters:(TypeParameters)?> <formal_parameter_list:FormalParameterList> => FormalParameterPart{<>}};
 
-pub functionFormalParameter : FunctionFormalParameter = {<covariant_token:(<Start:@L> "covariant" <End:@R>)?> <dart_type:(dartType)?> <identifier:identifier> <formal_parameter_part:formalParameterPart> <question_token:(<Start:@L> "?" <End:@R>)?> => FunctionFormalParameter{covariant_token, dart_type, identifier, formal_parameter_part, question_token}}
+pub FunctionBodyArrowToken: FunctionBodyArrowToken = {<async_token:(ASYNC_TOKEN)?> <arrow_token:ARROW_TOKEN> <expression:Expression> <semicolon_token:SEMICOLON_TOKEN> => FunctionBodyArrowToken{<>}};
 
-pub simpleFormalParameter : SimpleFormalParameter = {declaredIdentifier => SimpleFormalParameter::DeclaredIdentifier(DeclaredIdentifier(<>)),
-  SimpleFormalParameterIdentifier => SimpleFormalParameter::Identifier(SimpleFormalParameterIdentifier(<>)),}
+pub FunctionBodyGeneratorAsyncToken: FunctionBodyGeneratorAsyncToken = {<async_token:ASYNC_TOKEN> <asterisk_token:(ASTERISK_TOKEN)?> => FunctionBodyGeneratorAsyncToken{<>}};
 
-pub declaredIdentifier : DeclaredIdentifier = {<covariant_token:(<Start:@L> "covariant" <End:@R>)?> <final_const_var_or_type:finalConstVarOrType> <identifier:identifier> => DeclaredIdentifier{covariant_token, final_const_var_or_type, identifier}}
+pub FunctionBodyGeneratorSyncToken: FunctionBodyGeneratorSyncToken = {<sync_token:SYNC_TOKEN> <asterisk_token:ASTERISK_TOKEN> => FunctionBodyGeneratorSyncToken{<>}};
 
-pub fieldFormalParameter : FieldFormalParameter = {<final_const_var_or_type:(finalConstVarOrType)?> <this_tokenStart:@L> "this" <this_tokenEnd:@R> <period_tokenStart:@L> "." <period_tokenEnd:@R> <identifier:identifier> <formal_parameter_part:(FieldFormalParameterFormalParameterPart)?> => FieldFormalParameter{final_const_var_or_type, this_token:Token(this_tokenStart, this_tokenEnd), period_token:Token(period_tokenStart, period_tokenEnd), identifier, formal_parameter_part}}
+pub FunctionBodyGenerator: FunctionBodyGenerator = {FunctionBodyGeneratorAsyncToken => FunctionBodyGenerator::Async(<>), FunctionBodyGeneratorSyncToken => FunctionBodyGenerator::Sync(<>)};
 
-pub defaultFormalParameter : DefaultFormalParameter = {<normal_formal_parameter:normalFormalParameter> <expression_equal:(ExpressionEqual)?> => DefaultFormalParameter{normal_formal_parameter, expression_equal}}
+pub FunctionBodyBlock: FunctionBodyBlock = {<function_body_generator:(FunctionBodyGenerator)?> <block:Block> => FunctionBodyBlock{<>}};
 
-pub defaultNamedParameter : DefaultNamedParameter = {<metadata:metadata> <required_token:(<Start:@L> "required" <End:@R>)?> <normal_formal_parameter_no_metadata:normalFormalParameterNoMetadata> <default_named_parameter_assignment:(DefaultNamedParameterAssignment)?> => DefaultNamedParameter{metadata, required_token, normal_formal_parameter_no_metadata, default_named_parameter_assignment}}
+pub FunctionBody: FunctionBody = {FunctionBodyArrowToken => FunctionBody::Arrow(<>), FunctionBodyBlock => FunctionBody::Block(<>)};
 
-pub classDeclaration : ClassDeclaration = {ClassDeclarationClassToken => ClassDeclaration::Class(ClassDeclarationClassToken(<>)),
-  ClassDeclarationMixin => ClassDeclaration::ClassDeclarationMixin(ClassDeclarationMixin(<>)),}
+pub Block: Block = {<open_curly_bracket_token:OPEN_CURLY_BRACKET_TOKEN> <statements:Statements> <close_curly_bracket_token:CLOSE_CURLY_BRACKET_TOKEN> => Block{<>}};
 
-pub typeNotVoidList : TypeNotVoidList = {<type_not_void:typeNotVoid> <type_not_void_item:(TypeNotVoidItem)*> => TypeNotVoidList{type_not_void, type_not_void_item}}
+pub EmptyParameters: EmptyParameters = {<open_paren_token:OPEN_PAREN_TOKEN> <close_paren_token:CLOSE_PAREN_TOKEN> => EmptyParameters{<>}};
 
-pub classMemberDeclaration : ClassMemberDeclaration = {ClassMemberDeclarationSemicolonToken => ClassMemberDeclaration::Semicolon(ClassMemberDeclarationSemicolonToken(<>)),
-  ClassMemberDeclarationMethodSignature => ClassMemberDeclaration::MethodSignature(ClassMemberDeclarationMethodSignature(<>)),}
+pub FormalParameterListNormalFormalParameters: FormalParameterListNormalFormalParameters = {<open_paren_token:OPEN_PAREN_TOKEN> <normal_formal_parameters:NormalFormalParameters> <comma_token:(COMMA_TOKEN)?> <close_paren_token:CLOSE_PAREN_TOKEN> => FormalParameterListNormalFormalParameters{<>}};
 
-pub methodSignature : MethodSignature = {MethodSignatureConstructorSignature => MethodSignature::ConstructorSignature(MethodSignatureConstructorSignature(<>)),
-  factoryConstructorSignature => MethodSignature::FactoryConstructorSignature(FactoryConstructorSignature(<>)),
-  MethodSignatureFunctionSignature => MethodSignature::FunctionSignature(MethodSignatureFunctionSignature(<>)),
-  MethodSignatureGetterSignature => MethodSignature::GetterSignature(MethodSignatureGetterSignature(<>)),
-  MethodSignatureSetterSignature => MethodSignature::SetterSignature(MethodSignatureSetterSignature(<>)),
-  operatorSignature => MethodSignature::OperatorSignature(OperatorSignature(<>)),}
+pub NormalWithOptionalOrNamedParameters: NormalWithOptionalOrNamedParameters = {<open_paren_token:OPEN_PAREN_TOKEN> <normal_formal_parameters:NormalFormalParameters> <comma_token:COMMA_TOKEN> <optional_or_named_formal_parameters:OptionalOrNamedFormalParameters> <close_paren_token:CLOSE_PAREN_TOKEN> => NormalWithOptionalOrNamedParameters{<>}};
 
-pub declaration : Declaration = {DeclarationFactoryConstructorSignature => Declaration::FactoryConstructorSignature(DeclarationFactoryConstructorSignature(<>)),
-  ExternalConstantConstructorSignature => Declaration::ExternalConstantConstructorSignature(ExternalConstantConstructorSignature(<>)),
-  ExternalConstructorSignature => Declaration::ExternalConstructorSignature(ExternalConstructorSignature(<>)),
-  DeclarationGetterSignature => Declaration::GetterSignature(DeclarationGetterSignature(<>)),
-  DeclarationSetterSignature => Declaration::SetterSignature(DeclarationSetterSignature(<>)),
-  DeclarationFunctionSignature => Declaration::FunctionSignature(DeclarationFunctionSignature(<>)),
-  DeclarationOperatorSignature => Declaration::OperatorSignature(DeclarationOperatorSignature(<>)),
-  StaticConst => Declaration::StaticConst(StaticConst(<>)),
-  StaticFinal => Declaration::StaticFinal(StaticFinal(<>)),
-  StaticLateFinal => Declaration::StaticLateFinal(StaticLateFinal(<>)),
-  StaticVarOrType => Declaration::StaticVarOrType(StaticVarOrType(<>)),
-  CovariantLateFinal => Declaration::CovariantLateFinal(CovariantLateFinal(<>)),
-  CovariantVarOrType => Declaration::CovariantVarOrType(CovariantVarOrType(<>)),
-  DeclarationFinalToken => Declaration::Final(DeclarationFinalToken(<>)),
-  DeclarationVarOrType => Declaration::VarOrType(DeclarationVarOrType(<>)),
-  redirectingFactoryConstructorSignature => Declaration::RedirectingFactoryConstructorSignature(RedirectingFactoryConstructorSignature(<>)),
-  DeclarationConstantConstructorSignature => Declaration::ConstantConstructorSignature(DeclarationConstantConstructorSignature(<>)),
-  DeclarationConstructorSignature => Declaration::ConstructorSignature(DeclarationConstructorSignature(<>)),}
+pub FormalParameterListOptionalOrNamedFormalParameters: FormalParameterListOptionalOrNamedFormalParameters = {<open_paren_token:OPEN_PAREN_TOKEN> <optional_or_named_formal_parameters:OptionalOrNamedFormalParameters> <close_paren_token:CLOSE_PAREN_TOKEN> => FormalParameterListOptionalOrNamedFormalParameters{<>}};
 
-pub staticFinalDeclarationList : StaticFinalDeclarationList = {<static_final_declaration:staticFinalDeclaration> <static_final_declaration_item:(StaticFinalDeclarationItem)*> => StaticFinalDeclarationList{static_final_declaration, static_final_declaration_item}}
+pub FormalParameterList: FormalParameterList = {EmptyParameters => FormalParameterList::EmptyParameters(<>), FormalParameterListNormalFormalParameters => FormalParameterList::NormalFormalParameters(<>), NormalWithOptionalOrNamedParameters => FormalParameterList::NormalWithOptionalOrNamedParameters(<>), FormalParameterListOptionalOrNamedFormalParameters => FormalParameterList::OptionalOrNamedFormalParameters(<>)};
 
-pub staticFinalDeclaration : StaticFinalDeclaration = {<identifier:identifier> <equal_tokenStart:@L> "=" <equal_tokenEnd:@R> <expression:expression> => StaticFinalDeclaration{identifier, equal_token:Token(equal_tokenStart, equal_tokenEnd), expression}}
+pub NormalFormalParameterItem: NormalFormalParameterItem = {<comma_token:COMMA_TOKEN> <normal_formal_parameter:NormalFormalParameter> => NormalFormalParameterItem{<>}};
 
-pub operatorSignature : OperatorSignature = {<dart_type:(dartType)?> <operator_tokenStart:@L> "operator" <operator_tokenEnd:@R> <operator:operator> <formal_parameter_list:formalParameterList> => OperatorSignature{dart_type, operator_token:Token(operator_tokenStart, operator_tokenEnd), operator, formal_parameter_list}}
+pub NormalFormalParameters: NormalFormalParameters = {<normal_formal_parameter:NormalFormalParameter> <normal_formal_parameter_item:(NormalFormalParameterItem)*> => NormalFormalParameters{<>}};
 
-pub operator : Operator = {<Start:@L> "~" <End:@R> => Operator::Tilde(Token(<>)),
-  binaryOperator => Operator::BinaryOperator(BinaryOperator(<>)),
-  <Start:@L> "[]" <End:@R> => Operator::SquareBrackets(Token(<>)),
-  <Start:@L> "[]=" <End:@R> => Operator::QuareBracketsEq(Token(<>)),}
+pub OptionalOrNamedFormalParameters: OptionalOrNamedFormalParameters = {OptionalPositionalFormalParameters => OptionalOrNamedFormalParameters::OptionalPositionalFormalParameters(<>), NamedFormalParameters => OptionalOrNamedFormalParameters::NamedFormalParameters(<>)};
 
-pub binaryOperator : BinaryOperator = {multiplicativeOperator => BinaryOperator::MultiplicativeOperator(MultiplicativeOperator(<>)),
-  additiveOperator => BinaryOperator::AdditiveOperator(AdditiveOperator(<>)),
-  shiftOperator => BinaryOperator::ShiftOperator(ShiftOperator(<>)),
-  relationalOperator => BinaryOperator::RelationalOperator(RelationalOperator(<>)),
-  <Start:@L> "==" <End:@R> => BinaryOperator::DoubleEqual(Token(<>)),
-  bitwiseOperator => BinaryOperator::BitwiseOperator(BitwiseOperator(<>)),}
+pub DefaultFormalParameterItem: DefaultFormalParameterItem = {<comma_token:COMMA_TOKEN> <default_formal_parameter:DefaultFormalParameter> => DefaultFormalParameterItem{<>}};
 
-pub getterSignature : GetterSignature = {<dart_type:(dartType)?> <get_tokenStart:@L> "get" <get_tokenEnd:@R> <identifier:identifier> => GetterSignature{dart_type, get_token:Token(get_tokenStart, get_tokenEnd), identifier}}
+pub OptionalPositionalFormalParameters: OptionalPositionalFormalParameters = {<open_square_bracket_token:OPEN_SQUARE_BRACKET_TOKEN> <default_formal_parameter:DefaultFormalParameter> <default_formal_parameter_item:(DefaultFormalParameterItem)*> <comma_token:(COMMA_TOKEN)?> <close_square_bracket_token:CLOSE_SQUARE_BRACKET_TOKEN> => OptionalPositionalFormalParameters{<>}};
 
-pub setterSignature : SetterSignature = {<dart_type:(dartType)?> <set_tokenStart:@L> "set" <set_tokenEnd:@R> <identifier:identifier> <formal_parameter_list:formalParameterList> => SetterSignature{dart_type, set_token:Token(set_tokenStart, set_tokenEnd), identifier, formal_parameter_list}}
+pub DefaultNamedParameterItem: DefaultNamedParameterItem = {<comma_token:COMMA_TOKEN> <default_named_parameter:DefaultNamedParameter> => DefaultNamedParameterItem{<>}};
 
-pub constructorSignature : ConstructorSignature = {<constructor_name:constructorName> <formal_parameter_list:formalParameterList> => ConstructorSignature{constructor_name, formal_parameter_list}}
+pub NamedFormalParameters: NamedFormalParameters = {<open_curly_bracket_token:OPEN_CURLY_BRACKET_TOKEN> <default_named_parameter:DefaultNamedParameter> <default_named_parameter_item:(DefaultNamedParameterItem)*> <comma_token:(COMMA_TOKEN)?> <close_curly_bracket_token:CLOSE_CURLY_BRACKET_TOKEN> => NamedFormalParameters{<>}};
 
-pub constructorName : ConstructorName = {<type_identifier:typeIdentifier> <identifier_selector:(IdentifierSelector)?> => ConstructorName{type_identifier, identifier_selector}}
+pub NormalFormalParameter: NormalFormalParameter = {<metadata:Metadata> <normal_formal_parameter_no_metadata:NormalFormalParameterNoMetadata> => NormalFormalParameter{<>}};
 
-pub redirection : Redirection = {<colon_tokenStart:@L> ":" <colon_tokenEnd:@R> <this_tokenStart:@L> "this" <this_tokenEnd:@R> <identifier_selector:(IdentifierSelector)?> <arguments:arguments> => Redirection{colon_token:Token(colon_tokenStart, colon_tokenEnd), this_token:Token(this_tokenStart, this_tokenEnd), identifier_selector, arguments}}
+pub NormalFormalParameterNoMetadata: NormalFormalParameterNoMetadata = {FunctionFormalParameter => NormalFormalParameterNoMetadata::FunctionFormalParameter(<>), FieldFormalParameter => NormalFormalParameterNoMetadata::FieldFormalParameter(<>), SimpleFormalParameter => NormalFormalParameterNoMetadata::SimpleFormalParameter(<>), SuperFormalParameter => NormalFormalParameterNoMetadata::SuperFormalParameter(<>)};
 
-pub initializers : Initializers = {<colon_tokenStart:@L> ":" <colon_tokenEnd:@R> <initializer_list_entry:initializerListEntry> <initializer_list_entry_item:(InitializerListEntryItem)*> => Initializers{colon_token:Token(colon_tokenStart, colon_tokenEnd), initializer_list_entry, initializer_list_entry_item}}
+pub FunctionFormalParameter: FunctionFormalParameter = {<covariant_token:(COVARIANT_TOKEN)?> <dart_type:(Type)?> <identifier:Identifier> <formal_parameter_part:FormalParameterPart> <question_token:(QUESTION_TOKEN)?> => FunctionFormalParameter{<>}};
 
-pub initializerListEntry : InitializerListEntry = {InitializerListEntryArguments => InitializerListEntry::Arguments(InitializerListEntryArguments(<>)),
-  InitializerListEntrySuperToken => InitializerListEntry::Super(InitializerListEntrySuperToken(<>)),
-  fieldInitializer => InitializerListEntry::FieldInitializer(FieldInitializer(<>)),
-  assertion => InitializerListEntry::Assertion(Assertion(<>)),}
+pub SimpleFormalParameterIdentifier: SimpleFormalParameterIdentifier = {<covariant_token:(COVARIANT_TOKEN)?> <identifier:Identifier> => SimpleFormalParameterIdentifier{<>}};
 
-pub fieldInitializer : FieldInitializer = {<this_token:(FieldInitializerThisToken)?> <identifier:identifier> <equal_tokenStart:@L> "=" <equal_tokenEnd:@R> <initializer_expression:initializerExpression> => FieldInitializer{this_token, identifier, equal_token:Token(equal_tokenStart, equal_tokenEnd), initializer_expression}}
+pub SimpleFormalParameter: SimpleFormalParameter = {DeclaredIdentifier => SimpleFormalParameter::DeclaredIdentifier(<>), SimpleFormalParameterIdentifier => SimpleFormalParameter::Identifier(<>)};
 
-pub initializerExpression : InitializerExpression = {conditionalExpression => InitializerExpression::ConditionalExpression(ConditionalExpression(<>)),
-  cascade => InitializerExpression::Cascade(Cascade(<>)),}
+pub DeclaredIdentifier: DeclaredIdentifier = {<covariant_token:(COVARIANT_TOKEN)?> <final_const_var_or_type:FinalConstVarOrType> <identifier:Identifier> => DeclaredIdentifier{<>}};
 
-pub factoryConstructorSignature : FactoryConstructorSignature = {<const_token:(<Start:@L> "const" <End:@R>)?> <factory_tokenStart:@L> "factory" <factory_tokenEnd:@R> <constructor_name:constructorName> <formal_parameter_list:formalParameterList> => FactoryConstructorSignature{const_token, factory_token:Token(factory_tokenStart, factory_tokenEnd), constructor_name, formal_parameter_list}}
+pub FieldFormalParameterFormalParameterPart: FieldFormalParameterFormalParameterPart = {<formal_parameter_part:FormalParameterPart> <question_token:(QUESTION_TOKEN)?> => FieldFormalParameterFormalParameterPart{<>}};
 
-pub redirectingFactoryConstructorSignature : RedirectingFactoryConstructorSignature = {<const_token:(<Start:@L> "const" <End:@R>)?> <factory_tokenStart:@L> "factory" <factory_tokenEnd:@R> <constructor_name:constructorName> <formal_parameter_list:formalParameterList> <equal_tokenStart:@L> "=" <equal_tokenEnd:@R> <constructor_designation:constructorDesignation> => RedirectingFactoryConstructorSignature{const_token, factory_token:Token(factory_tokenStart, factory_tokenEnd), constructor_name, formal_parameter_list, equal_token:Token(equal_tokenStart, equal_tokenEnd), constructor_designation}}
+pub FieldFormalParameter: FieldFormalParameter = {<final_const_var_or_type:(FinalConstVarOrType)?> <this_token:THIS_TOKEN> <period_token:PERIOD_TOKEN> <identifier:Identifier> <formal_parameter_part:(FieldFormalParameterFormalParameterPart)?> => FieldFormalParameter{<>}};
 
-pub constructorDesignation : ConstructorDesignation = {typeIdentifier => ConstructorDesignation::TypeIdentifier(TypeIdentifier(<>)),
-  qualifiedName => ConstructorDesignation::QualifiedName(QualifiedName(<>)),
-  ConstructorDesignationTypeName => ConstructorDesignation::TypeName(ConstructorDesignationTypeName(<>)),}
+pub SuperFormalParameterFormalParameterPart: SuperFormalParameterFormalParameterPart = {<formal_parameter_part:FormalParameterPart> <question_token:(QUESTION_TOKEN)?> => SuperFormalParameterFormalParameterPart{<>}};
 
-pub constantConstructorSignature : ConstantConstructorSignature = {<const_tokenStart:@L> "const" <const_tokenEnd:@R> <constructor_name:constructorName> <formal_parameter_list:formalParameterList> => ConstantConstructorSignature{const_token:Token(const_tokenStart, const_tokenEnd), constructor_name, formal_parameter_list}}
+pub SuperFormalParameter: SuperFormalParameter = {<final_const_var_or_type:(FinalConstVarOrType)?> <super_token:SUPER_TOKEN> <period_token:PERIOD_TOKEN> <identifier:Identifier> <formal_parameter_part:(SuperFormalParameterFormalParameterPart)?> => SuperFormalParameter{<>}};
 
-pub superclass : Superclass = {SuperclassTypeNotVoid => Superclass::TypeNotVoid(SuperclassTypeNotVoid(<>)),
-  mixins => Superclass::Mixins(Mixins(<>)),}
+pub ExpressionEqual: ExpressionEqual = {<equal_token:EQUAL_TOKEN> <expression:Expression> => ExpressionEqual{<>}};
 
-pub mixins : Mixins = {<with_tokenStart:@L> "with" <with_tokenEnd:@R> <type_not_void_list:typeNotVoidList> => Mixins{with_token:Token(with_tokenStart, with_tokenEnd), type_not_void_list}}
+pub DefaultFormalParameter: DefaultFormalParameter = {<normal_formal_parameter:NormalFormalParameter> <expression_equal:(ExpressionEqual)?> => DefaultFormalParameter{<>}};
 
-pub interfaces : Interfaces = {<implements_tokenStart:@L> "implements" <implements_tokenEnd:@R> <type_not_void_list:typeNotVoidList> => Interfaces{implements_token:Token(implements_tokenStart, implements_tokenEnd), type_not_void_list}}
+pub EqualTokenOrColonToken: EqualTokenOrColonToken = {EQUAL_TOKEN => EqualTokenOrColonToken::Equal(<>), COLON_TOKEN => EqualTokenOrColonToken::Colon(<>)};
 
-pub mixinApplicationClass : MixinApplicationClass = {<identifier:identifier> <type_parameters:(typeParameters)?> <equal_tokenStart:@L> "=" <equal_tokenEnd:@R> <mixin_application:mixinApplication> <semicolon_tokenStart:@L> ";" <semicolon_tokenEnd:@R> => MixinApplicationClass{identifier, type_parameters, equal_token:Token(equal_tokenStart, equal_tokenEnd), mixin_application, semicolon_token:Token(semicolon_tokenStart, semicolon_tokenEnd)}}
+pub DefaultNamedParameterAssignment: DefaultNamedParameterAssignment = {<equal_token_or_colon_token:EqualTokenOrColonToken> <expression:Expression> => DefaultNamedParameterAssignment{<>}};
 
-pub mixinApplication : MixinApplication = {<type_not_void:typeNotVoid> <mixins:mixins> <interfaces:(interfaces)?> => MixinApplication{type_not_void, mixins, interfaces}}
+pub DefaultNamedParameter: DefaultNamedParameter = {<metadata:Metadata> <required_token:(REQUIRED_TOKEN)?> <normal_formal_parameter_no_metadata:NormalFormalParameterNoMetadata> <default_named_parameter_assignment:(DefaultNamedParameterAssignment)?> => DefaultNamedParameter{<>}};
 
-pub mixinDeclaration : MixinDeclaration = {<mixin_tokenStart:@L> "mixin" <mixin_tokenEnd:@R> <type_identifier:typeIdentifier> <type_parameters:(typeParameters)?> <type_not_void_list_on:(TypeNotVoidListOn)?> <interfaces:(interfaces)?> <open_curly_bracket_tokenStart:@L> "{" <open_curly_bracket_tokenEnd:@R> <metadata:(MixinDeclarationMetadata)*> <close_curly_bracket_tokenStart:@L> "}" <close_curly_bracket_tokenEnd:@R> => MixinDeclaration{mixin_token:Token(mixin_tokenStart, mixin_tokenEnd), type_identifier, type_parameters, type_not_void_list_on, interfaces, open_curly_bracket_token:Token(open_curly_bracket_tokenStart, open_curly_bracket_tokenEnd), metadata, close_curly_bracket_token:Token(close_curly_bracket_tokenStart, close_curly_bracket_tokenEnd)}}
+pub ClassDeclarationMembers: ClassDeclarationMembers = {<metadata:Metadata> <class_member_declaration:ClassMemberDeclaration> => ClassDeclarationMembers{<>}};
 
-pub extensionDeclaration : ExtensionDeclaration = {<extension_tokenStart:@L> "extension" <extension_tokenEnd:@R> <identifier:(identifier)?> <type_parameters:(typeParameters)?> <on_tokenStart:@L> "on" <on_tokenEnd:@R> <dart_type:dartType> <open_curly_bracket_tokenStart:@L> "{" <open_curly_bracket_tokenEnd:@R> <metadata:(ExtensionDeclarationMetadata)*> <close_curly_bracket_tokenStart:@L> "}" <close_curly_bracket_tokenEnd:@R> => ExtensionDeclaration{extension_token:Token(extension_tokenStart, extension_tokenEnd), identifier, type_parameters, on_token:Token(on_tokenStart, on_tokenEnd), dart_type, open_curly_bracket_token:Token(open_curly_bracket_tokenStart, open_curly_bracket_tokenEnd), metadata, close_curly_bracket_token:Token(close_curly_bracket_tokenStart, close_curly_bracket_tokenEnd)}}
+pub ClassDeclarationClassToken: ClassDeclarationClassToken = {<abstract_token:(ABSTRACT_TOKEN)?> <class_token:CLASS_TOKEN> <type_identifier:TypeIdentifier> <type_parameters:(TypeParameters)?> <superclass:(Superclass)?> <interfaces:(Interfaces)?> <open_curly_bracket_token:OPEN_CURLY_BRACKET_TOKEN> <class_declaration_members:(ClassDeclarationMembers)*> <close_curly_bracket_token:CLOSE_CURLY_BRACKET_TOKEN> => ClassDeclarationClassToken{<>}};
 
-pub enumType : EnumType = {<enum_tokenStart:@L> "enum" <enum_tokenEnd:@R> <identifier:identifier> <open_curly_bracket_tokenStart:@L> "{" <open_curly_bracket_tokenEnd:@R> <enum_entry:enumEntry> <enum_entry_item:(EnumEntryItem)*> <comma_token:(<Start:@L> "," <End:@R>)?> <close_curly_bracket_tokenStart:@L> "}" <close_curly_bracket_tokenEnd:@R> => EnumType{enum_token:Token(enum_tokenStart, enum_tokenEnd), identifier, open_curly_bracket_token:Token(open_curly_bracket_tokenStart, open_curly_bracket_tokenEnd), enum_entry, enum_entry_item, comma_token, close_curly_bracket_token:Token(close_curly_bracket_tokenStart, close_curly_bracket_tokenEnd)}}
+pub ClassDeclarationMixin: ClassDeclarationMixin = {<abstract_token:(ABSTRACT_TOKEN)?> <class_token:CLASS_TOKEN> <mixin_application_class:MixinApplicationClass> => ClassDeclarationMixin{<>}};
 
-pub enumEntry : EnumEntry = {<metadata:metadata> <identifier:identifier> => EnumEntry{metadata, identifier}}
+pub ClassDeclaration: ClassDeclaration = {ClassDeclarationClassToken => ClassDeclaration::Class(<>), ClassDeclarationMixin => ClassDeclaration::ClassDeclarationMixin(<>)};
 
-pub typeParameter : TypeParameter = {<metadata:metadata> <identifier:identifier> <type_not_void_extends:(TypeNotVoidExtends)?> => TypeParameter{metadata, identifier, type_not_void_extends}}
+pub TypeNotVoidItem: TypeNotVoidItem = {<comma_token:COMMA_TOKEN> <type_not_void:TypeNotVoid> => TypeNotVoidItem{<>}};
 
-pub typeParameters : TypeParameters = {<less_tokenStart:@L> "<" <less_tokenEnd:@R> <type_parameter:typeParameter> <type_parameter_item:(TypeParameterItem)*> <more_tokenStart:@L> ">" <more_tokenEnd:@R> => TypeParameters{less_token:Token(less_tokenStart, less_tokenEnd), type_parameter, type_parameter_item, more_token:Token(more_tokenStart, more_tokenEnd)}}
+pub TypeNotVoidList: TypeNotVoidList = {<type_not_void:TypeNotVoid> <type_not_void_item:(TypeNotVoidItem)*> => TypeNotVoidList{<>}};
 
-pub metadata : Metadata = {(MetadataItem)*}
+pub ClassMemberDeclarationSemicolonToken: ClassMemberDeclarationSemicolonToken = {<declaration:Declaration> <semicolon_token:SEMICOLON_TOKEN> => ClassMemberDeclarationSemicolonToken{<>}};
 
-pub metadatum : Metadatum = {identifier => Metadatum::Identifier(Identifier(<>)),
-  qualifiedName => Metadatum::QualifiedName(QualifiedName(<>)),
-  MetadatumConstructorDesignation => Metadatum::ConstructorDesignation(MetadatumConstructorDesignation(<>)),}
+pub ClassMemberDeclarationMethodSignature: ClassMemberDeclarationMethodSignature = {<method_signature:MethodSignature> <function_body:FunctionBody> => ClassMemberDeclarationMethodSignature{<>}};
 
-pub expression : Expression = {ExpressionAssignableExpression => Expression::AssignableExpression(ExpressionAssignableExpression(<>)),
-  conditionalExpression => Expression::ConditionalExpression(ConditionalExpression(<>)),
-  cascade => Expression::Cascade(Cascade(<>)),
-  throwExpression => Expression::ThrowExpression(ThrowExpression(<>)),}
-
-pub expressionWithoutCascade : ExpressionWithoutCascade = {ExpressionWithoutCascadeAssignableExpression => ExpressionWithoutCascade::AssignableExpression(ExpressionWithoutCascadeAssignableExpression(<>)),
-  conditionalExpression => ExpressionWithoutCascade::ConditionalExpression(ConditionalExpression(<>)),
-  throwExpressionWithoutCascade => ExpressionWithoutCascade::ThrowExpressionWithoutCascade(ThrowExpressionWithoutCascade(<>)),}
-
-pub expressionList : ExpressionList = {<expression:expression> <expression_item:(ExpressionItem)*> => ExpressionList{expression, expression_item}}
-
-pub primary : Primary = {thisExpression => Primary::ThisExpression(ThisExpression(<>)),
-  PrimaryUnconditionalAssignableSelector => Primary::UnconditionalAssignableSelector(PrimaryUnconditionalAssignableSelector(<>)),
-  PrimaryArgumentPart => Primary::ArgumentPart(PrimaryArgumentPart(<>)),
-  functionExpression => Primary::FunctionExpression(FunctionExpression(<>)),
-  literal => Primary::Literal(Literal(<>)),
-  identifier => Primary::Identifier(Identifier(<>)),
-  newExpression => Primary::NewExpression(NewExpression(<>)),
-  constObjectExpression => Primary::ConstObjectExpression(ConstObjectExpression(<>)),
-  constructorInvocation => Primary::ConstructorInvocation(ConstructorInvocation(<>)),
-  PrimaryExpression => Primary::Expression(PrimaryExpression(<>)),}
+pub ClassMemberDeclaration: ClassMemberDeclaration = {ClassMemberDeclarationSemicolonToken => ClassMemberDeclaration::Semicolon(<>), ClassMemberDeclarationMethodSignature => ClassMemberDeclaration::MethodSignature(<>)};
 
-pub literal : Literal = {nullLiteral => Literal::NullLiteral(NullLiteral(<>)),
-  booleanLiteral => Literal::BooleanLiteral(BooleanLiteral(<>)),
-  numericLiteral => Literal::NumericLiteral(NumericLiteral(<>)),
-  stringLiteral => Literal::StringLiteral(StringLiteral(<>)),
-  symbolLiteral => Literal::SymbolLiteral(SymbolLiteral(<>)),
-  listLiteral => Literal::ListLiteral(ListLiteral(<>)),
-  setOrMapLiteral => Literal::SetOrMapLiteral(SetOrMapLiteral(<>)),}
+pub MethodSignatureConstructorSignature: MethodSignatureConstructorSignature = {<constructor_signature:ConstructorSignature> <initializers:(Initializers)?> => MethodSignatureConstructorSignature{<>}};
 
-pub nullLiteral : NullLiteral = {<Start:@L> "null" <End:@R>}
+pub MethodSignatureFunctionSignature: MethodSignatureFunctionSignature = {<static_token:(STATIC_TOKEN)?> <function_signature:FunctionSignature> => MethodSignatureFunctionSignature{<>}};
 
-pub numericLiteral : NumericLiteral = {<Start:@L> NUMBER <End:@R> => NumericLiteral::Number(Token(<>)),
-  <Start:@L> HEX_NUMBER <End:@R> => NumericLiteral::HexNumber(Token(<>)),}
+pub MethodSignatureGetterSignature: MethodSignatureGetterSignature = {<static_token:(STATIC_TOKEN)?> <getter_signature:GetterSignature> => MethodSignatureGetterSignature{<>}};
 
- NUMBER : null = {Or(
-  And(Modified(+,Id(DIGIT)), Modified(?,And(Raw(.), Modified(+,Id(DIGIT)))), Modified(?,Id(EXPONENT))),
-  And(Raw(.), Modified(+,Id(DIGIT)), Modified(?,Id(EXPONENT))),
-)}
+pub MethodSignatureSetterSignature: MethodSignatureSetterSignature = {<static_token:(STATIC_TOKEN)?> <setter_signature:SetterSignature> => MethodSignatureSetterSignature{<>}};
 
- EXPONENT : null = {And(Or(
-  Raw(e),
-  Raw(E),
-), Modified(?,Or(
-  Raw(+),
-  Raw(-),
-)), Modified(+,Id(DIGIT)))}
+pub MethodSignature: MethodSignature = {MethodSignatureConstructorSignature => MethodSignature::ConstructorSignature(<>), FactoryConstructorSignature => MethodSignature::FactoryConstructorSignature(<>), MethodSignatureFunctionSignature => MethodSignature::FunctionSignature(<>), MethodSignatureGetterSignature => MethodSignature::GetterSignature(<>), MethodSignatureSetterSignature => MethodSignature::SetterSignature(<>), OperatorSignature => MethodSignature::OperatorSignature(<>)};
 
- HEX_NUMBER : null = {Or(
-  And(Raw(0x), Modified(+,Id(HEX_DIGIT))),
-  And(Raw(0X), Modified(+,Id(HEX_DIGIT))),
-)}
+pub DeclarationFactoryConstructorSignature: DeclarationFactoryConstructorSignature = {<external_token:EXTERNAL_TOKEN> <factory_constructor_signature:FactoryConstructorSignature> => DeclarationFactoryConstructorSignature{<>}};
 
- HEX_DIGIT : null = {Or(
-  RawRange(Raw(a),Raw(f)),
-  RawRange(Raw(A),Raw(F)),
-  Id(DIGIT),
-)}
+pub ExternalConstantConstructorSignature: ExternalConstantConstructorSignature = {<external_token:EXTERNAL_TOKEN> <constant_constructor_signature:ConstantConstructorSignature> => ExternalConstantConstructorSignature{<>}};
 
-pub booleanLiteral : BooleanLiteral = {<Start:@L> "true" <End:@R> => BooleanLiteral::True(Token(<>)),
-  <Start:@L> "false" <End:@R> => BooleanLiteral::False(Token(<>)),}
+pub ExternalConstructorSignature: ExternalConstructorSignature = {<external_token:EXTERNAL_TOKEN> <constructor_signature:ConstructorSignature> => ExternalConstructorSignature{<>}};
 
-pub stringLiteral : StringLiteral = {(StringLiteralItem)+}
+pub ExternalMaybeStatic: ExternalMaybeStatic = {<external_token:EXTERNAL_TOKEN> <static_token:(STATIC_TOKEN)?> => ExternalMaybeStatic{<>}};
 
-pub singleLineString : SingleLineString = {<Start:@L> RAW_SINGLE_LINE_STRING <End:@R> => SingleLineString::RawSingleLineString(Token(<>)),
-  <Start:@L> SINGLE_LINE_STRING_SQ_BEGIN_END <End:@R> => SingleLineString::SingleLineStringSqBeginEnd(Token(<>)),
-  SingleLineStringSingleLineStringSqBeginMid => SingleLineString::SingleLineStringSqBeginMid(SingleLineStringSingleLineStringSqBeginMid(<>)),
-  <Start:@L> SINGLE_LINE_STRING_DQ_BEGIN_END <End:@R> => SingleLineString::SingleLineStringDqBeginEnd(Token(<>)),
-  SingleLineStringSingleLineStringDqBeginMid => SingleLineString::SingleLineStringDqBeginMid(SingleLineStringSingleLineStringDqBeginMid(<>)),}
+pub DeclarationGetterSignature: DeclarationGetterSignature = {<external_maybe_static:(ExternalMaybeStatic)?> <getter_signature:GetterSignature> => DeclarationGetterSignature{<>}};
 
- RAW_SINGLE_LINE_STRING : null = {Or(
-  And(Raw(r), Raw(\'), Modified(*,Negated(Or(
-    Raw(\'),
-    Raw(\r),
-    Raw(\n),
-  ))), Raw(\')),
-  And(Raw(r), Raw("), Modified(*,Negated(Or(
-    Raw("),
-    Raw(\r),
-    Raw(\n),
-  ))), Raw(")),
-)}
+pub ExternalMaybeStatic: ExternalMaybeStatic = {<external_token:EXTERNAL_TOKEN> <static_token:(STATIC_TOKEN)?> => ExternalMaybeStatic{<>}};
 
- STRING_CONTENT_COMMON : null = {Or(
-  Negated(Or(
-    Raw(\\),
-    Raw(\'),
-    Raw("),
-    Raw($),
-    Raw(\r),
-    Raw(\n),
-  )),
-  Id(ESCAPE_SEQUENCE),
-  And(Raw(\\), Negated(Or(
-    Raw(n),
-    Raw(r),
-    Raw(b),
-    Raw(t),
-    Raw(v),
-    Raw(x),
-    Raw(u),
-    Raw(\r),
-    Raw(\n),
-  ))),
-  Id(SIMPLE_STRING_INTERPOLATION),
-)}
+pub DeclarationSetterSignature: DeclarationSetterSignature = {<external_maybe_static:(ExternalMaybeStatic)?> <setter_signature:SetterSignature> => DeclarationSetterSignature{<>}};
 
- STRING_CONTENT_SQ : null = {Or(
-  Id(STRING_CONTENT_COMMON),
-  Raw("),
-)}
+pub ExternalMaybeStatic: ExternalMaybeStatic = {<external_token:EXTERNAL_TOKEN> <static_token:(STATIC_TOKEN)?> => ExternalMaybeStatic{<>}};
 
- SINGLE_LINE_STRING_SQ_BEGIN_END : null = {And(Raw(\'), Modified(*,Id(STRING_CONTENT_SQ)), Raw(\'))}
+pub DeclarationFunctionSignature: DeclarationFunctionSignature = {<external_maybe_static:(ExternalMaybeStatic)?> <function_signature:FunctionSignature> => DeclarationFunctionSignature{<>}};
 
- SINGLE_LINE_STRING_SQ_BEGIN_MID : null = {And(Raw(\'), Modified(*,Id(STRING_CONTENT_SQ)), Raw(${))}
+pub DeclarationOperatorSignature: DeclarationOperatorSignature = {<external_token:(EXTERNAL_TOKEN)?> <operator_signature:OperatorSignature> => DeclarationOperatorSignature{<>}};
 
- SINGLE_LINE_STRING_SQ_MID_MID : null = {And(Raw(}), Modified(*,Id(STRING_CONTENT_SQ)), Raw(${))}
+pub StaticConst: StaticConst = {<static_token:STATIC_TOKEN> <const_token:CONST_TOKEN> <dart_type:(Type)?> <static_final_declaration_list:StaticFinalDeclarationList> => StaticConst{<>}};
 
- SINGLE_LINE_STRING_SQ_MID_END : null = {And(Raw(}), Modified(*,Id(STRING_CONTENT_SQ)), Raw(\'))}
+pub StaticFinal: StaticFinal = {<static_token:STATIC_TOKEN> <final_token:FINAL_TOKEN> <dart_type:(Type)?> <static_final_declaration_list:StaticFinalDeclarationList> => StaticFinal{<>}};
 
- STRING_CONTENT_DQ : null = {Or(
-  Id(STRING_CONTENT_COMMON),
-  Raw(\'),
-)}
+pub StaticLateFinal: StaticLateFinal = {<static_token:STATIC_TOKEN> <late_token:LATE_TOKEN> <final_token:FINAL_TOKEN> <dart_type:(Type)?> <initialized_identifier_list:InitializedIdentifierList> => StaticLateFinal{<>}};
 
- SINGLE_LINE_STRING_DQ_BEGIN_END : null = {And(Raw("), Modified(*,Id(STRING_CONTENT_DQ)), Raw("))}
+pub StaticVarOrType: StaticVarOrType = {<static_token:STATIC_TOKEN> <late_token:(LATE_TOKEN)?> <var_or_type:VarOrType> <initialized_identifier_list:InitializedIdentifierList> => StaticVarOrType{<>}};
 
- SINGLE_LINE_STRING_DQ_BEGIN_MID : null = {And(Raw("), Modified(*,Id(STRING_CONTENT_DQ)), Raw(${))}
+pub CovariantLateFinal: CovariantLateFinal = {<covariant_token:COVARIANT_TOKEN> <late_token:LATE_TOKEN> <final_token:FINAL_TOKEN> <dart_type:(Type)?> <identifier_list:IdentifierList> => CovariantLateFinal{<>}};
 
- SINGLE_LINE_STRING_DQ_MID_MID : null = {And(Raw(}), Modified(*,Id(STRING_CONTENT_DQ)), Raw(${))}
+pub CovariantVarOrType: CovariantVarOrType = {<covariant_token:COVARIANT_TOKEN> <late_token:(LATE_TOKEN)?> <var_or_type:VarOrType> <initialized_identifier_list:InitializedIdentifierList> => CovariantVarOrType{<>}};
 
- SINGLE_LINE_STRING_DQ_MID_END : null = {And(Raw(}), Modified(*,Id(STRING_CONTENT_DQ)), Raw("))}
+pub DeclarationFinalToken: DeclarationFinalToken = {<late_token:(LATE_TOKEN)?> <final_token:FINAL_TOKEN> <dart_type:(Type)?> <initialized_identifier_list:InitializedIdentifierList> => DeclarationFinalToken{<>}};
 
-pub multilineString : MultilineString = {<Start:@L> RAW_MULTI_LINE_STRING <End:@R> => MultilineString::RawMultiLineString(Token(<>)),
-  <Start:@L> MULTI_LINE_STRING_SQ_BEGIN_END <End:@R> => MultilineString::MultiLineStringSqBeginEnd(Token(<>)),
-  MultilineStringMultiLineStringSqBeginMid => MultilineString::MultiLineStringSqBeginMid(MultilineStringMultiLineStringSqBeginMid(<>)),
-  <Start:@L> MULTI_LINE_STRING_DQ_BEGIN_END <End:@R> => MultilineString::MultiLineStringDqBeginEnd(Token(<>)),
-  MultilineStringMultiLineStringDqBeginMid => MultilineString::MultiLineStringDqBeginMid(MultilineStringMultiLineStringDqBeginMid(<>)),}
+pub DeclarationVarOrType: DeclarationVarOrType = {<late_token:(LATE_TOKEN)?> <var_or_type:VarOrType> <initialized_identifier_list:InitializedIdentifierList> => DeclarationVarOrType{<>}};
 
- RAW_MULTI_LINE_STRING : null = {Or(
-  And(Raw(r), Raw(\'\'\'), Any, Raw(\'\'\')),
-  And(Raw(r), Raw("""), Any, Raw(""")),
-)}
+pub RedirectionOrInitializers: RedirectionOrInitializers = {Redirection => RedirectionOrInitializers::Redirection(<>), Initializers => RedirectionOrInitializers::Initializers(<>)};
 
- QUOTES_SQ : null = {Or(
-  Raw(\'),
-  Raw(\'\'),
-)}
+pub DeclarationConstantConstructorSignature: DeclarationConstantConstructorSignature = {<constant_constructor_signature:ConstantConstructorSignature> <redirection_or_initializers:(RedirectionOrInitializers)?> => DeclarationConstantConstructorSignature{<>}};
 
- STRING_CONTENT_TSQ : null = {And(Modified(?,Id(QUOTES_SQ)), Or(
-  Id(STRING_CONTENT_COMMON),
-  Raw("),
-  Raw(\r),
-  Raw(\n),
-))}
+pub RedirectionOrInitializers: RedirectionOrInitializers = {Redirection => RedirectionOrInitializers::Redirection(<>), Initializers => RedirectionOrInitializers::Initializers(<>)};
 
- MULTI_LINE_STRING_SQ_BEGIN_END : null = {And(Raw(\'\'\'), Modified(*,Id(STRING_CONTENT_TSQ)), Raw(\'\'\'))}
+pub DeclarationConstructorSignature: DeclarationConstructorSignature = {<constructor_signature:ConstructorSignature> <redirection_or_initializers:(RedirectionOrInitializers)?> => DeclarationConstructorSignature{<>}};
 
- MULTI_LINE_STRING_SQ_BEGIN_MID : null = {And(Raw(\'\'\'), Modified(*,Id(STRING_CONTENT_TSQ)), Modified(?,Id(QUOTES_SQ)), Raw(${))}
+pub Declaration: Declaration = {DeclarationFactoryConstructorSignature => Declaration::FactoryConstructorSignature(<>), ExternalConstantConstructorSignature => Declaration::ExternalConstantConstructorSignature(<>), ExternalConstructorSignature => Declaration::ExternalConstructorSignature(<>), DeclarationGetterSignature => Declaration::GetterSignature(<>), DeclarationSetterSignature => Declaration::SetterSignature(<>), DeclarationFunctionSignature => Declaration::FunctionSignature(<>), DeclarationOperatorSignature => Declaration::OperatorSignature(<>), StaticConst => Declaration::StaticConst(<>), StaticFinal => Declaration::StaticFinal(<>), StaticLateFinal => Declaration::StaticLateFinal(<>), StaticVarOrType => Declaration::StaticVarOrType(<>), CovariantLateFinal => Declaration::CovariantLateFinal(<>), CovariantVarOrType => Declaration::CovariantVarOrType(<>), DeclarationFinalToken => Declaration::Final(<>), DeclarationVarOrType => Declaration::VarOrType(<>), RedirectingFactoryConstructorSignature => Declaration::RedirectingFactoryConstructorSignature(<>), DeclarationConstantConstructorSignature => Declaration::ConstantConstructorSignature(<>), DeclarationConstructorSignature => Declaration::ConstructorSignature(<>)};
 
- MULTI_LINE_STRING_SQ_MID_MID : null = {And(Raw(}), Modified(*,Id(STRING_CONTENT_TSQ)), Modified(?,Id(QUOTES_SQ)), Raw(${))}
+pub StaticFinalDeclarationItem: StaticFinalDeclarationItem = {<comma_token:COMMA_TOKEN> <static_final_declaration:StaticFinalDeclaration> => StaticFinalDeclarationItem{<>}};
 
- MULTI_LINE_STRING_SQ_MID_END : null = {And(Raw(}), Modified(*,Id(STRING_CONTENT_TSQ)), Raw(\'\'\'))}
+pub StaticFinalDeclarationList: StaticFinalDeclarationList = {<static_final_declaration:StaticFinalDeclaration> <static_final_declaration_item:(StaticFinalDeclarationItem)*> => StaticFinalDeclarationList{<>}};
 
- QUOTES_DQ : null = {Or(
-  Raw("),
-  Raw(""),
-)}
+pub StaticFinalDeclaration: StaticFinalDeclaration = {<identifier:Identifier> <equal_token:EQUAL_TOKEN> <expression:Expression> => StaticFinalDeclaration{<>}};
 
- STRING_CONTENT_TDQ : null = {And(Modified(?,Id(QUOTES_DQ)), Or(
-  Id(STRING_CONTENT_COMMON),
-  Raw(\'),
-  Raw(\r),
-  Raw(\n),
-))}
+pub OperatorSignature: OperatorSignature = {<dart_type:(Type)?> <operator_token:OPERATOR_TOKEN> <operator:Operator> <formal_parameter_list:FormalParameterList> => OperatorSignature{<>}};
 
- MULTI_LINE_STRING_DQ_BEGIN_END : null = {And(Raw("""), Modified(*,Id(STRING_CONTENT_TDQ)), Raw("""))}
+pub Operator: Operator = {TILDE_TOKEN => Operator::Tilde(<>), BinaryOperator => Operator::BinaryOperator(<>), SQUARE_BRACKETS_TOKEN => Operator::SquareBrackets(<>), SQUARE_BRACKETS_EQ_TOKEN => Operator::SquareBracketsEq(<>)};
 
- MULTI_LINE_STRING_DQ_BEGIN_MID : null = {And(Raw("""), Modified(*,Id(STRING_CONTENT_TDQ)), Modified(?,Id(QUOTES_DQ)), Raw(${))}
+pub BinaryOperator: BinaryOperator = {MultiplicativeOperator => BinaryOperator::MultiplicativeOperator(<>), AdditiveOperator => BinaryOperator::AdditiveOperator(<>), ShiftOperator => BinaryOperator::ShiftOperator(<>), RelationalOperator => BinaryOperator::RelationalOperator(<>), DOUBLE_EQUAL_TOKEN => BinaryOperator::DoubleEqual(<>), BitwiseOperator => BinaryOperator::BitwiseOperator(<>)};
 
- MULTI_LINE_STRING_DQ_MID_MID : null = {And(Raw(}), Modified(*,Id(STRING_CONTENT_TDQ)), Modified(?,Id(QUOTES_DQ)), Raw(${))}
+pub GetterSignature: GetterSignature = {<dart_type:(Type)?> <get_token:GET_TOKEN> <identifier:Identifier> => GetterSignature{<>}};
 
- MULTI_LINE_STRING_DQ_MID_END : null = {And(Raw(}), Modified(*,Id(STRING_CONTENT_TDQ)), Raw("""))}
+pub SetterSignature: SetterSignature = {<dart_type:(Type)?> <set_token:SET_TOKEN> <identifier:Identifier> <formal_parameter_list:FormalParameterList> => SetterSignature{<>}};
 
- ESCAPE_SEQUENCE : null = {Or(
-  Raw(\n),
-  Raw(\r),
-  Raw(\f),
-  Raw(\b),
-  Raw(\t),
-  Raw(\v),
-  And(Raw(\x), Id(HEX_DIGIT), Id(HEX_DIGIT)),
-  And(Raw(\u), Id(HEX_DIGIT), Id(HEX_DIGIT), Id(HEX_DIGIT), Id(HEX_DIGIT)),
-  And(Raw(\u{), Id(HEX_DIGIT_SEQUENCE), Raw(})),
-)}
+pub ConstructorSignature: ConstructorSignature = {<constructor_name:ConstructorName> <formal_parameter_list:FormalParameterList> => ConstructorSignature{<>}};
 
- HEX_DIGIT_SEQUENCE : null = {And(Id(HEX_DIGIT), Modified(?,Id(HEX_DIGIT)), Modified(?,Id(HEX_DIGIT)), Modified(?,Id(HEX_DIGIT)), Modified(?,Id(HEX_DIGIT)), Modified(?,Id(HEX_DIGIT)))}
+pub IdentifierOrNewSelector: IdentifierOrNewSelector = {<period_token:PERIOD_TOKEN> <identifier_or_new:IdentifierOrNew> => IdentifierOrNewSelector{<>}};
 
- NEWLINE : null = {Or(
-  Raw(\n),
-  Raw(\r),
-  Raw(\r\n),
-)}
+pub ConstructorName: ConstructorName = {<type_identifier:TypeIdentifier> <identifier_or_new_selector:(IdentifierOrNewSelector)?> => ConstructorName{<>}};
 
-pub stringInterpolation : StringInterpolation = {<Start:@L> SIMPLE_STRING_INTERPOLATION <End:@R> => StringInterpolation::SimpleStringInterpolation(Token(<>)),
-  StringInterpolationExpression => StringInterpolation::Expression(StringInterpolationExpression(<>)),}
+pub IdentifierOrNewSelector: IdentifierOrNewSelector = {<period_token:PERIOD_TOKEN> <identifier_or_new:IdentifierOrNew> => IdentifierOrNewSelector{<>}};
 
- SIMPLE_STRING_INTERPOLATION : null = {And(Raw($), Or(
-  Id(IDENTIFIER_NO_DOLLAR),
-  Id(BUILT_IN_IDENTIFIER),
-  Raw(this),
-))}
+pub Redirection: Redirection = {<colon_token:COLON_TOKEN> <this_token:THIS_TOKEN> <identifier_or_new_selector:(IdentifierOrNewSelector)?> <arguments:Arguments> => Redirection{<>}};
 
-pub symbolLiteral : SymbolLiteral = {<hash_tokenStart:@L> "#" <hash_tokenEnd:@R> <symbol_literal_value:SymbolLiteralValue> => SymbolLiteral{hash_token:Token(hash_tokenStart, hash_tokenEnd), symbol_literal_value}}
+pub InitializerListEntryItem: InitializerListEntryItem = {<comma_token:COMMA_TOKEN> <initializer_list_entry:InitializerListEntry> => InitializerListEntryItem{<>}};
 
-pub listLiteral : ListLiteral = {<const_token:(<Start:@L> "const" <End:@R>)?> <type_arguments:(typeArguments)?> <open_square_bracket_tokenStart:@L> "[" <open_square_bracket_tokenEnd:@R> <elements:(elements)?> <close_square_bracket_tokenStart:@L> "]" <close_square_bracket_tokenEnd:@R> => ListLiteral{const_token, type_arguments, open_square_bracket_token:Token(open_square_bracket_tokenStart, open_square_bracket_tokenEnd), elements, close_square_bracket_token:Token(close_square_bracket_tokenStart, close_square_bracket_tokenEnd)}}
+pub Initializers: Initializers = {<colon_token:COLON_TOKEN> <initializer_list_entry:InitializerListEntry> <initializer_list_entry_item:(InitializerListEntryItem)*> => Initializers{<>}};
 
-pub setOrMapLiteral : SetOrMapLiteral = {<const_token:(<Start:@L> "const" <End:@R>)?> <type_arguments:(typeArguments)?> <open_curly_bracket_tokenStart:@L> "{" <open_curly_bracket_tokenEnd:@R> <elements:(elements)?> <close_curly_bracket_tokenStart:@L> "}" <close_curly_bracket_tokenEnd:@R> => SetOrMapLiteral{const_token, type_arguments, open_curly_bracket_token:Token(open_curly_bracket_tokenStart, open_curly_bracket_tokenEnd), elements, close_curly_bracket_token:Token(close_curly_bracket_tokenStart, close_curly_bracket_tokenEnd)}}
+pub InitializerListEntryArguments: InitializerListEntryArguments = {<super_token:SUPER_TOKEN> <arguments:Arguments> => InitializerListEntryArguments{<>}};
 
-pub elements : Elements = {<element:element> <element_item:(ElementItem)*> <comma_token:(<Start:@L> "," <End:@R>)?> => Elements{element, element_item, comma_token}}
+pub InitializerListEntrySuperToken: InitializerListEntrySuperToken = {<super_token:SUPER_TOKEN> <period_token:PERIOD_TOKEN> <identifier_or_new:IdentifierOrNew> <arguments:Arguments> => InitializerListEntrySuperToken{<>}};
 
-pub element : Element = {expressionElement => Element::ExpressionElement(ExpressionElement(<>)),
-  mapElement => Element::MapElement(MapElement(<>)),
-  spreadElement => Element::SpreadElement(SpreadElement(<>)),
-  ifElement => Element::IfElement(IfElement(<>)),
-  forElement => Element::ForElement(ForElement(<>)),}
+pub InitializerListEntry: InitializerListEntry = {InitializerListEntryArguments => InitializerListEntry::Arguments(<>), InitializerListEntrySuperToken => InitializerListEntry::Super(<>), FieldInitializer => InitializerListEntry::FieldInitializer(<>), Assertion => InitializerListEntry::Assertion(<>)};
 
-pub expressionElement : ExpressionElement = {expression}
+pub FieldInitializerThisToken: FieldInitializerThisToken = {<this_token:THIS_TOKEN> <period_token:PERIOD_TOKEN> => FieldInitializerThisToken{<>}};
 
-pub mapElement : MapElement = {<expression:expression> <colon_tokenStart:@L> ":" <colon_tokenEnd:@R> <expression2:expression> => MapElement{expression, colon_token:Token(colon_tokenStart, colon_tokenEnd), expression2}}
+pub FieldInitializer: FieldInitializer = {<this_token:(FieldInitializerThisToken)?> <identifier:Identifier> <equal_token:EQUAL_TOKEN> <initializer_expression:InitializerExpression> => FieldInitializer{<>}};
 
-pub spreadElement : SpreadElement = {<spread_element_type:SpreadElementType> <expression:expression> => SpreadElement{spread_element_type, expression}}
+pub InitializerExpression: InitializerExpression = {ConditionalExpression => InitializerExpression::ConditionalExpression(<>), Cascade => InitializerExpression::Cascade(<>)};
 
-pub ifElement : IfElement = {<if_tokenStart:@L> "if" <if_tokenEnd:@R> <open_paren_tokenStart:@L> "(" <open_paren_tokenEnd:@R> <expression:expression> <close_paren_tokenStart:@L> ")" <close_paren_tokenEnd:@R> <element:element> <element_else:(ElementElse)?> => IfElement{if_token:Token(if_tokenStart, if_tokenEnd), open_paren_token:Token(open_paren_tokenStart, open_paren_tokenEnd), expression, close_paren_token:Token(close_paren_tokenStart, close_paren_tokenEnd), element, element_else}}
+pub FactoryConstructorSignature: FactoryConstructorSignature = {<const_token:(CONST_TOKEN)?> <factory_token:FACTORY_TOKEN> <constructor_name:ConstructorName> <formal_parameter_list:FormalParameterList> => FactoryConstructorSignature{<>}};
 
-pub forElement : ForElement = {<await_token:(<Start:@L> "await" <End:@R>)?> <for_tokenStart:@L> "for" <for_tokenEnd:@R> <open_paren_tokenStart:@L> "(" <open_paren_tokenEnd:@R> <for_loop_parts:forLoopParts> <close_paren_tokenStart:@L> ")" <close_paren_tokenEnd:@R> <element:element> => ForElement{await_token, for_token:Token(for_tokenStart, for_tokenEnd), open_paren_token:Token(open_paren_tokenStart, open_paren_tokenEnd), for_loop_parts, close_paren_token:Token(close_paren_tokenStart, close_paren_tokenEnd), element}}
+pub RedirectingFactoryConstructorSignature: RedirectingFactoryConstructorSignature = {<const_token:(CONST_TOKEN)?> <factory_token:FACTORY_TOKEN> <constructor_name:ConstructorName> <formal_parameter_list:FormalParameterList> <equal_token:EQUAL_TOKEN> <constructor_designation:ConstructorDesignation> => RedirectingFactoryConstructorSignature{<>}};
 
-pub throwExpression : ThrowExpression = {<throw_tokenStart:@L> "throw" <throw_tokenEnd:@R> <expression:expression> => ThrowExpression{throw_token:Token(throw_tokenStart, throw_tokenEnd), expression}}
+pub IdentifierOrNewSelector: IdentifierOrNewSelector = {<period_token:PERIOD_TOKEN> <identifier_or_new:IdentifierOrNew> => IdentifierOrNewSelector{<>}};
 
-pub throwExpressionWithoutCascade : ThrowExpressionWithoutCascade = {<throw_tokenStart:@L> "throw" <throw_tokenEnd:@R> <expression_without_cascade:expressionWithoutCascade> => ThrowExpressionWithoutCascade{throw_token:Token(throw_tokenStart, throw_tokenEnd), expression_without_cascade}}
+pub ConstructorDesignationTypeName: ConstructorDesignationTypeName = {<type_name:TypeName> <type_arguments:TypeArguments> <identifier_or_new_selector:(IdentifierOrNewSelector)?> => ConstructorDesignationTypeName{<>}};
 
-pub functionExpression : FunctionExpression = {<formal_parameter_part:formalParameterPart> <function_expression_body:functionExpressionBody> => FunctionExpression{formal_parameter_part, function_expression_body}}
+pub ConstructorDesignation: ConstructorDesignation = {TypeIdentifier => ConstructorDesignation::TypeIdentifier(<>), QualifiedName => ConstructorDesignation::QualifiedName(<>), ConstructorDesignationTypeName => ConstructorDesignation::TypeName(<>)};
 
-pub functionExpressionBody : FunctionExpressionBody = {FunctionExpressionBodyArrowToken => FunctionExpressionBody::Arrow(FunctionExpressionBodyArrowToken(<>)),
-  FunctionExpressionBodyBlock => FunctionExpressionBody::Block(FunctionExpressionBodyBlock(<>)),}
+pub ConstantConstructorSignature: ConstantConstructorSignature = {<const_token:CONST_TOKEN> <constructor_name:ConstructorName> <formal_parameter_list:FormalParameterList> => ConstantConstructorSignature{<>}};
 
-pub thisExpression : ThisExpression = {<Start:@L> "this" <End:@R>}
+pub SuperclassTypeNotVoid: SuperclassTypeNotVoid = {<extends_token:EXTENDS_TOKEN> <type_not_void:TypeNotVoid> <mixins:(Mixins)?> => SuperclassTypeNotVoid{<>}};
 
-pub newExpression : NewExpression = {<new_tokenStart:@L> "new" <new_tokenEnd:@R> <constructor_designation:constructorDesignation> <arguments:arguments> => NewExpression{new_token:Token(new_tokenStart, new_tokenEnd), constructor_designation, arguments}}
+pub Superclass: Superclass = {SuperclassTypeNotVoid => Superclass::TypeNotVoid(<>), Mixins => Superclass::Mixins(<>)};
 
-pub constObjectExpression : ConstObjectExpression = {<const_tokenStart:@L> "const" <const_tokenEnd:@R> <constructor_designation:constructorDesignation> <arguments:arguments> => ConstObjectExpression{const_token:Token(const_tokenStart, const_tokenEnd), constructor_designation, arguments}}
+pub Mixins: Mixins = {<with_token:WITH_TOKEN> <type_not_void_list:TypeNotVoidList> => Mixins{<>}};
 
-pub arguments : Arguments = {<open_paren_tokenStart:@L> "(" <open_paren_tokenEnd:@R> <argument_list:(ArgumentsArgumentList)?> <close_paren_tokenStart:@L> ")" <close_paren_tokenEnd:@R> => Arguments{open_paren_token:Token(open_paren_tokenStart, open_paren_tokenEnd), argument_list, close_paren_token:Token(close_paren_tokenStart, close_paren_tokenEnd)}}
+pub Interfaces: Interfaces = {<implements_token:IMPLEMENTS_TOKEN> <type_not_void_list:TypeNotVoidList> => Interfaces{<>}};
 
-pub argumentList : ArgumentList = {ArgumentListNamedArgument => ArgumentList::NamedArgument(ArgumentListNamedArgument(<>)),
-  ArgumentListExpressionList => ArgumentList::ExpressionList(ArgumentListExpressionList(<>)),}
+pub MixinApplicationClass: MixinApplicationClass = {<identifier:Identifier> <type_parameters:(TypeParameters)?> <equal_token:EQUAL_TOKEN> <mixin_application:MixinApplication> <semicolon_token:SEMICOLON_TOKEN> => MixinApplicationClass{<>}};
 
-pub namedArgument : NamedArgument = {<label:label> <expression:expression> => NamedArgument{label, expression}}
+pub MixinApplication: MixinApplication = {<type_not_void:TypeNotVoid> <mixins:Mixins> <interfaces:(Interfaces)?> => MixinApplication{<>}};
 
-pub cascade : Cascade = {CascadePointsIdToken => Cascade::PointsId(CascadePointsIdToken(<>)),
-  CascadeConditionalExpression => Cascade::ConditionalExpression(CascadeConditionalExpression(<>)),}
+pub TypeNotVoidListOn: TypeNotVoidListOn = {<on_token:ON_TOKEN> <type_not_void_list:TypeNotVoidList> => TypeNotVoidListOn{<>}};
 
-pub cascadeSection : CascadeSection = {<cascade_selector:cascadeSelector> <cascade_section_tail:cascadeSectionTail> => CascadeSection{cascade_selector, cascade_section_tail}}
+pub MixinDeclarationMetadata: MixinDeclarationMetadata = {<metadata:Metadata> <class_member_declaration:ClassMemberDeclaration> => MixinDeclarationMetadata{<>}};
 
-pub cascadeSelector : CascadeSelector = {CascadeSelectorExpression => CascadeSelector::Expression(CascadeSelectorExpression(<>)),
-  identifier => CascadeSelector::Identifier(Identifier(<>)),}
+pub MixinDeclaration: MixinDeclaration = {<mixin_token:MIXIN_TOKEN> <type_identifier:TypeIdentifier> <type_parameters:(TypeParameters)?> <type_not_void_list_on:(TypeNotVoidListOn)?> <interfaces:(Interfaces)?> <open_curly_bracket_token:OPEN_CURLY_BRACKET_TOKEN> <metadata:(MixinDeclarationMetadata)*> <close_curly_bracket_token:CLOSE_CURLY_BRACKET_TOKEN> => MixinDeclaration{<>}};
 
-pub cascadeSectionTail : CascadeSectionTail = {cascadeAssignment => CascadeSectionTail::CascadeAssignment(CascadeAssignment(<>)),
-  SelectedCascade => CascadeSectionTail::SelectedCascade(SelectedCascade(<>)),}
+pub ExtensionDeclarationMetadata: ExtensionDeclarationMetadata = {<metadata:Metadata> <class_member_declaration:ClassMemberDeclaration> => ExtensionDeclarationMetadata{<>}};
 
-pub cascadeAssignment : CascadeAssignment = {<assignment_operator:assignmentOperator> <expression_without_cascade:expressionWithoutCascade> => CascadeAssignment{assignment_operator, expression_without_cascade}}
+pub ExtensionDeclaration: ExtensionDeclaration = {<extension_token:EXTENSION_TOKEN> <identifier:(Identifier)?> <type_parameters:(TypeParameters)?> <on_token:ON_TOKEN> <dart_type:Type> <open_curly_bracket_token:OPEN_CURLY_BRACKET_TOKEN> <metadata:(ExtensionDeclarationMetadata)*> <close_curly_bracket_token:CLOSE_CURLY_BRACKET_TOKEN> => ExtensionDeclaration{<>}};
 
-pub assignmentOperator : AssignmentOperator = {<Start:@L> "=" <End:@R> => AssignmentOperator::Equal(Token(<>)),
-  compoundAssignmentOperator => AssignmentOperator::CompoundAssignmentOperator(CompoundAssignmentOperator(<>)),}
+pub EnumEntryItem: EnumEntryItem = {<comma_token:COMMA_TOKEN> <enum_entry:EnumEntry> => EnumEntryItem{<>}};
 
-pub compoundAssignmentOperator : CompoundAssignmentOperator = {<Start:@L> "*=" <End:@R> => CompoundAssignmentOperator::TimesEqual(Token(<>)),
-  <Start:@L> "/=" <End:@R> => CompoundAssignmentOperator::DivEqual(Token(<>)),
-  <Start:@L> "~/=" <End:@R> => CompoundAssignmentOperator::IntegerDivEqual(Token(<>)),
-  <Start:@L> "%=" <End:@R> => CompoundAssignmentOperator::ModuleEqual(Token(<>)),
-  <Start:@L> "+=" <End:@R> => CompoundAssignmentOperator::PlusEqual(Token(<>)),
-  <Start:@L> "-=" <End:@R> => CompoundAssignmentOperator::MinusEqual(Token(<>)),
-  <Start:@L> "<<=" <End:@R> => CompoundAssignmentOperator::BitLeftEqual(Token(<>)),
-  <Start:@L> ">>>=" <End:@R> => CompoundAssignmentOperator::BitRight0Equal(Token(<>)),
-  <Start:@L> ">>=" <End:@R> => CompoundAssignmentOperator::BitRightEqual(Token(<>)),
-  <Start:@L> "&=" <End:@R> => CompoundAssignmentOperator::BitAndEuqal(Token(<>)),
-  <Start:@L> "^=" <End:@R> => CompoundAssignmentOperator::BitNegEqual(Token(<>)),
-  <Start:@L> "|=" <End:@R> => CompoundAssignmentOperator::BitXorEqual(Token(<>)),
-  <Start:@L> "??=" <End:@R> => CompoundAssignmentOperator::QuestionQuestionEqual(Token(<>)),}
+pub EnumTypeMembersMetadata: EnumTypeMembersMetadata = {<metadata:Metadata> <class_member_declaration:ClassMemberDeclaration> => EnumTypeMembersMetadata{<>}};
 
-pub conditionalExpression : ConditionalExpression = {<if_null_expression:ifNullExpression> <expression_without_cascade:(ConditionalExpressionExpressionWithoutCascade)?> => ConditionalExpression{if_null_expression, expression_without_cascade}}
+pub EnumTypeMembers: EnumTypeMembers = {<semicolon_token:SEMICOLON_TOKEN> <metadata:(EnumTypeMembersMetadata)*> => EnumTypeMembers{<>}};
 
-pub ifNullExpression : IfNullExpression = {<logical_or_expression:logicalOrExpression> <logical_or_expression_question_question:(LogicalOrExpressionQuestionQuestion)*> => IfNullExpression{logical_or_expression, logical_or_expression_question_question}}
+pub EnumType: EnumType = {<enum_token:ENUM_TOKEN> <type_identifier:TypeIdentifier> <type_parameters:(TypeParameters)?> <mixins:(Mixins)?> <interfaces:(Interfaces)?> <open_curly_bracket_token:OPEN_CURLY_BRACKET_TOKEN> <enum_entry:EnumEntry> <enum_entry_item:(EnumEntryItem)*> <comma_token:(COMMA_TOKEN)?> <enum_type_members:(EnumTypeMembers)?> <close_curly_bracket_token:CLOSE_CURLY_BRACKET_TOKEN> => EnumType{<>}};
 
-pub logicalOrExpression : LogicalOrExpression = {<logical_and_expression:logicalAndExpression> <logical_and_expression_or:(LogicalAndExpressionOr)*> => LogicalOrExpression{logical_and_expression, logical_and_expression_or}}
+pub NamedEnumEntry: NamedEnumEntry = {<metadata:Metadata> <identifier:Identifier> <type_arguments:(TypeArguments)?> <period_token:PERIOD_TOKEN> <identifier2:Identifier> <arguments:Arguments> => NamedEnumEntry{<>}};
 
-pub logicalAndExpression : LogicalAndExpression = {<equality_expression:equalityExpression> <equality_expression_and:(EqualityExpressionAnd)*> => LogicalAndExpression{equality_expression, equality_expression_and}}
+pub UnnamedEnumEntry: UnnamedEnumEntry = {<metadata:Metadata> <identifier:Identifier> <argument_part:(ArgumentPart)?> => UnnamedEnumEntry{<>}};
 
-pub equalityExpression : EqualityExpression = {EqualityExpressionRelationalExpression => EqualityExpression::RelationalExpression(EqualityExpressionRelationalExpression(<>)),
-  EqualityExpressionEqualityOperator => EqualityExpression::EqualityOperator(EqualityExpressionEqualityOperator(<>)),}
+pub EnumEntry: EnumEntry = {NamedEnumEntry => EnumEntry::NamedEnumEntry(<>), UnnamedEnumEntry => EnumEntry::UnnamedEnumEntry(<>)};
 
-pub equalityOperator : EqualityOperator = {<Start:@L> "==" <End:@R> => EqualityOperator::DoubleEqual(Token(<>)),
-  <Start:@L> "!=" <End:@R> => EqualityOperator::NotEqual(Token(<>)),}
+pub TypeNotVoidExtends: TypeNotVoidExtends = {<extends_token:EXTENDS_TOKEN> <type_not_void:TypeNotVoid> => TypeNotVoidExtends{<>}};
 
-pub relationalExpression : RelationalExpression = {RelationalExpressionBitwiseOrExpression => RelationalExpression::BitwiseOrExpression(RelationalExpressionBitwiseOrExpression(<>)),
-  RelationalExpressionRelationalOperator => RelationalExpression::RelationalOperator(RelationalExpressionRelationalOperator(<>)),}
+pub TypeParameter: TypeParameter = {<metadata:Metadata> <identifier:Identifier> <type_not_void_extends:(TypeNotVoidExtends)?> => TypeParameter{<>}};
 
-pub relationalOperator : RelationalOperator = {<Start:@L> ">=" <End:@R> => RelationalOperator::MoreOrEqual(Token(<>)),
-  <Start:@L> ">" <End:@R> => RelationalOperator::More(Token(<>)),
-  <Start:@L> "<=" <End:@R> => RelationalOperator::LessOrEqual(Token(<>)),
-  <Start:@L> "<" <End:@R> => RelationalOperator::Less(Token(<>)),}
+pub TypeParameterItem: TypeParameterItem = {<comma_token:COMMA_TOKEN> <type_parameter:TypeParameter> => TypeParameterItem{<>}};
 
-pub bitwiseOrExpression : BitwiseOrExpression = {BitwiseOrExpressionBitwiseXorExpression => BitwiseOrExpression::BitwiseXorExpression(BitwiseOrExpressionBitwiseXorExpression(<>)),
-  BitwiseOrExpressionSuperToken => BitwiseOrExpression::Super(BitwiseOrExpressionSuperToken(<>)),}
+pub TypeParameters: TypeParameters = {<less_token:LESS_TOKEN> <type_parameter:TypeParameter> <type_parameter_item:(TypeParameterItem)*> <more_token:MORE_TOKEN> => TypeParameters{<>}};
 
-pub bitwiseXorExpression : BitwiseXorExpression = {BitwiseXorExpressionBitwiseAndExpression => BitwiseXorExpression::BitwiseAndExpression(BitwiseXorExpressionBitwiseAndExpression(<>)),
-  BitwiseXorExpressionSuperToken => BitwiseXorExpression::Super(BitwiseXorExpressionSuperToken(<>)),}
+pub MetadataItem: MetadataItem = {<at_token:AT_TOKEN> <metadatum:Metadatum> => MetadataItem{<>}};
 
-pub bitwiseAndExpression : BitwiseAndExpression = {BitwiseAndExpressionShiftExpression => BitwiseAndExpression::ShiftExpression(BitwiseAndExpressionShiftExpression(<>)),
-  BitwiseAndExpressionSuperToken => BitwiseAndExpression::Super(BitwiseAndExpressionSuperToken(<>)),}
+pub Metadata: Metadata = {(MetadataItem)* => Metadata(<>)};
 
-pub bitwiseOperator : BitwiseOperator = {<Start:@L> "&" <End:@R> => BitwiseOperator::BitAnd(Token(<>)),
-  <Start:@L> "^" <End:@R> => BitwiseOperator::BitNeg(Token(<>)),
-  <Start:@L> "|" <End:@R> => BitwiseOperator::BitXor(Token(<>)),}
+pub MetadatumConstructorDesignation: MetadatumConstructorDesignation = {<constructor_designation:ConstructorDesignation> <arguments:Arguments> => MetadatumConstructorDesignation{<>}};
 
-pub shiftExpression : ShiftExpression = {ShiftExpressionAdditiveExpression => ShiftExpression::AdditiveExpression(ShiftExpressionAdditiveExpression(<>)),
-  ShiftExpressionSuperToken => ShiftExpression::Super(ShiftExpressionSuperToken(<>)),}
+pub Metadatum: Metadatum = {Identifier => Metadatum::Identifier(<>), QualifiedName => Metadatum::QualifiedName(<>), MetadatumConstructorDesignation => Metadatum::ConstructorDesignation(<>)};
 
-pub shiftOperator : ShiftOperator = {<Start:@L> "<<" <End:@R> => ShiftOperator::BitLeft(Token(<>)),
-  <Start:@L> ">>>" <End:@R> => ShiftOperator::BitRight0(Token(<>)),
-  <Start:@L> ">>" <End:@R> => ShiftOperator::BitRight(Token(<>)),}
+pub ExpressionAssignableExpression: ExpressionAssignableExpression = {<assignable_expression:AssignableExpression> <assignment_operator:AssignmentOperator> <expression:Expression> => ExpressionAssignableExpression{<>}};
 
-pub additiveExpression : AdditiveExpression = {AdditiveExpressionMultiplicativeExpression => AdditiveExpression::MultiplicativeExpression(AdditiveExpressionMultiplicativeExpression(<>)),
-  AdditiveExpressionSuperToken => AdditiveExpression::Super(AdditiveExpressionSuperToken(<>)),}
+pub Expression: Expression = {ExpressionAssignableExpression => Expression::AssignableExpression(<>), ConditionalExpression => Expression::ConditionalExpression(<>), Cascade => Expression::Cascade(<>), ThrowExpression => Expression::ThrowExpression(<>)};
 
-pub additiveOperator : AdditiveOperator = {<Start:@L> "+" <End:@R> => AdditiveOperator::Plus(Token(<>)),
-  <Start:@L> "-" <End:@R> => AdditiveOperator::Minus(Token(<>)),}
+pub ExpressionWithoutCascadeAssignableExpression: ExpressionWithoutCascadeAssignableExpression = {<assignable_expression:AssignableExpression> <assignment_operator:AssignmentOperator> <expression_without_cascade:ExpressionWithoutCascade> => ExpressionWithoutCascadeAssignableExpression{<>}};
 
-pub multiplicativeExpression : MultiplicativeExpression = {MultiplicativeExpressionUnaryExpression => MultiplicativeExpression::UnaryExpression(MultiplicativeExpressionUnaryExpression(<>)),
-  MultiplicativeExpressionSuperToken => MultiplicativeExpression::Super(MultiplicativeExpressionSuperToken(<>)),}
+pub ExpressionWithoutCascade: ExpressionWithoutCascade = {ExpressionWithoutCascadeAssignableExpression => ExpressionWithoutCascade::AssignableExpression(<>), ConditionalExpression => ExpressionWithoutCascade::ConditionalExpression(<>), ThrowExpressionWithoutCascade => ExpressionWithoutCascade::ThrowExpressionWithoutCascade(<>)};
 
-pub multiplicativeOperator : MultiplicativeOperator = {<Start:@L> "*" <End:@R> => MultiplicativeOperator::Asterisk(Token(<>)),
-  <Start:@L> "/" <End:@R> => MultiplicativeOperator::Divide(Token(<>)),
-  <Start:@L> "%" <End:@R> => MultiplicativeOperator::Modulus(Token(<>)),
-  <Start:@L> "~/" <End:@R> => MultiplicativeOperator::IntegerDiv(Token(<>)),}
+pub ExpressionItem: ExpressionItem = {<comma_token:COMMA_TOKEN> <expression:Expression> => ExpressionItem{<>}};
 
-pub unaryExpression : UnaryExpression = {UnaryExpressionPrefixOperator => UnaryExpression::PrefixOperator(UnaryExpressionPrefixOperator(<>)),
-  awaitExpression => UnaryExpression::AwaitExpression(AwaitExpression(<>)),
-  postfixExpression => UnaryExpression::PostfixExpression(PostfixExpression(<>)),
-  UnaryExpressionSuperToken => UnaryExpression::Super(UnaryExpressionSuperToken(<>)),
-  UnaryExpressionIncrementOperator => UnaryExpression::IncrementOperator(UnaryExpressionIncrementOperator(<>)),}
+pub ExpressionList: ExpressionList = {<expression:Expression> <expression_item:(ExpressionItem)*> => ExpressionList{<>}};
 
-pub prefixOperator : PrefixOperator = {minusOperator => PrefixOperator::MinusOperator(MinusOperator(<>)),
-  negationOperator => PrefixOperator::NegationOperator(NegationOperator(<>)),
-  tildeOperator => PrefixOperator::TildeOperator(TildeOperator(<>)),}
+pub PrimaryUnconditionalAssignableSelector: PrimaryUnconditionalAssignableSelector = {<super_token:SUPER_TOKEN> <unconditional_assignable_selector:UnconditionalAssignableSelector> => PrimaryUnconditionalAssignableSelector{<>}};
 
-pub minusOperator : MinusOperator = {<Start:@L> "-" <End:@R>}
+pub PrimaryArgumentPart: PrimaryArgumentPart = {<super_token:SUPER_TOKEN> <argument_part:ArgumentPart> => PrimaryArgumentPart{<>}};
 
-pub negationOperator : NegationOperator = {<Start:@L> "!" <End:@R>}
+pub PrimaryExpression: PrimaryExpression = {<open_paren_token:OPEN_PAREN_TOKEN> <expression:Expression> <close_paren_token:CLOSE_PAREN_TOKEN> => PrimaryExpression{<>}};
 
-pub tildeOperator : TildeOperator = {<Start:@L> "~" <End:@R>}
+pub Primary: Primary = {ThisExpression => Primary::ThisExpression(<>), PrimaryUnconditionalAssignableSelector => Primary::UnconditionalAssignableSelector(<>), PrimaryArgumentPart => Primary::ArgumentPart(<>), FunctionExpression => Primary::FunctionExpression(<>), NewExpression => Primary::NewExpression(<>), ConstObjectExpression => Primary::ConstObjectExpression(<>), ConstructorInvocation => Primary::ConstructorInvocation(<>), ConstructorTearoff => Primary::ConstructorTearoff(<>), PrimaryExpression => Primary::Expression(<>), Literal => Primary::Literal(<>), Identifier => Primary::Identifier(<>)};
 
-pub awaitExpression : AwaitExpression = {<await_tokenStart:@L> "await" <await_tokenEnd:@R> <unary_expression:unaryExpression> => AwaitExpression{await_token:Token(await_tokenStart, await_tokenEnd), unary_expression}}
+pub Literal: Literal = {NullLiteral => Literal::NullLiteral(<>), BooleanLiteral => Literal::BooleanLiteral(<>), NumericLiteral => Literal::NumericLiteral(<>), StringLiteral => Literal::StringLiteral(<>), SymbolLiteral => Literal::SymbolLiteral(<>), ListLiteral => Literal::ListLiteral(<>), SetOrMapLiteral => Literal::SetOrMapLiteral(<>)};
 
-pub postfixExpression : PostfixExpression = {PostfixExpressionAssignableExpression => PostfixExpression::AssignableExpression(PostfixExpressionAssignableExpression(<>)),
-  PostfixExpressionPrimary => PostfixExpression::Primary(PostfixExpressionPrimary(<>)),}
+pub NullLiteral: NullLiteral = {NULL_TOKEN};
 
-pub postfixOperator : PostfixOperator = {incrementOperator}
+pub NumericLiteral: NumericLiteral = {NUMBER => NumericLiteral::Number(<>), HEX_NUMBER => NumericLiteral::HexNumber(<>)};
 
-pub constructorInvocation : ConstructorInvocation = {<type_name:typeName> <type_arguments:typeArguments> <period_tokenStart:@L> "." <period_tokenEnd:@R> <identifier:identifier> <arguments:arguments> => ConstructorInvocation{type_name, type_arguments, period_token:Token(period_tokenStart, period_tokenEnd), identifier, arguments}}
+pub BooleanLiteral: BooleanLiteral = {TRUE_TOKEN => BooleanLiteral::True(<>), FALSE_TOKEN => BooleanLiteral::False(<>)};
 
-pub selector : Selector = {<Start:@L> "!" <End:@R> => Selector::Exclamation(Token(<>)),
-  assignableSelector => Selector::AssignableSelector(AssignableSelector(<>)),
-  argumentPart => Selector::ArgumentPart(ArgumentPart(<>)),}
+pub StringLiteralItem: StringLiteralItem = {MultilineString => StringLiteralItem::MultilineString(<>), SingleLineString => StringLiteralItem::SingleLineString(<>)};
 
-pub argumentPart : ArgumentPart = {<type_arguments:(typeArguments)?> <arguments:arguments> => ArgumentPart{type_arguments, arguments}}
+pub StringLiteral: StringLiteral = {(StringLiteralItem)+ => StringLiteral(<>)};
 
-pub incrementOperator : IncrementOperator = {<Start:@L> "++" <End:@R> => IncrementOperator::PlusPlus(Token(<>)),
-  <Start:@L> "--" <End:@R> => IncrementOperator::MinusMinus(Token(<>)),}
+pub ExpressionSingleLineStringSqMidMid: ExpressionSingleLineStringSqMidMid = {<single_line_string_sq_mid_mid:SINGLE_LINE_STRING_SQ_MID_MID> <expression:Expression> => ExpressionSingleLineStringSqMidMid{<>}};
 
-pub assignableExpression : AssignableExpression = {AssignableExpressionPrimary => AssignableExpression::Primary(AssignableExpressionPrimary(<>)),
-  AssignableExpressionUnconditionalAssignableSelector => AssignableExpression::UnconditionalAssignableSelector(AssignableExpressionUnconditionalAssignableSelector(<>)),
-  identifier => AssignableExpression::Identifier(Identifier(<>)),}
+pub SingleLineStringSingleLineStringSqBeginMid: SingleLineStringSingleLineStringSqBeginMid = {<single_line_string_sq_begin_mid:SINGLE_LINE_STRING_SQ_BEGIN_MID> <expression:Expression> <expression_single_line_string_sq_mid_mid:(ExpressionSingleLineStringSqMidMid)*> <single_line_string_sq_mid_end:SINGLE_LINE_STRING_SQ_MID_END> => SingleLineStringSingleLineStringSqBeginMid{<>}};
 
-pub assignableSelectorPart : AssignableSelectorPart = {<selector:(selector)*> <assignable_selector:assignableSelector> => AssignableSelectorPart{selector, assignable_selector}}
+pub ExpressionSingleLineStringDqMidMid: ExpressionSingleLineStringDqMidMid = {<single_line_string_dq_mid_mid:SINGLE_LINE_STRING_DQ_MID_MID> <expression:Expression> => ExpressionSingleLineStringDqMidMid{<>}};
 
-pub unconditionalAssignableSelector : UnconditionalAssignableSelector = {UnconditionalAssignableSelectorExpression => UnconditionalAssignableSelector::Expression(UnconditionalAssignableSelectorExpression(<>)),
-  UnconditionalAssignableSelectorIdentifier => UnconditionalAssignableSelector::Identifier(UnconditionalAssignableSelectorIdentifier(<>)),}
+pub SingleLineStringSingleLineStringDqBeginMid: SingleLineStringSingleLineStringDqBeginMid = {<single_line_string_dq_begin_mid:SINGLE_LINE_STRING_DQ_BEGIN_MID> <expression:Expression> <expression_single_line_string_dq_mid_mid:(ExpressionSingleLineStringDqMidMid)*> <single_line_string_dq_mid_end:SINGLE_LINE_STRING_DQ_MID_END> => SingleLineStringSingleLineStringDqBeginMid{<>}};
 
-pub assignableSelector : AssignableSelector = {unconditionalAssignableSelector => AssignableSelector::UnconditionalAssignableSelector(UnconditionalAssignableSelector(<>)),
-  AssignableSelectorIdentifier => AssignableSelector::Identifier(AssignableSelectorIdentifier(<>)),
-  AssignableSelectorQuestionToken => AssignableSelector::Question(AssignableSelectorQuestionToken(<>)),}
+pub SingleLineString: SingleLineString = {RAW_SINGLE_LINE_STRING => SingleLineString::RawSingleLineString(<>), SINGLE_LINE_STRING_SQ_BEGIN_END => SingleLineString::SingleLineStringSqBeginEnd(<>), SingleLineStringSingleLineStringSqBeginMid => SingleLineString::SingleLineStringSqBeginMid(<>), SINGLE_LINE_STRING_DQ_BEGIN_END => SingleLineString::SingleLineStringDqBeginEnd(<>), SingleLineStringSingleLineStringDqBeginMid => SingleLineString::SingleLineStringDqBeginMid(<>)};
 
-pub identifier : Identifier = {<Start:@L> IDENTIFIER <End:@R> => Identifier::Identifier(Token(<>)),
-  <Start:@L> BUILT_IN_IDENTIFIER <End:@R> => Identifier::BuiltInIdentifier(Token(<>)),
-  <Start:@L> OTHER_IDENTIFIER <End:@R> => Identifier::OtherIdentifier(Token(<>)),}
+pub ExpressionMultiLineStringSqMidMid: ExpressionMultiLineStringSqMidMid = {<multi_line_string_sq_mid_mid:MULTI_LINE_STRING_SQ_MID_MID> <expression:Expression> => ExpressionMultiLineStringSqMidMid{<>}};
 
-pub typeIdentifier : TypeIdentifier = {<Start:@L> IDENTIFIER <End:@R> => TypeIdentifier::Identifier(Token(<>)),
-  <Start:@L> OTHER_IDENTIFIER <End:@R> => TypeIdentifier::OtherIdentifier(Token(<>)),
-  <Start:@L> "dynamic" <End:@R> => TypeIdentifier::Dynamic(Token(<>)),}
+pub MultilineStringMultiLineStringSqBeginMid: MultilineStringMultiLineStringSqBeginMid = {<multi_line_string_sq_begin_mid:MULTI_LINE_STRING_SQ_BEGIN_MID> <expression:Expression> <expression_multi_line_string_sq_mid_mid:(ExpressionMultiLineStringSqMidMid)*> <multi_line_string_sq_mid_end:MULTI_LINE_STRING_SQ_MID_END> => MultilineStringMultiLineStringSqBeginMid{<>}};
 
-pub qualifiedName : QualifiedName = {QualifiedNameSingle => QualifiedName::QualifiedNameSingle(QualifiedNameSingle(<>)),
-  QualifiedNameDouble => QualifiedName::QualifiedNameDouble(QualifiedNameDouble(<>)),}
+pub ExpressionMultiLineStringDqMidMid: ExpressionMultiLineStringDqMidMid = {<multi_line_string_dq_mid_mid:MULTI_LINE_STRING_DQ_MID_MID> <expression:Expression> => ExpressionMultiLineStringDqMidMid{<>}};
 
- BUILT_IN_IDENTIFIER : null = {Or(
-  Raw(abstract),
-  Raw(as),
-  Raw(covariant),
-  Raw(deferred),
-  Raw(dynamic),
-  Raw(export),
-  Raw(external),
-  Raw(extension),
-  Raw(factory),
-  Raw(Function),
-  Raw(get),
-  Raw(implements),
-  Raw(import),
-  Raw(interface),
-  Raw(late),
-  Raw(library),
-  Raw(mixin),
-  Raw(operator),
-  Raw(part),
-  Raw(required),
-  Raw(set),
-  Raw(static),
-  Raw(typedef),
-)}
+pub MultilineStringMultiLineStringDqBeginMid: MultilineStringMultiLineStringDqBeginMid = {<multi_line_string_dq_begin_mid:MULTI_LINE_STRING_DQ_BEGIN_MID> <expression:Expression> <expression_multi_line_string_dq_mid_mid:(ExpressionMultiLineStringDqMidMid)*> <multi_line_string_dq_mid_end:MULTI_LINE_STRING_DQ_MID_END> => MultilineStringMultiLineStringDqBeginMid{<>}};
 
- OTHER_IDENTIFIER : null = {Or(
-  Raw(async),
-  Raw(hide),
-  Raw(of),
-  Raw(on),
-  Raw(show),
-  Raw(sync),
-  Raw(await),
-  Raw(yield),
-)}
+pub MultilineString: MultilineString = {RAW_MULTI_LINE_STRING => MultilineString::RawMultiLineString(<>), MULTI_LINE_STRING_SQ_BEGIN_END => MultilineString::MultiLineStringSqBeginEnd(<>), MultilineStringMultiLineStringSqBeginMid => MultilineString::MultiLineStringSqBeginMid(<>), MULTI_LINE_STRING_DQ_BEGIN_END => MultilineString::MultiLineStringDqBeginEnd(<>), MultilineStringMultiLineStringDqBeginMid => MultilineString::MultiLineStringDqBeginMid(<>)};
 
- IDENTIFIER_NO_DOLLAR : null = {And(Id(IDENTIFIER_START_NO_DOLLAR), Modified(*,Id(IDENTIFIER_PART_NO_DOLLAR)))}
+pub StringInterpolationExpression: StringInterpolationExpression = {<interpolation_start_token:INTERPOLATION_START_TOKEN> <expression:Expression> <close_curly_bracket_token:CLOSE_CURLY_BRACKET_TOKEN> => StringInterpolationExpression{<>}};
 
- IDENTIFIER_START_NO_DOLLAR : null = {Or(
-  Id(LETTER),
-  Raw(_),
-)}
+pub StringInterpolation: StringInterpolation = {SIMPLE_STRING_INTERPOLATION => StringInterpolation::SimpleStringInterpolation(<>), StringInterpolationExpression => StringInterpolation::Expression(<>)};
 
- IDENTIFIER_PART_NO_DOLLAR : null = {Or(
-  Id(IDENTIFIER_START_NO_DOLLAR),
-  Id(DIGIT),
-)}
+pub SymbolLiteralOtherIdentifiers: SymbolLiteralOtherIdentifiers = {<period_token:PERIOD_TOKEN> <identifier:Identifier> => SymbolLiteralOtherIdentifiers{<>}};
 
- IDENTIFIER : null = {And(Id(IDENTIFIER_START), Modified(*,Id(IDENTIFIER_PART)))}
+pub SymbolLiteralValueIdentifier: SymbolLiteralValueIdentifier = {<identifier:Identifier> <symbol_literal_other_identifiers:(SymbolLiteralOtherIdentifiers)*> => SymbolLiteralValueIdentifier{<>}};
 
- IDENTIFIER_START : null = {Or(
-  Id(IDENTIFIER_START_NO_DOLLAR),
-  Raw($),
-)}
+pub SymbolLiteralValue: SymbolLiteralValue = {SymbolLiteralValueIdentifier => SymbolLiteralValue::Identifier(<>), Operator => SymbolLiteralValue::Operator(<>), VOID_TOKEN => SymbolLiteralValue::Void(<>)};
 
- IDENTIFIER_PART : null = {Or(
-  Id(IDENTIFIER_START),
-  Id(DIGIT),
-)}
+pub SymbolLiteral: SymbolLiteral = {<hash_token:HASH_TOKEN> <symbol_literal_value:SymbolLiteralValue> => SymbolLiteral{<>}};
 
- LETTER : null = {Or(
-  RawRange(Raw(a),Raw(z)),
-  RawRange(Raw(A),Raw(Z)),
-)}
+pub ListLiteral: ListLiteral = {<const_token:(CONST_TOKEN)?> <type_arguments:(TypeArguments)?> <open_square_bracket_token:OPEN_SQUARE_BRACKET_TOKEN> <elements:(Elements)?> <close_square_bracket_token:CLOSE_SQUARE_BRACKET_TOKEN> => ListLiteral{<>}};
 
- DIGIT : null = {r"[0-9]"}
+pub SetOrMapLiteral: SetOrMapLiteral = {<const_token:(CONST_TOKEN)?> <type_arguments:(TypeArguments)?> <open_curly_bracket_token:OPEN_CURLY_BRACKET_TOKEN> <elements:(Elements)?> <close_curly_bracket_token:CLOSE_CURLY_BRACKET_TOKEN> => SetOrMapLiteral{<>}};
 
- WHITESPACE : null = {(Or(
-  Raw(\t),
-  Raw( ),
-  Id(NEWLINE),
-))+}
+pub ElementItem: ElementItem = {<comma_token:COMMA_TOKEN> <element:Element> => ElementItem{<>}};
 
-pub typeTest : TypeTest = {<is_operator:isOperator> <type_not_void:typeNotVoid> => TypeTest{is_operator, type_not_void}}
+pub Elements: Elements = {<element:Element> <element_item:(ElementItem)*> <comma_token:(COMMA_TOKEN)?> => Elements{<>}};
 
-pub isOperator : IsOperator = {<is_tokenStart:@L> "is" <is_tokenEnd:@R> <exclamation_token:(<Start:@L> "!" <End:@R>)?> => IsOperator{is_token:Token(is_tokenStart, is_tokenEnd), exclamation_token}}
+pub Element: Element = {ExpressionElement => Element::ExpressionElement(<>), MapElement => Element::MapElement(<>), SpreadElement => Element::SpreadElement(<>), IfElement => Element::IfElement(<>), ForElement => Element::ForElement(<>)};
 
-pub typeCast : TypeCast = {<as_operator:asOperator> <type_not_void:typeNotVoid> => TypeCast{as_operator, type_not_void}}
+pub ExpressionElement: ExpressionElement = {Expression};
 
-pub asOperator : AsOperator = {<Start:@L> "as" <End:@R>}
+pub MapElement: MapElement = {<expression:Expression> <colon_token:COLON_TOKEN> <expression2:Expression> => MapElement{<>}};
 
-pub statements : Statements = {(statement)*}
+pub SpreadElementType: SpreadElementType = {POINTS_EXPAND_TOKEN => SpreadElementType::PointsExpand(<>), POINTS_EXPAND_QUESTION_TOKEN => SpreadElementType::PointsExpandQuestion(<>)};
 
-pub statement : Statement = {<label:(label)*> <non_labelled_statement:nonLabelledStatement> => Statement{label, non_labelled_statement}}
+pub SpreadElement: SpreadElement = {<spread_element_type:SpreadElementType> <expression:Expression> => SpreadElement{<>}};
 
-pub nonLabelledStatement : NonLabelledStatement = {block => NonLabelledStatement::Block(Block(<>)),
-  localVariableDeclaration => NonLabelledStatement::LocalVariableDeclaration(LocalVariableDeclaration(<>)),
-  forStatement => NonLabelledStatement::ForStatement(ForStatement(<>)),
-  whileStatement => NonLabelledStatement::WhileStatement(WhileStatement(<>)),
-  doStatement => NonLabelledStatement::DoStatement(DoStatement(<>)),
-  switchStatement => NonLabelledStatement::SwitchStatement(SwitchStatement(<>)),
-  ifStatement => NonLabelledStatement::IfStatement(IfStatement(<>)),
-  rethrowStatement => NonLabelledStatement::RethrowStatement(RethrowStatement(<>)),
-  tryStatement => NonLabelledStatement::TryStatement(TryStatement(<>)),
-  breakStatement => NonLabelledStatement::BreakStatement(BreakStatement(<>)),
-  continueStatement => NonLabelledStatement::ContinueStatement(ContinueStatement(<>)),
-  returnStatement => NonLabelledStatement::ReturnStatement(ReturnStatement(<>)),
-  yieldStatement => NonLabelledStatement::YieldStatement(YieldStatement(<>)),
-  yieldEachStatement => NonLabelledStatement::YieldEachStatement(YieldEachStatement(<>)),
-  expressionStatement => NonLabelledStatement::ExpressionStatement(ExpressionStatement(<>)),
-  assertStatement => NonLabelledStatement::AssertStatement(AssertStatement(<>)),
-  localFunctionDeclaration => NonLabelledStatement::LocalFunctionDeclaration(LocalFunctionDeclaration(<>)),}
+pub ElementElse: ElementElse = {<else_token:ELSE_TOKEN> <element:Element> => ElementElse{<>}};
 
-pub expressionStatement : ExpressionStatement = {<expression:(expression)?> <semicolon_tokenStart:@L> ";" <semicolon_tokenEnd:@R> => ExpressionStatement{expression, semicolon_token:Token(semicolon_tokenStart, semicolon_tokenEnd)}}
+pub IfElement: IfElement = {<if_token:IF_TOKEN> <open_paren_token:OPEN_PAREN_TOKEN> <expression:Expression> <close_paren_token:CLOSE_PAREN_TOKEN> <element:Element> <element_else:(ElementElse)?> => IfElement{<>}};
 
-pub localVariableDeclaration : LocalVariableDeclaration = {<metadata:metadata> <initialized_variable_declaration:initializedVariableDeclaration> <semicolon_tokenStart:@L> ";" <semicolon_tokenEnd:@R> => LocalVariableDeclaration{metadata, initialized_variable_declaration, semicolon_token:Token(semicolon_tokenStart, semicolon_tokenEnd)}}
+pub ForElement: ForElement = {<await_token:(AWAIT_TOKEN)?> <for_token:FOR_TOKEN> <open_paren_token:OPEN_PAREN_TOKEN> <for_loop_parts:ForLoopParts> <close_paren_token:CLOSE_PAREN_TOKEN> <element:Element> => ForElement{<>}};
 
-pub localFunctionDeclaration : LocalFunctionDeclaration = {<metadata:metadata> <function_signature:functionSignature> <function_body:functionBody> => LocalFunctionDeclaration{metadata, function_signature, function_body}}
+pub ConstructorTearoff: ConstructorTearoff = {<type_name:TypeName> <type_arguments:(TypeArguments)?> <period_token:PERIOD_TOKEN> <new_token:NEW_TOKEN> => ConstructorTearoff{<>}};
 
-pub ifStatement : IfStatement = {<if_tokenStart:@L> "if" <if_tokenEnd:@R> <open_paren_tokenStart:@L> "(" <open_paren_tokenEnd:@R> <expression:expression> <close_paren_tokenStart:@L> ")" <close_paren_tokenEnd:@R> <statement:statement> <statement_else:(StatementElse)?> => IfStatement{if_token:Token(if_tokenStart, if_tokenEnd), open_paren_token:Token(open_paren_tokenStart, open_paren_tokenEnd), expression, close_paren_token:Token(close_paren_tokenStart, close_paren_tokenEnd), statement, statement_else}}
+pub ThrowExpression: ThrowExpression = {<throw_token:THROW_TOKEN> <expression:Expression> => ThrowExpression{<>}};
 
-pub forStatement : ForStatement = {<await_token:(<Start:@L> "await" <End:@R>)?> <for_tokenStart:@L> "for" <for_tokenEnd:@R> <open_paren_tokenStart:@L> "(" <open_paren_tokenEnd:@R> <for_loop_parts:forLoopParts> <close_paren_tokenStart:@L> ")" <close_paren_tokenEnd:@R> <statement:statement> => ForStatement{await_token, for_token:Token(for_tokenStart, for_tokenEnd), open_paren_token:Token(open_paren_tokenStart, open_paren_tokenEnd), for_loop_parts, close_paren_token:Token(close_paren_tokenStart, close_paren_tokenEnd), statement}}
+pub ThrowExpressionWithoutCascade: ThrowExpressionWithoutCascade = {<throw_token:THROW_TOKEN> <expression_without_cascade:ExpressionWithoutCascade> => ThrowExpressionWithoutCascade{<>}};
 
-pub forLoopParts : ForLoopParts = {ForLoopPartsSemicolonToken => ForLoopParts::Semicolon(ForLoopPartsSemicolonToken(<>)),
-  ForLoopPartsMetadata => ForLoopParts::Metadata(ForLoopPartsMetadata(<>)),
-  ForLoopPartsInToken => ForLoopParts::In(ForLoopPartsInToken(<>)),}
+pub FunctionExpression: FunctionExpression = {<formal_parameter_part:FormalParameterPart> <function_expression_body:FunctionExpressionBody> => FunctionExpression{<>}};
 
-pub forInitializerStatement : ForInitializerStatement = {localVariableDeclaration => ForInitializerStatement::LocalVariableDeclaration(LocalVariableDeclaration(<>)),
-  ForInitializerStatementSemicolonToken => ForInitializerStatement::Semicolon(ForInitializerStatementSemicolonToken(<>)),}
+pub FunctionExpressionBodyArrowToken: FunctionExpressionBodyArrowToken = {<async_token:(ASYNC_TOKEN)?> <arrow_token:ARROW_TOKEN> <expression:Expression> => FunctionExpressionBodyArrowToken{<>}};
 
-pub whileStatement : WhileStatement = {<while_tokenStart:@L> "while" <while_tokenEnd:@R> <open_paren_tokenStart:@L> "(" <open_paren_tokenEnd:@R> <expression:expression> <close_paren_tokenStart:@L> ")" <close_paren_tokenEnd:@R> <statement:statement> => WhileStatement{while_token:Token(while_tokenStart, while_tokenEnd), open_paren_token:Token(open_paren_tokenStart, open_paren_tokenEnd), expression, close_paren_token:Token(close_paren_tokenStart, close_paren_tokenEnd), statement}}
+pub FunctionExpressionGeneratorAsyncToken: FunctionExpressionGeneratorAsyncToken = {<async_token:ASYNC_TOKEN> <asterisk_token:(ASTERISK_TOKEN)?> => FunctionExpressionGeneratorAsyncToken{<>}};
 
-pub doStatement : DoStatement = {<do_tokenStart:@L> "do" <do_tokenEnd:@R> <statement:statement> <while_tokenStart:@L> "while" <while_tokenEnd:@R> <open_paren_tokenStart:@L> "(" <open_paren_tokenEnd:@R> <expression:expression> <close_paren_tokenStart:@L> ")" <close_paren_tokenEnd:@R> <semicolon_tokenStart:@L> ";" <semicolon_tokenEnd:@R> => DoStatement{do_token:Token(do_tokenStart, do_tokenEnd), statement, while_token:Token(while_tokenStart, while_tokenEnd), open_paren_token:Token(open_paren_tokenStart, open_paren_tokenEnd), expression, close_paren_token:Token(close_paren_tokenStart, close_paren_tokenEnd), semicolon_token:Token(semicolon_tokenStart, semicolon_tokenEnd)}}
+pub FunctionExpressionGeneratorSyncToken: FunctionExpressionGeneratorSyncToken = {<sync_token:SYNC_TOKEN> <asterisk_token:ASTERISK_TOKEN> => FunctionExpressionGeneratorSyncToken{<>}};
 
-pub switchStatement : SwitchStatement = {<switch_tokenStart:@L> "switch" <switch_tokenEnd:@R> <open_paren_tokenStart:@L> "(" <open_paren_tokenEnd:@R> <expression:expression> <close_paren_tokenStart:@L> ")" <close_paren_tokenEnd:@R> <open_curly_bracket_tokenStart:@L> "{" <open_curly_bracket_tokenEnd:@R> <switch_case:(switchCase)*> <default_case:(defaultCase)?> <close_curly_bracket_tokenStart:@L> "}" <close_curly_bracket_tokenEnd:@R> => SwitchStatement{switch_token:Token(switch_tokenStart, switch_tokenEnd), open_paren_token:Token(open_paren_tokenStart, open_paren_tokenEnd), expression, close_paren_token:Token(close_paren_tokenStart, close_paren_tokenEnd), open_curly_bracket_token:Token(open_curly_bracket_tokenStart, open_curly_bracket_tokenEnd), switch_case, default_case, close_curly_bracket_token:Token(close_curly_bracket_tokenStart, close_curly_bracket_tokenEnd)}}
+pub FunctionExpressionGenerator: FunctionExpressionGenerator = {FunctionExpressionGeneratorAsyncToken => FunctionExpressionGenerator::Async(<>), FunctionExpressionGeneratorSyncToken => FunctionExpressionGenerator::Sync(<>)};
 
-pub switchCase : SwitchCase = {<label:(label)*> <case_tokenStart:@L> "case" <case_tokenEnd:@R> <expression:expression> <colon_tokenStart:@L> ":" <colon_tokenEnd:@R> <statements:statements> => SwitchCase{label, case_token:Token(case_tokenStart, case_tokenEnd), expression, colon_token:Token(colon_tokenStart, colon_tokenEnd), statements}}
+pub FunctionExpressionBodyBlock: FunctionExpressionBodyBlock = {<function_expression_generator:(FunctionExpressionGenerator)?> <block:Block> => FunctionExpressionBodyBlock{<>}};
 
-pub defaultCase : DefaultCase = {<label:(label)*> <default_tokenStart:@L> "default" <default_tokenEnd:@R> <colon_tokenStart:@L> ":" <colon_tokenEnd:@R> <statements:statements> => DefaultCase{label, default_token:Token(default_tokenStart, default_tokenEnd), colon_token:Token(colon_tokenStart, colon_tokenEnd), statements}}
+pub FunctionExpressionBody: FunctionExpressionBody = {FunctionExpressionBodyArrowToken => FunctionExpressionBody::Arrow(<>), FunctionExpressionBodyBlock => FunctionExpressionBody::Block(<>)};
 
-pub rethrowStatement : RethrowStatement = {<rethrow_tokenStart:@L> "rethrow" <rethrow_tokenEnd:@R> <semicolon_tokenStart:@L> ";" <semicolon_tokenEnd:@R> => RethrowStatement{rethrow_token:Token(rethrow_tokenStart, rethrow_tokenEnd), semicolon_token:Token(semicolon_tokenStart, semicolon_tokenEnd)}}
+pub ThisExpression: ThisExpression = {THIS_TOKEN};
 
-pub tryStatement : TryStatement = {<try_tokenStart:@L> "try" <try_tokenEnd:@R> <block:block> <try_statement_catch_finally:TryStatementCatchFinally> => TryStatement{try_token:Token(try_tokenStart, try_tokenEnd), block, try_statement_catch_finally}}
+pub NewExpression: NewExpression = {<new_token:NEW_TOKEN> <constructor_designation:ConstructorDesignation> <arguments:Arguments> => NewExpression{<>}};
 
-pub onPart : OnPart = {OnPartCatchPart => OnPart::CatchPart(OnPartCatchPart(<>)),
-  OnPartTypeNotVoid => OnPart::TypeNotVoid(OnPartTypeNotVoid(<>)),}
+pub ConstObjectExpression: ConstObjectExpression = {<const_token:CONST_TOKEN> <constructor_designation:ConstructorDesignation> <arguments:Arguments> => ConstObjectExpression{<>}};
 
-pub catchPart : CatchPart = {<catch_tokenStart:@L> "catch" <catch_tokenEnd:@R> <open_paren_tokenStart:@L> "(" <open_paren_tokenEnd:@R> <identifier:identifier> <identifier_item:(IdentifierItem)?> <close_paren_tokenStart:@L> ")" <close_paren_tokenEnd:@R> => CatchPart{catch_token:Token(catch_tokenStart, catch_tokenEnd), open_paren_token:Token(open_paren_tokenStart, open_paren_tokenEnd), identifier, identifier_item, close_paren_token:Token(close_paren_tokenStart, close_paren_tokenEnd)}}
+pub ArgumentsArgumentList: ArgumentsArgumentList = {<argument_list:ArgumentList> <comma_token:(COMMA_TOKEN)?> => ArgumentsArgumentList{<>}};
 
-pub finallyPart : FinallyPart = {<finally_tokenStart:@L> "finally" <finally_tokenEnd:@R> <block:block> => FinallyPart{finally_token:Token(finally_tokenStart, finally_tokenEnd), block}}
+pub Arguments: Arguments = {<open_paren_token:OPEN_PAREN_TOKEN> <argument_list:(ArgumentsArgumentList)?> <close_paren_token:CLOSE_PAREN_TOKEN> => Arguments{<>}};
 
-pub returnStatement : ReturnStatement = {<return_tokenStart:@L> "return" <return_tokenEnd:@R> <expression:(expression)?> <semicolon_tokenStart:@L> ";" <semicolon_tokenEnd:@R> => ReturnStatement{return_token:Token(return_tokenStart, return_tokenEnd), expression, semicolon_token:Token(semicolon_tokenStart, semicolon_tokenEnd)}}
+pub ArgumentItem: ArgumentItem = {<comma_token:COMMA_TOKEN> <argument:Argument> => ArgumentItem{<>}};
 
-pub label : Label = {<identifier:identifier> <colon_tokenStart:@L> ":" <colon_tokenEnd:@R> => Label{identifier, colon_token:Token(colon_tokenStart, colon_tokenEnd)}}
+pub ArgumentList: ArgumentList = {<argument:Argument> <argument_item:(ArgumentItem)*> => ArgumentList{<>}};
 
-pub breakStatement : BreakStatement = {<break_tokenStart:@L> "break" <break_tokenEnd:@R> <identifier:(identifier)?> <semicolon_tokenStart:@L> ";" <semicolon_tokenEnd:@R> => BreakStatement{break_token:Token(break_tokenStart, break_tokenEnd), identifier, semicolon_token:Token(semicolon_tokenStart, semicolon_tokenEnd)}}
+pub Argument: Argument = {<label:(Label)?> <expression:Expression> => Argument{<>}};
 
-pub continueStatement : ContinueStatement = {<continue_tokenStart:@L> "continue" <continue_tokenEnd:@R> <identifier:(identifier)?> <semicolon_tokenStart:@L> ";" <semicolon_tokenEnd:@R> => ContinueStatement{continue_token:Token(continue_tokenStart, continue_tokenEnd), identifier, semicolon_token:Token(semicolon_tokenStart, semicolon_tokenEnd)}}
+pub CascadeRight: CascadeRight = {<points_id_token:POINTS_ID_TOKEN> <cascade_section:CascadeSection> <cascade_right:(CascadeRight)?> => CascadeRight{<>}};
 
-pub yieldStatement : YieldStatement = {<yield_tokenStart:@L> "yield" <yield_tokenEnd:@R> <expression:expression> <semicolon_tokenStart:@L> ";" <semicolon_tokenEnd:@R> => YieldStatement{yield_token:Token(yield_tokenStart, yield_tokenEnd), expression, semicolon_token:Token(semicolon_tokenStart, semicolon_tokenEnd)}}
+pub CascadePrefixType: CascadePrefixType = {POINTS_ID_QUESTION_TOKEN => CascadePrefixType::PointsIdQuestion(<>), POINTS_ID_TOKEN => CascadePrefixType::PointsId(<>)};
 
-pub yieldEachStatement : YieldEachStatement = {<yield_tokenStart:@L> "yield" <yield_tokenEnd:@R> <asterisk_tokenStart:@L> "*" <asterisk_tokenEnd:@R> <expression:expression> <semicolon_tokenStart:@L> ";" <semicolon_tokenEnd:@R> => YieldEachStatement{yield_token:Token(yield_tokenStart, yield_tokenEnd), asterisk_token:Token(asterisk_tokenStart, asterisk_tokenEnd), expression, semicolon_token:Token(semicolon_tokenStart, semicolon_tokenEnd)}}
+pub CascadeLeft: CascadeLeft = {<conditional_expression:ConditionalExpression> <cascade_prefix_type:CascadePrefixType> <cascade_section:CascadeSection> => CascadeLeft{<>}};
 
-pub assertStatement : AssertStatement = {<assertion:assertion> <semicolon_tokenStart:@L> ";" <semicolon_tokenEnd:@R> => AssertStatement{assertion, semicolon_token:Token(semicolon_tokenStart, semicolon_tokenEnd)}}
+pub Cascade: Cascade = {<cascade_left:CascadeLeft> <cascade_right:(CascadeRight)?> => Cascade{<>}};
 
-pub assertion : Assertion = {<assert_tokenStart:@L> "assert" <assert_tokenEnd:@R> <open_paren_tokenStart:@L> "(" <open_paren_tokenEnd:@R> <expression:expression> <expression_item:(ExpressionItem)?> <comma_token:(<Start:@L> "," <End:@R>)?> <close_paren_tokenStart:@L> ")" <close_paren_tokenEnd:@R> => Assertion{assert_token:Token(assert_tokenStart, assert_tokenEnd), open_paren_token:Token(open_paren_tokenStart, open_paren_tokenEnd), expression, expression_item, comma_token, close_paren_token:Token(close_paren_tokenStart, close_paren_tokenEnd)}}
+pub CascadeSection: CascadeSection = {<cascade_selector:CascadeSelector> <cascade_section_tail:CascadeSectionTail> => CascadeSection{<>}};
 
-pub topLevelDeclaration : TopLevelDeclaration = {classDeclaration => TopLevelDeclaration::ClassDeclaration(ClassDeclaration(<>)),
-  mixinDeclaration => TopLevelDeclaration::MixinDeclaration(MixinDeclaration(<>)),
-  extensionDeclaration => TopLevelDeclaration::ExtensionDeclaration(ExtensionDeclaration(<>)),
-  enumType => TopLevelDeclaration::EnumType(EnumType(<>)),
-  typeAlias => TopLevelDeclaration::TypeAlias(TypeAlias(<>)),
-  ExternalFunctionSignature => TopLevelDeclaration::ExternalFunctionSignature(ExternalFunctionSignature(<>)),
-  ExternalGetterSignature => TopLevelDeclaration::ExternalGetterSignature(ExternalGetterSignature(<>)),
-  ExternalSetterSignature => TopLevelDeclaration::ExternalSetterSignature(ExternalSetterSignature(<>)),
-  TopLevelDeclarationFunctionSignature => TopLevelDeclaration::FunctionSignature(TopLevelDeclarationFunctionSignature(<>)),
-  TopLevelDeclarationGetterSignature => TopLevelDeclaration::GetterSignature(TopLevelDeclarationGetterSignature(<>)),
-  TopLevelDeclarationSetterSignature => TopLevelDeclaration::SetterSignature(TopLevelDeclarationSetterSignature(<>)),
-  TopLevelDeclarationSemicolonToken => TopLevelDeclaration::Semicolon(TopLevelDeclarationSemicolonToken(<>)),
-  TopLevelDeclarationLateToken => TopLevelDeclaration::Late(TopLevelDeclarationLateToken(<>)),
-  TopLevelDeclarationVarOrType => TopLevelDeclaration::VarOrType(TopLevelDeclarationVarOrType(<>)),}
+pub CascadeSelectorExpression: CascadeSelectorExpression = {<open_square_bracket_token:OPEN_SQUARE_BRACKET_TOKEN> <expression:Expression> <close_square_bracket_token:CLOSE_SQUARE_BRACKET_TOKEN> => CascadeSelectorExpression{<>}};
 
-pub libraryDeclaration : LibraryDeclaration = {<script_tag:(scriptTag)?> <library_name:(libraryName)?> <import_or_export:(importOrExport)*> <part_directive:(partDirective)*> <metadata:(LibraryDeclarationMetadata)*> <eofStart:@L> EOF <eofEnd:@R> => LibraryDeclaration{script_tag, library_name, import_or_export, part_directive, metadata, eof:Token(eofStart, eofEnd)}}
+pub CascadeSelector: CascadeSelector = {CascadeSelectorExpression => CascadeSelector::Expression(<>), Identifier => CascadeSelector::Identifier(<>)};
 
-pub scriptTag : ScriptTag = {<hash_exclamation_tokenStart:@L> "#!" <hash_exclamation_tokenEnd:@R> (!(<Start:@L> NEWLINE <End:@R>)* <newlineStart:@L> NEWLINE <newlineEnd:@R> => ScriptTag{hash_exclamation_token:Token(hash_exclamation_tokenStart, hash_exclamation_tokenEnd), null, newline:Token(newlineStart, newlineEnd)}}
+pub SelectedCascadeAssignment: SelectedCascadeAssignment = {<assignable_selector:AssignableSelector> <cascade_assignment:CascadeAssignment> => SelectedCascadeAssignment{<>}};
 
-pub libraryName : LibraryName = {<metadata:metadata> <library_tokenStart:@L> "library" <library_tokenEnd:@R> <dotted_identifier_list:dottedIdentifierList> <semicolon_tokenStart:@L> ";" <semicolon_tokenEnd:@R> => LibraryName{metadata, library_token:Token(library_tokenStart, library_tokenEnd), dotted_identifier_list, semicolon_token:Token(semicolon_tokenStart, semicolon_tokenEnd)}}
+pub SelectedCascade: SelectedCascade = {<selector:(Selector)*> <assignment:(SelectedCascadeAssignment)?> => SelectedCascade{<>}};
 
-pub importOrExport : ImportOrExport = {libraryImport => ImportOrExport::LibraryImport(LibraryImport(<>)),
-  libraryExport => ImportOrExport::LibraryExport(LibraryExport(<>)),}
+pub CascadeSectionTail: CascadeSectionTail = {CascadeAssignment => CascadeSectionTail::CascadeAssignment(<>), SelectedCascade => CascadeSectionTail::SelectedCascade(<>)};
 
-pub dottedIdentifierList : DottedIdentifierList = {<identifier:identifier> <identifier_selector:(IdentifierSelector)*> => DottedIdentifierList{identifier, identifier_selector}}
+pub CascadeAssignment: CascadeAssignment = {<assignment_operator:AssignmentOperator> <expression_without_cascade:ExpressionWithoutCascade> => CascadeAssignment{<>}};
 
-pub libraryImport : LibraryImport = {<metadata:metadata> <import_specification:importSpecification> => LibraryImport{metadata, import_specification}}
+pub AssignmentOperator: AssignmentOperator = {EQUAL_TOKEN => AssignmentOperator::Equal(<>), CompoundAssignmentOperator => AssignmentOperator::CompoundAssignmentOperator(<>)};
 
-pub importSpecification : ImportSpecification = {<import_tokenStart:@L> "import" <import_tokenEnd:@R> <configurable_uri:configurableUri> <as_token:(ImportSpecificationAsToken)?> <combinator:(combinator)*> <semicolon_tokenStart:@L> ";" <semicolon_tokenEnd:@R> => ImportSpecification{import_token:Token(import_tokenStart, import_tokenEnd), configurable_uri, as_token, combinator, semicolon_token:Token(semicolon_tokenStart, semicolon_tokenEnd)}}
+pub CompoundAssignmentOperator: CompoundAssignmentOperator = {TIMES_EQUAL_TOKEN => CompoundAssignmentOperator::TimesEqual(<>), DIV_EQUAL_TOKEN => CompoundAssignmentOperator::DivEqual(<>), INTEGER_DIV_EQUAL_TOKEN => CompoundAssignmentOperator::IntegerDivEqual(<>), MODULE_EQUAL_TOKEN => CompoundAssignmentOperator::ModuleEqual(<>), PLUS_EQUAL_TOKEN => CompoundAssignmentOperator::PlusEqual(<>), MINUS_EQUAL_TOKEN => CompoundAssignmentOperator::MinusEqual(<>), BIT_LEFT_EQUAL_TOKEN => CompoundAssignmentOperator::BitLeftEqual(<>), BIT_RIGHT0_EQUAL_TOKEN => CompoundAssignmentOperator::BitRight0Equal(<>), BIT_RIGHT_EQUAL_TOKEN => CompoundAssignmentOperator::BitRightEqual(<>), BIT_AND_EUQAL_TOKEN => CompoundAssignmentOperator::BitAndEuqal(<>), BIT_NEG_EQUAL_TOKEN => CompoundAssignmentOperator::BitNegEqual(<>), BIT_XOR_EQUAL_TOKEN => CompoundAssignmentOperator::BitXorEqual(<>), QUESTION_QUESTION_EQUAL_TOKEN => CompoundAssignmentOperator::QuestionQuestionEqual(<>)};
 
-pub libraryExport : LibraryExport = {<metadata:metadata> <export_tokenStart:@L> "export" <export_tokenEnd:@R> <configurable_uri:configurableUri> <combinator:(combinator)*> <semicolon_tokenStart:@L> ";" <semicolon_tokenEnd:@R> => LibraryExport{metadata, export_token:Token(export_tokenStart, export_tokenEnd), configurable_uri, combinator, semicolon_token:Token(semicolon_tokenStart, semicolon_tokenEnd)}}
+pub ConditionalExpressionExpressionWithoutCascade: ConditionalExpressionExpressionWithoutCascade = {<question_token:QUESTION_TOKEN> <expression_without_cascade:ExpressionWithoutCascade> <colon_token:COLON_TOKEN> <expression_without_cascade2:ExpressionWithoutCascade> => ConditionalExpressionExpressionWithoutCascade{<>}};
 
-pub combinator : Combinator = {ShowCombinator => Combinator::ShowCombinator(ShowCombinator(<>)),
-  HideCombinator => Combinator::HideCombinator(HideCombinator(<>)),}
+pub ConditionalExpression: ConditionalExpression = {<if_null_expression:IfNullExpression> <expression_without_cascade:(ConditionalExpressionExpressionWithoutCascade)?> => ConditionalExpression{<>}};
 
-pub identifierList : IdentifierList = {<identifier:identifier> <identifier_item:(IdentifierItem)*> => IdentifierList{identifier, identifier_item}}
+pub LogicalOrExpressionQuestionQuestion: LogicalOrExpressionQuestionQuestion = {<question_question_token:QUESTION_QUESTION_TOKEN> <logical_or_expression:LogicalOrExpression> => LogicalOrExpressionQuestionQuestion{<>}};
 
-pub partDirective : PartDirective = {<metadata:metadata> <part_tokenStart:@L> "part" <part_tokenEnd:@R> <uri:uri> <semicolon_tokenStart:@L> ";" <semicolon_tokenEnd:@R> => PartDirective{metadata, part_token:Token(part_tokenStart, part_tokenEnd), uri, semicolon_token:Token(semicolon_tokenStart, semicolon_tokenEnd)}}
+pub IfNullExpression: IfNullExpression = {<logical_or_expression:LogicalOrExpression> <logical_or_expression_question_question:(LogicalOrExpressionQuestionQuestion)*> => IfNullExpression{<>}};
 
-pub partHeader : PartHeader = {<metadata:metadata> <part_tokenStart:@L> "part" <part_tokenEnd:@R> <of_tokenStart:@L> "of" <of_tokenEnd:@R> <dotted_identifier_list_or_uri:DottedIdentifierListOrUri> <semicolon_tokenStart:@L> ";" <semicolon_tokenEnd:@R> => PartHeader{metadata, part_token:Token(part_tokenStart, part_tokenEnd), of_token:Token(of_tokenStart, of_tokenEnd), dotted_identifier_list_or_uri, semicolon_token:Token(semicolon_tokenStart, semicolon_tokenEnd)}}
+pub LogicalAndExpressionOr: LogicalAndExpressionOr = {<or_token:OR_TOKEN> <logical_and_expression:LogicalAndExpression> => LogicalAndExpressionOr{<>}};
 
-pub partDeclaration : PartDeclaration = {<part_header:partHeader> <metadata:(PartDeclarationMetadata)*> <eofStart:@L> EOF <eofEnd:@R> => PartDeclaration{part_header, metadata, eof:Token(eofStart, eofEnd)}}
+pub LogicalOrExpression: LogicalOrExpression = {<logical_and_expression:LogicalAndExpression> <logical_and_expression_or:(LogicalAndExpressionOr)*> => LogicalOrExpression{<>}};
 
-pub uri : Uri = {stringLiteral}
+pub EqualityExpressionAnd: EqualityExpressionAnd = {<and_token:AND_TOKEN> <equality_expression:EqualityExpression> => EqualityExpressionAnd{<>}};
 
-pub configurableUri : ConfigurableUri = {<uri:uri> <configuration_uri:(configurationUri)*> => ConfigurableUri{uri, configuration_uri}}
+pub LogicalAndExpression: LogicalAndExpression = {<equality_expression:EqualityExpression> <equality_expression_and:(EqualityExpressionAnd)*> => LogicalAndExpression{<>}};
 
-pub configurationUri : ConfigurationUri = {<if_tokenStart:@L> "if" <if_tokenEnd:@R> <open_paren_tokenStart:@L> "(" <open_paren_tokenEnd:@R> <uri_test:uriTest> <close_paren_tokenStart:@L> ")" <close_paren_tokenEnd:@R> <uri:uri> => ConfigurationUri{if_token:Token(if_tokenStart, if_tokenEnd), open_paren_token:Token(open_paren_tokenStart, open_paren_tokenEnd), uri_test, close_paren_token:Token(close_paren_tokenStart, close_paren_tokenEnd), uri}}
+pub EqualityExpressionInner: EqualityExpressionInner = {<equality_operator:EqualityOperator> <relational_expression:RelationalExpression> => EqualityExpressionInner{<>}};
 
-pub uriTest : UriTest = {<dotted_identifier_list:dottedIdentifierList> <string_literal_double_equal:(StringLiteralDoubleEqual)?> => UriTest{dotted_identifier_list, string_literal_double_equal}}
+pub EqualityExpressionRelationalExpression: EqualityExpressionRelationalExpression = {<relational_expression:RelationalExpression> <equality_expression_inner:(EqualityExpressionInner)?> => EqualityExpressionRelationalExpression{<>}};
 
-pub type : Type = {TypeFunctionType => Type::FunctionType(TypeFunctionType(<>)),
-  typeNotFunction => Type::TypeNotFunction(TypeNotFunction(<>)),}
+pub EqualityExpressionEqualityOperator: EqualityExpressionEqualityOperator = {<super_token:SUPER_TOKEN> <equality_operator:EqualityOperator> <relational_expression:RelationalExpression> => EqualityExpressionEqualityOperator{<>}};
 
-pub typeNotVoid : TypeNotVoid = {TypeNotVoidFunctionType => TypeNotVoid::FunctionType(TypeNotVoidFunctionType(<>)),
-  typeNotVoidNotFunction => TypeNotVoid::TypeNotVoidNotFunction(TypeNotVoidNotFunction(<>)),}
+pub EqualityExpression: EqualityExpression = {EqualityExpressionRelationalExpression => EqualityExpression::RelationalExpression(<>), EqualityExpressionEqualityOperator => EqualityExpression::EqualityOperator(<>)};
 
-pub typeNotFunction : TypeNotFunction = {<Start:@L> "void" <End:@R> => TypeNotFunction::Void(Token(<>)),
-  typeNotVoidNotFunction => TypeNotFunction::TypeNotVoidNotFunction(TypeNotVoidNotFunction(<>)),}
+pub EqualityOperator: EqualityOperator = {DOUBLE_EQUAL_TOKEN => EqualityOperator::DoubleEqual(<>), NOT_EQUAL_TOKEN => EqualityOperator::NotEqual(<>)};
 
-pub typeNotVoidNotFunction : TypeNotVoidNotFunction = {TypeNotVoidNotFunctionTypeName => TypeNotVoidNotFunction::TypeName(TypeNotVoidNotFunctionTypeName(<>)),
-  TypeNotVoidNotFunctionFunctionToken => TypeNotVoidNotFunction::Function(TypeNotVoidNotFunctionFunctionToken(<>)),}
+pub BitwiseOrExpressionInterRelationalOperator: BitwiseOrExpressionInterRelationalOperator = {<relational_operator:RelationalOperator> <bitwise_or_expression:BitwiseOrExpression> => BitwiseOrExpressionInterRelationalOperator{<>}};
 
-pub typeName : TypeName = {<type_identifier:typeIdentifier> <type_identifier_selector:(TypeIdentifierSelector)?> => TypeName{type_identifier, type_identifier_selector}}
+pub BitwiseOrExpressionInter: BitwiseOrExpressionInter = {TypeTest => BitwiseOrExpressionInter::TypeTest(<>), TypeCast => BitwiseOrExpressionInter::TypeCast(<>), BitwiseOrExpressionInterRelationalOperator => BitwiseOrExpressionInter::RelationalOperator(<>)};
 
-pub typeArguments : TypeArguments = {<less_tokenStart:@L> "<" <less_tokenEnd:@R> <type_list:typeList> <more_tokenStart:@L> ">" <more_tokenEnd:@R> => TypeArguments{less_token:Token(less_tokenStart, less_tokenEnd), type_list, more_token:Token(more_tokenStart, more_tokenEnd)}}
+pub RelationalExpressionBitwiseOrExpression: RelationalExpressionBitwiseOrExpression = {<bitwise_or_expression:BitwiseOrExpression> <bitwise_or_expression_inter:(BitwiseOrExpressionInter)?> => RelationalExpressionBitwiseOrExpression{<>}};
 
-pub typeList : TypeList = {<dart_type:dartType> <type_item:(TypeItem)*> => TypeList{dart_type, type_item}}
+pub RelationalExpressionRelationalOperator: RelationalExpressionRelationalOperator = {<super_token:SUPER_TOKEN> <relational_operator:RelationalOperator> <bitwise_or_expression:BitwiseOrExpression> => RelationalExpressionRelationalOperator{<>}};
 
-pub typeNotVoidNotFunctionList : TypeNotVoidNotFunctionList = {<type_not_void_not_function:typeNotVoidNotFunction> <type_not_void_not_function_item:(TypeNotVoidNotFunctionItem)*> => TypeNotVoidNotFunctionList{type_not_void_not_function, type_not_void_not_function_item}}
+pub RelationalExpression: RelationalExpression = {RelationalExpressionBitwiseOrExpression => RelationalExpression::BitwiseOrExpression(<>), RelationalExpressionRelationalOperator => RelationalExpression::RelationalOperator(<>)};
 
-pub functionType : FunctionType = {functionTypeTails => FunctionType::FunctionTypeTails(FunctionTypeTails(<>)),
-  FunctionTypeTypeNotFunction => FunctionType::TypeNotFunction(FunctionTypeTypeNotFunction(<>)),}
+pub RelationalOperator: RelationalOperator = {MORE_OR_EQUAL_TOKEN => RelationalOperator::MoreOrEqual(<>), MORE_TOKEN => RelationalOperator::More(<>), LESS_OR_EQUAL_TOKEN => RelationalOperator::LessOrEqual(<>), LESS_TOKEN => RelationalOperator::Less(<>)};
 
-pub functionTypeTails : FunctionTypeTails = {FunctionTypeTailsMany => FunctionTypeTails::FunctionTypeTailsMany(FunctionTypeTailsMany(<>)),
-  functionTypeTail => FunctionTypeTails::FunctionTypeTail(FunctionTypeTail(<>)),}
+pub BitwiseXorExpressionBitXor: BitwiseXorExpressionBitXor = {<bit_xor_token:BIT_XOR_TOKEN> <bitwise_xor_expression:BitwiseXorExpression> => BitwiseXorExpressionBitXor{<>}};
 
-pub functionTypeTail : FunctionTypeTail = {<function_tokenStart:@L> "Function" <function_tokenEnd:@R> <type_parameters:(typeParameters)?> <parameter_type_list:parameterTypeList> => FunctionTypeTail{function_token:Token(function_tokenStart, function_tokenEnd), type_parameters, parameter_type_list}}
+pub BitwiseOrExpressionBitwiseXorExpression: BitwiseOrExpressionBitwiseXorExpression = {<bitwise_xor_expression:BitwiseXorExpression> <bitwise_xor_expression_bit_xor:(BitwiseXorExpressionBitXor)*> => BitwiseOrExpressionBitwiseXorExpression{<>}};
 
-pub parameterTypeList : ParameterTypeList = {EmptyParameters => ParameterTypeList::EmptyParameters(EmptyParameters(<>)),
-  NormalWithOptionalParameters => ParameterTypeList::NormalWithOptionalParameters(NormalWithOptionalParameters(<>)),
-  ParameterTypeListNormalParameterTypes => ParameterTypeList::NormalParameterTypes(ParameterTypeListNormalParameterTypes(<>)),
-  ParameterTypeListOptionalParameterTypes => ParameterTypeList::OptionalParameterTypes(ParameterTypeListOptionalParameterTypes(<>)),}
+pub BitwiseXorExpressionBitXor: BitwiseXorExpressionBitXor = {<bit_xor_token:BIT_XOR_TOKEN> <bitwise_xor_expression:BitwiseXorExpression> => BitwiseXorExpressionBitXor{<>}};
 
-pub normalParameterTypes : NormalParameterTypes = {<normal_parameter_type:normalParameterType> <normal_parameter_type_item:(NormalParameterTypeItem)*> => NormalParameterTypes{normal_parameter_type, normal_parameter_type_item}}
+pub BitwiseOrExpressionSuperToken: BitwiseOrExpressionSuperToken = {<super_token:SUPER_TOKEN> <bitwise_xor_expression_bit_xor:(BitwiseXorExpressionBitXor)+> => BitwiseOrExpressionSuperToken{<>}};
 
-pub normalParameterType : NormalParameterType = {IdentifierParameterType => NormalParameterType::IdentifierParameterType(IdentifierParameterType(<>)),
-  TypeParameterType => NormalParameterType::TypeParameterType(TypeParameterType(<>)),}
+pub BitwiseOrExpression: BitwiseOrExpression = {BitwiseOrExpressionBitwiseXorExpression => BitwiseOrExpression::BitwiseXorExpression(<>), BitwiseOrExpressionSuperToken => BitwiseOrExpression::Super(<>)};
 
-pub optionalParameterTypes : OptionalParameterTypes = {optionalPositionalParameterTypes => OptionalParameterTypes::OptionalPositionalParameterTypes(OptionalPositionalParameterTypes(<>)),
-  namedParameterTypes => OptionalParameterTypes::NamedParameterTypes(NamedParameterTypes(<>)),}
+pub BitwiseAndExpressionBitNeg: BitwiseAndExpressionBitNeg = {<bit_neg_token:BIT_NEG_TOKEN> <bitwise_and_expression:BitwiseAndExpression> => BitwiseAndExpressionBitNeg{<>}};
 
-pub optionalPositionalParameterTypes : OptionalPositionalParameterTypes = {<open_square_bracket_tokenStart:@L> "[" <open_square_bracket_tokenEnd:@R> <normal_parameter_types:normalParameterTypes> <comma_token:(<Start:@L> "," <End:@R>)?> <close_square_bracket_tokenStart:@L> "]" <close_square_bracket_tokenEnd:@R> => OptionalPositionalParameterTypes{open_square_bracket_token:Token(open_square_bracket_tokenStart, open_square_bracket_tokenEnd), normal_parameter_types, comma_token, close_square_bracket_token:Token(close_square_bracket_tokenStart, close_square_bracket_tokenEnd)}}
+pub BitwiseXorExpressionBitwiseAndExpression: BitwiseXorExpressionBitwiseAndExpression = {<bitwise_and_expression:BitwiseAndExpression> <bitwise_and_expression_bit_neg:(BitwiseAndExpressionBitNeg)*> => BitwiseXorExpressionBitwiseAndExpression{<>}};
 
-pub namedParameterTypes : NamedParameterTypes = {<open_curly_bracket_tokenStart:@L> "{" <open_curly_bracket_tokenEnd:@R> <named_parameter_type:namedParameterType> <named_parameter_type_item:(NamedParameterTypeItem)*> <comma_token:(<Start:@L> "," <End:@R>)?> <close_curly_bracket_tokenStart:@L> "}" <close_curly_bracket_tokenEnd:@R> => NamedParameterTypes{open_curly_bracket_token:Token(open_curly_bracket_tokenStart, open_curly_bracket_tokenEnd), named_parameter_type, named_parameter_type_item, comma_token, close_curly_bracket_token:Token(close_curly_bracket_tokenStart, close_curly_bracket_tokenEnd)}}
+pub BitwiseAndExpressionBitNeg: BitwiseAndExpressionBitNeg = {<bit_neg_token:BIT_NEG_TOKEN> <bitwise_and_expression:BitwiseAndExpression> => BitwiseAndExpressionBitNeg{<>}};
 
-pub namedParameterType : NamedParameterType = {<metadata:metadata> <required_token:(<Start:@L> "required" <End:@R>)?> <typed_identifier:typedIdentifier> => NamedParameterType{metadata, required_token, typed_identifier}}
+pub BitwiseXorExpressionSuperToken: BitwiseXorExpressionSuperToken = {<super_token:SUPER_TOKEN> <bitwise_and_expression_bit_neg:(BitwiseAndExpressionBitNeg)+> => BitwiseXorExpressionSuperToken{<>}};
 
-pub typedIdentifier : TypedIdentifier = {<dart_type:dartType> <identifier:identifier> => TypedIdentifier{dart_type, identifier}}
+pub BitwiseXorExpression: BitwiseXorExpression = {BitwiseXorExpressionBitwiseAndExpression => BitwiseXorExpression::BitwiseAndExpression(<>), BitwiseXorExpressionSuperToken => BitwiseXorExpression::Super(<>)};
 
-pub typeAlias : TypeAlias = {TypeAliasTypeIdentifier => TypeAlias::TypeIdentifier(TypeAliasTypeIdentifier(<>)),
-  TypeAliasFunctionTypeAlias => TypeAlias::FunctionTypeAlias(TypeAliasFunctionTypeAlias(<>)),}
+pub ShiftExpressionBitAnd: ShiftExpressionBitAnd = {<bit_and_token:BIT_AND_TOKEN> <shift_expression:ShiftExpression> => ShiftExpressionBitAnd{<>}};
 
-pub functionTypeAlias : FunctionTypeAlias = {<function_prefix:functionPrefix> <formal_parameter_part:formalParameterPart> <semicolon_tokenStart:@L> ";" <semicolon_tokenEnd:@R> => FunctionTypeAlias{function_prefix, formal_parameter_part, semicolon_token:Token(semicolon_tokenStart, semicolon_tokenEnd)}}
+pub BitwiseAndExpressionShiftExpression: BitwiseAndExpressionShiftExpression = {<shift_expression:ShiftExpression> <shift_expression_bit_and:(ShiftExpressionBitAnd)*> => BitwiseAndExpressionShiftExpression{<>}};
 
-pub functionPrefix : FunctionPrefix = {<dart_type:(dartType)?> <identifier:identifier> => FunctionPrefix{dart_type, identifier}}
+pub ShiftExpressionBitAnd: ShiftExpressionBitAnd = {<bit_and_token:BIT_AND_TOKEN> <shift_expression:ShiftExpression> => ShiftExpressionBitAnd{<>}};
 
- RESERVED_WORD : null = {Or(
-  Raw(assert),
-  Raw(break),
-  Raw(case),
-  Raw(catch),
-  Raw(class),
-  Raw(const),
-  Raw(continue),
-  Raw(default),
-  Raw(do),
-  Raw(else),
-  Raw(enum),
-  Raw(extends),
-  Raw(false),
-  Raw(final),
-  Raw(finally),
-  Raw(for),
-  Raw(if),
-  Raw(in),
-  Raw(is),
-  Raw(new),
-  Raw(null),
-  Raw(rethrow),
-  Raw(return),
-  Raw(super),
-  Raw(switch),
-  Raw(this),
-  Raw(throw),
-  Raw(true),
-  Raw(try),
-  Raw(var),
-  Raw(void),
-  Raw(while),
-  Raw(with),
-)}
+pub BitwiseAndExpressionSuperToken: BitwiseAndExpressionSuperToken = {<super_token:SUPER_TOKEN> <shift_expression_bit_and:(ShiftExpressionBitAnd)+> => BitwiseAndExpressionSuperToken{<>}};
 
- SINGLE_LINE_COMMENT : null = {And(Raw(//), Modified(*,Negated(Id(NEWLINE))), Modified(?,Id(NEWLINE)))}
+pub BitwiseAndExpression: BitwiseAndExpression = {BitwiseAndExpressionShiftExpression => BitwiseAndExpression::ShiftExpression(<>), BitwiseAndExpressionSuperToken => BitwiseAndExpression::Super(<>)};
 
- MULTI_LINE_COMMENT : null = {And(Raw(/*), Modified(*,Or(
-  Id(MULTI_LINE_COMMENT),
-  Negated(Raw(*/)),
-)), Raw(*/))}
+pub BitwiseOperator: BitwiseOperator = {BIT_AND_TOKEN => BitwiseOperator::BitAnd(<>), BIT_NEG_TOKEN => BitwiseOperator::BitNeg(<>), BIT_XOR_TOKEN => BitwiseOperator::BitXor(<>)};
 
- COMMENT : null = {Or(
-  Id(SINGLE_LINE_COMMENT),
-  Id(MULTI_LINE_COMMENT),
-)}
+pub ShiftExpressionInner: ShiftExpressionInner = {<shift_operator:ShiftOperator> <additive_expression:AdditiveExpression> => ShiftExpressionInner{<>}};
+
+pub ShiftExpressionAdditiveExpression: ShiftExpressionAdditiveExpression = {<additive_expression:AdditiveExpression> <shift_expression_inner:(ShiftExpressionInner)*> => ShiftExpressionAdditiveExpression{<>}};
+
+pub ShiftExpressionInner: ShiftExpressionInner = {<shift_operator:ShiftOperator> <additive_expression:AdditiveExpression> => ShiftExpressionInner{<>}};
+
+pub ShiftExpressionSuperToken: ShiftExpressionSuperToken = {<super_token:SUPER_TOKEN> <shift_expression_inner:(ShiftExpressionInner)+> => ShiftExpressionSuperToken{<>}};
+
+pub ShiftExpression: ShiftExpression = {ShiftExpressionAdditiveExpression => ShiftExpression::AdditiveExpression(<>), ShiftExpressionSuperToken => ShiftExpression::Super(<>)};
+
+pub ShiftOperator: ShiftOperator = {BIT_LEFT_TOKEN => ShiftOperator::BitLeft(<>), BIT_RIGHT0_TOKEN => ShiftOperator::BitRight0(<>), BIT_RIGHT_TOKEN => ShiftOperator::BitRight(<>)};
+
+pub AdditiveExpressionInner: AdditiveExpressionInner = {<additive_operator:AdditiveOperator> <multiplicative_expression:MultiplicativeExpression> => AdditiveExpressionInner{<>}};
+
+pub AdditiveExpressionMultiplicativeExpression: AdditiveExpressionMultiplicativeExpression = {<multiplicative_expression:MultiplicativeExpression> <additive_expression_inner:(AdditiveExpressionInner)*> => AdditiveExpressionMultiplicativeExpression{<>}};
+
+pub AdditiveExpressionInner: AdditiveExpressionInner = {<additive_operator:AdditiveOperator> <multiplicative_expression:MultiplicativeExpression> => AdditiveExpressionInner{<>}};
+
+pub AdditiveExpressionSuperToken: AdditiveExpressionSuperToken = {<super_token:SUPER_TOKEN> <additive_expression_inner:(AdditiveExpressionInner)+> => AdditiveExpressionSuperToken{<>}};
+
+pub AdditiveExpression: AdditiveExpression = {AdditiveExpressionMultiplicativeExpression => AdditiveExpression::MultiplicativeExpression(<>), AdditiveExpressionSuperToken => AdditiveExpression::Super(<>)};
+
+pub AdditiveOperator: AdditiveOperator = {PLUS_TOKEN => AdditiveOperator::Plus(<>), MINUS_TOKEN => AdditiveOperator::Minus(<>)};
+
+pub MultiplicativeExpressionInner: MultiplicativeExpressionInner = {<multiplicative_operator:MultiplicativeOperator> <unary_expression:UnaryExpression> => MultiplicativeExpressionInner{<>}};
+
+pub MultiplicativeExpressionUnaryExpression: MultiplicativeExpressionUnaryExpression = {<unary_expression:UnaryExpression> <multiplicative_expression_inner:(MultiplicativeExpressionInner)*> => MultiplicativeExpressionUnaryExpression{<>}};
+
+pub MultiplicativeExpressionInner: MultiplicativeExpressionInner = {<multiplicative_operator:MultiplicativeOperator> <unary_expression:UnaryExpression> => MultiplicativeExpressionInner{<>}};
+
+pub MultiplicativeExpressionSuperToken: MultiplicativeExpressionSuperToken = {<super_token:SUPER_TOKEN> <multiplicative_expression_inner:(MultiplicativeExpressionInner)+> => MultiplicativeExpressionSuperToken{<>}};
+
+pub MultiplicativeExpression: MultiplicativeExpression = {MultiplicativeExpressionUnaryExpression => MultiplicativeExpression::UnaryExpression(<>), MultiplicativeExpressionSuperToken => MultiplicativeExpression::Super(<>)};
+
+pub MultiplicativeOperator: MultiplicativeOperator = {ASTERISK_TOKEN => MultiplicativeOperator::Asterisk(<>), DIVIDE_TOKEN => MultiplicativeOperator::Divide(<>), MODULUS_TOKEN => MultiplicativeOperator::Modulus(<>), INTEGER_DIV_TOKEN => MultiplicativeOperator::IntegerDiv(<>)};
+
+pub UnaryExpressionPrefixOperator: UnaryExpressionPrefixOperator = {<prefix_operator:PrefixOperator> <unary_expression:UnaryExpression> => UnaryExpressionPrefixOperator{<>}};
+
+pub UnaryOperator: UnaryOperator = {MinusOperator => UnaryOperator::MinusOperator(<>), TildeOperator => UnaryOperator::TildeOperator(<>)};
+
+pub UnaryExpressionSuperToken: UnaryExpressionSuperToken = {<unary_operator:UnaryOperator> <super_token:SUPER_TOKEN> => UnaryExpressionSuperToken{<>}};
+
+pub UnaryExpressionIncrementOperator: UnaryExpressionIncrementOperator = {<increment_operator:IncrementOperator> <assignable_expression:AssignableExpression> => UnaryExpressionIncrementOperator{<>}};
+
+pub UnaryExpression: UnaryExpression = {UnaryExpressionPrefixOperator => UnaryExpression::PrefixOperator(<>), AwaitExpression => UnaryExpression::AwaitExpression(<>), PostfixExpression => UnaryExpression::PostfixExpression(<>), UnaryExpressionSuperToken => UnaryExpression::Super(<>), UnaryExpressionIncrementOperator => UnaryExpression::IncrementOperator(<>)};
+
+pub PrefixOperator: PrefixOperator = {MinusOperator => PrefixOperator::MinusOperator(<>), NegationOperator => PrefixOperator::NegationOperator(<>), TildeOperator => PrefixOperator::TildeOperator(<>)};
+
+pub MinusOperator: MinusOperator = {MINUS_TOKEN};
+
+pub NegationOperator: NegationOperator = {EXCLAMATION_TOKEN};
+
+pub TildeOperator: TildeOperator = {TILDE_TOKEN};
+
+pub AwaitExpression: AwaitExpression = {<await_token:AWAIT_TOKEN> <unary_expression:UnaryExpression> => AwaitExpression{<>}};
+
+pub PostfixExpressionAssignableExpression: PostfixExpressionAssignableExpression = {<assignable_expression:AssignableExpression> <postfix_operator:PostfixOperator> => PostfixExpressionAssignableExpression{<>}};
+
+pub PostfixExpressionPrimary: PostfixExpressionPrimary = {<primary:Primary> <selector:(Selector)*> => PostfixExpressionPrimary{<>}};
+
+pub PostfixExpression: PostfixExpression = {PostfixExpressionAssignableExpression => PostfixExpression::AssignableExpression(<>), PostfixExpressionPrimary => PostfixExpression::Primary(<>)};
+
+pub PostfixOperator: PostfixOperator = {IncrementOperator};
+
+pub ConstructorInvocationTypeName: ConstructorInvocationTypeName = {<type_name:TypeName> <type_arguments:TypeArguments> <period_token:PERIOD_TOKEN> <new_token:NEW_TOKEN> <arguments:Arguments> => ConstructorInvocationTypeName{<>}};
+
+pub ConstructorInvocationPeriodToken: ConstructorInvocationPeriodToken = {<type_name:TypeName> <period_token:PERIOD_TOKEN> <new_token:NEW_TOKEN> <arguments:Arguments> => ConstructorInvocationPeriodToken{<>}};
+
+pub ConstructorInvocation: ConstructorInvocation = {ConstructorInvocationTypeName => ConstructorInvocation::TypeName(<>), ConstructorInvocationPeriodToken => ConstructorInvocation::Period(<>)};
+
+pub Selector: Selector = {EXCLAMATION_TOKEN => Selector::Exclamation(<>), AssignableSelector => Selector::AssignableSelector(<>), ArgumentPart => Selector::ArgumentPart(<>), TypeArguments => Selector::TypeArguments(<>)};
+
+pub ArgumentPart: ArgumentPart = {<type_arguments:(TypeArguments)?> <arguments:Arguments> => ArgumentPart{<>}};
+
+pub IncrementOperator: IncrementOperator = {PLUS_PLUS_TOKEN => IncrementOperator::PlusPlus(<>), MINUS_MINUS_TOKEN => IncrementOperator::MinusMinus(<>)};
+
+pub AssignableExpressionPrimary: AssignableExpressionPrimary = {<primary:Primary> <assignable_selector_part:AssignableSelectorPart> => AssignableExpressionPrimary{<>}};
+
+pub AssignableExpressionUnconditionalAssignableSelector: AssignableExpressionUnconditionalAssignableSelector = {<super_token:SUPER_TOKEN> <unconditional_assignable_selector:UnconditionalAssignableSelector> => AssignableExpressionUnconditionalAssignableSelector{<>}};
+
+pub AssignableExpression: AssignableExpression = {AssignableExpressionPrimary => AssignableExpression::Primary(<>), AssignableExpressionUnconditionalAssignableSelector => AssignableExpression::UnconditionalAssignableSelector(<>), Identifier => AssignableExpression::Identifier(<>)};
+
+pub AssignableSelectorPart: AssignableSelectorPart = {<selector:(Selector)*> <assignable_selector:AssignableSelector> => AssignableSelectorPart{<>}};
+
+pub UnconditionalAssignableSelectorExpression: UnconditionalAssignableSelectorExpression = {<open_square_bracket_token:OPEN_SQUARE_BRACKET_TOKEN> <expression:Expression> <close_square_bracket_token:CLOSE_SQUARE_BRACKET_TOKEN> => UnconditionalAssignableSelectorExpression{<>}};
+
+pub UnconditionalAssignableSelectorIdentifier: UnconditionalAssignableSelectorIdentifier = {<period_token:PERIOD_TOKEN> <identifier:Identifier> => UnconditionalAssignableSelectorIdentifier{<>}};
+
+pub UnconditionalAssignableSelector: UnconditionalAssignableSelector = {UnconditionalAssignableSelectorExpression => UnconditionalAssignableSelector::Expression(<>), UnconditionalAssignableSelectorIdentifier => UnconditionalAssignableSelector::Identifier(<>)};
+
+pub AssignableSelectorIdentifier: AssignableSelectorIdentifier = {<question_id_token:QUESTION_ID_TOKEN> <identifier:Identifier> => AssignableSelectorIdentifier{<>}};
+
+pub AssignableSelectorQuestionToken: AssignableSelectorQuestionToken = {<question_token:QUESTION_TOKEN> <open_square_bracket_token:OPEN_SQUARE_BRACKET_TOKEN> <expression:Expression> <close_square_bracket_token:CLOSE_SQUARE_BRACKET_TOKEN> => AssignableSelectorQuestionToken{<>}};
+
+pub AssignableSelector: AssignableSelector = {UnconditionalAssignableSelector => AssignableSelector::UnconditionalAssignableSelector(<>), AssignableSelectorIdentifier => AssignableSelector::Identifier(<>), AssignableSelectorQuestionToken => AssignableSelector::Question(<>)};
+
+pub Identifier: Identifier = {IDENTIFIER => Identifier::Identifier(<>), BUILT_IN_IDENTIFIER => Identifier::BuiltInIdentifier(<>), OTHER_IDENTIFIER => Identifier::OtherIdentifier(<>)};
+
+pub TypeIdentifier: TypeIdentifier = {IDENTIFIER => TypeIdentifier::Identifier(<>), OTHER_IDENTIFIER => TypeIdentifier::OtherIdentifier(<>), DYNAMIC_TOKEN => TypeIdentifier::Dynamic(<>)};
+
+pub IdentifierOrNew: IdentifierOrNew = {Identifier => IdentifierOrNew::Identifier(<>), NEW_TOKEN => IdentifierOrNew::New(<>)};
+
+pub QualifiedNameSingle: QualifiedNameSingle = {<type_identifier:TypeIdentifier> <period_token:PERIOD_TOKEN> <identifier_or_new:IdentifierOrNew> => QualifiedNameSingle{<>}};
+
+pub QualifiedNameDouble: QualifiedNameDouble = {<type_identifier:TypeIdentifier> <period_token:PERIOD_TOKEN> <type_identifier2:TypeIdentifier> <period_token2:PERIOD_TOKEN> <identifier_or_new:IdentifierOrNew> => QualifiedNameDouble{<>}};
+
+pub QualifiedName: QualifiedName = {QualifiedNameSingle => QualifiedName::QualifiedNameSingle(<>), QualifiedNameDouble => QualifiedName::QualifiedNameDouble(<>)};
+
+pub TypeTest: TypeTest = {<is_operator:IsOperator> <type_not_void:TypeNotVoid> => TypeTest{<>}};
+
+pub IsOperator: IsOperator = {<is_token:IS_TOKEN> <exclamation_token:(EXCLAMATION_TOKEN)?> => IsOperator{<>}};
+
+pub TypeCast: TypeCast = {<as_operator:AsOperator> <type_not_void:TypeNotVoid> => TypeCast{<>}};
+
+pub AsOperator: AsOperator = {AS_TOKEN};
+
+pub Statements: Statements = {(Statement)* => Statements(<>)};
+
+pub Statement: Statement = {<label:(Label)*> <non_labelled_statement:NonLabelledStatement> => Statement{<>}};
+
+pub NonLabelledStatement: NonLabelledStatement = {Block => NonLabelledStatement::Block(<>), LocalVariableDeclaration => NonLabelledStatement::LocalVariableDeclaration(<>), ForStatement => NonLabelledStatement::ForStatement(<>), WhileStatement => NonLabelledStatement::WhileStatement(<>), DoStatement => NonLabelledStatement::DoStatement(<>), SwitchStatement => NonLabelledStatement::SwitchStatement(<>), IfStatement => NonLabelledStatement::IfStatement(<>), RethrowStatement => NonLabelledStatement::RethrowStatement(<>), TryStatement => NonLabelledStatement::TryStatement(<>), BreakStatement => NonLabelledStatement::BreakStatement(<>), ContinueStatement => NonLabelledStatement::ContinueStatement(<>), ReturnStatement => NonLabelledStatement::ReturnStatement(<>), YieldStatement => NonLabelledStatement::YieldStatement(<>), YieldEachStatement => NonLabelledStatement::YieldEachStatement(<>), ExpressionStatement => NonLabelledStatement::ExpressionStatement(<>), AssertStatement => NonLabelledStatement::AssertStatement(<>), LocalFunctionDeclaration => NonLabelledStatement::LocalFunctionDeclaration(<>)};
+
+pub ExpressionStatement: ExpressionStatement = {<expression:(Expression)?> <semicolon_token:SEMICOLON_TOKEN> => ExpressionStatement{<>}};
+
+pub LocalVariableDeclaration: LocalVariableDeclaration = {<metadata:Metadata> <initialized_variable_declaration:InitializedVariableDeclaration> <semicolon_token:SEMICOLON_TOKEN> => LocalVariableDeclaration{<>}};
+
+pub LocalFunctionDeclaration: LocalFunctionDeclaration = {<metadata:Metadata> <function_signature:FunctionSignature> <function_body:FunctionBody> => LocalFunctionDeclaration{<>}};
+
+pub StatementElse: StatementElse = {<else_token:ELSE_TOKEN> <statement:Statement> => StatementElse{<>}};
+
+pub IfStatement: IfStatement = {<if_token:IF_TOKEN> <open_paren_token:OPEN_PAREN_TOKEN> <expression:Expression> <close_paren_token:CLOSE_PAREN_TOKEN> <statement:Statement> <statement_else:(StatementElse)?> => IfStatement{<>}};
+
+pub ForStatement: ForStatement = {<await_token:(AWAIT_TOKEN)?> <for_token:FOR_TOKEN> <open_paren_token:OPEN_PAREN_TOKEN> <for_loop_parts:ForLoopParts> <close_paren_token:CLOSE_PAREN_TOKEN> <statement:Statement> => ForStatement{<>}};
+
+pub ForLoopPartsSemicolonToken: ForLoopPartsSemicolonToken = {<for_initializer_statement:ForInitializerStatement> <expression:(Expression)?> <semicolon_token:SEMICOLON_TOKEN> <expression_list:(ExpressionList)?> => ForLoopPartsSemicolonToken{<>}};
+
+pub ForLoopPartsMetadata: ForLoopPartsMetadata = {<metadata:Metadata> <declared_identifier:DeclaredIdentifier> <in_token:IN_TOKEN> <expression:Expression> => ForLoopPartsMetadata{<>}};
+
+pub ForLoopPartsInToken: ForLoopPartsInToken = {<identifier:Identifier> <in_token:IN_TOKEN> <expression:Expression> => ForLoopPartsInToken{<>}};
+
+pub ForLoopParts: ForLoopParts = {ForLoopPartsSemicolonToken => ForLoopParts::Semicolon(<>), ForLoopPartsMetadata => ForLoopParts::Metadata(<>), ForLoopPartsInToken => ForLoopParts::In(<>)};
+
+pub ForInitializerStatementSemicolonToken: ForInitializerStatementSemicolonToken = {<expression:(Expression)?> <semicolon_token:SEMICOLON_TOKEN> => ForInitializerStatementSemicolonToken{<>}};
+
+pub ForInitializerStatement: ForInitializerStatement = {LocalVariableDeclaration => ForInitializerStatement::LocalVariableDeclaration(<>), ForInitializerStatementSemicolonToken => ForInitializerStatement::Semicolon(<>)};
+
+pub WhileStatement: WhileStatement = {<while_token:WHILE_TOKEN> <open_paren_token:OPEN_PAREN_TOKEN> <expression:Expression> <close_paren_token:CLOSE_PAREN_TOKEN> <statement:Statement> => WhileStatement{<>}};
+
+pub DoStatement: DoStatement = {<do_token:DO_TOKEN> <statement:Statement> <while_token:WHILE_TOKEN> <open_paren_token:OPEN_PAREN_TOKEN> <expression:Expression> <close_paren_token:CLOSE_PAREN_TOKEN> <semicolon_token:SEMICOLON_TOKEN> => DoStatement{<>}};
+
+pub SwitchStatement: SwitchStatement = {<switch_token:SWITCH_TOKEN> <open_paren_token:OPEN_PAREN_TOKEN> <expression:Expression> <close_paren_token:CLOSE_PAREN_TOKEN> <open_curly_bracket_token:OPEN_CURLY_BRACKET_TOKEN> <switch_case:(SwitchCase)*> <default_case:(DefaultCase)?> <close_curly_bracket_token:CLOSE_CURLY_BRACKET_TOKEN> => SwitchStatement{<>}};
+
+pub SwitchCase: SwitchCase = {<label:(Label)*> <case_token:CASE_TOKEN> <expression:Expression> <colon_token:COLON_TOKEN> <statements:Statements> => SwitchCase{<>}};
+
+pub DefaultCase: DefaultCase = {<label:(Label)*> <default_token:DEFAULT_TOKEN> <colon_token:COLON_TOKEN> <statements:Statements> => DefaultCase{<>}};
+
+pub RethrowStatement: RethrowStatement = {<rethrow_token:RETHROW_TOKEN> <semicolon_token:SEMICOLON_TOKEN> => RethrowStatement{<>}};
+
+pub TryStatementOnPart: TryStatementOnPart = {<on_part:(OnPart)+> <finally_part:(FinallyPart)?> => TryStatementOnPart{<>}};
+
+pub TryStatementCatchFinally: TryStatementCatchFinally = {TryStatementOnPart => TryStatementCatchFinally::TryStatementOnPart(<>), FinallyPart => TryStatementCatchFinally::FinallyPart(<>)};
+
+pub TryStatement: TryStatement = {<try_token:TRY_TOKEN> <block:Block> <try_statement_catch_finally:TryStatementCatchFinally> => TryStatement{<>}};
+
+pub OnPartCatchPart: OnPartCatchPart = {<catch_part:CatchPart> <block:Block> => OnPartCatchPart{<>}};
+
+pub OnPartTypeNotVoid: OnPartTypeNotVoid = {<on_token:ON_TOKEN> <type_not_void:TypeNotVoid> <catch_part:(CatchPart)?> <block:Block> => OnPartTypeNotVoid{<>}};
+
+pub OnPart: OnPart = {OnPartCatchPart => OnPart::CatchPart(<>), OnPartTypeNotVoid => OnPart::TypeNotVoid(<>)};
+
+pub IdentifierItem: IdentifierItem = {<comma_token:COMMA_TOKEN> <identifier:Identifier> => IdentifierItem{<>}};
+
+pub CatchPart: CatchPart = {<catch_token:CATCH_TOKEN> <open_paren_token:OPEN_PAREN_TOKEN> <identifier:Identifier> <identifier_item:(IdentifierItem)?> <close_paren_token:CLOSE_PAREN_TOKEN> => CatchPart{<>}};
+
+pub FinallyPart: FinallyPart = {<finally_token:FINALLY_TOKEN> <block:Block> => FinallyPart{<>}};
+
+pub ReturnStatement: ReturnStatement = {<return_token:RETURN_TOKEN> <expression:(Expression)?> <semicolon_token:SEMICOLON_TOKEN> => ReturnStatement{<>}};
+
+pub Label: Label = {<identifier:Identifier> <colon_token:COLON_TOKEN> => Label{<>}};
+
+pub BreakStatement: BreakStatement = {<break_token:BREAK_TOKEN> <identifier:(Identifier)?> <semicolon_token:SEMICOLON_TOKEN> => BreakStatement{<>}};
+
+pub ContinueStatement: ContinueStatement = {<continue_token:CONTINUE_TOKEN> <identifier:(Identifier)?> <semicolon_token:SEMICOLON_TOKEN> => ContinueStatement{<>}};
+
+pub YieldStatement: YieldStatement = {<yield_token:YIELD_TOKEN> <expression:Expression> <semicolon_token:SEMICOLON_TOKEN> => YieldStatement{<>}};
+
+pub YieldEachStatement: YieldEachStatement = {<yield_token:YIELD_TOKEN> <asterisk_token:ASTERISK_TOKEN> <expression:Expression> <semicolon_token:SEMICOLON_TOKEN> => YieldEachStatement{<>}};
+
+pub AssertStatement: AssertStatement = {<assertion:Assertion> <semicolon_token:SEMICOLON_TOKEN> => AssertStatement{<>}};
+
+pub ExpressionItem: ExpressionItem = {<comma_token:COMMA_TOKEN> <expression:Expression> => ExpressionItem{<>}};
+
+pub Assertion: Assertion = {<assert_token:ASSERT_TOKEN> <open_paren_token:OPEN_PAREN_TOKEN> <expression:Expression> <expression_item:(ExpressionItem)?> <comma_token:(COMMA_TOKEN)?> <close_paren_token:CLOSE_PAREN_TOKEN> => Assertion{<>}};
+
+pub ExternalFunctionSignature: ExternalFunctionSignature = {<external_token:EXTERNAL_TOKEN> <function_signature:FunctionSignature> <semicolon_token:SEMICOLON_TOKEN> => ExternalFunctionSignature{<>}};
+
+pub ExternalGetterSignature: ExternalGetterSignature = {<external_token:EXTERNAL_TOKEN> <getter_signature:GetterSignature> <semicolon_token:SEMICOLON_TOKEN> => ExternalGetterSignature{<>}};
+
+pub ExternalSetterSignature: ExternalSetterSignature = {<external_token:EXTERNAL_TOKEN> <setter_signature:SetterSignature> <semicolon_token:SEMICOLON_TOKEN> => ExternalSetterSignature{<>}};
+
+pub TopLevelDeclarationFunctionSignature: TopLevelDeclarationFunctionSignature = {<function_signature:FunctionSignature> <function_body:FunctionBody> => TopLevelDeclarationFunctionSignature{<>}};
+
+pub TopLevelDeclarationGetterSignature: TopLevelDeclarationGetterSignature = {<getter_signature:GetterSignature> <function_body:FunctionBody> => TopLevelDeclarationGetterSignature{<>}};
+
+pub TopLevelDeclarationSetterSignature: TopLevelDeclarationSetterSignature = {<setter_signature:SetterSignature> <function_body:FunctionBody> => TopLevelDeclarationSetterSignature{<>}};
+
+pub FinalTokenOrConstToken: FinalTokenOrConstToken = {FINAL_TOKEN => FinalTokenOrConstToken::Final(<>), CONST_TOKEN => FinalTokenOrConstToken::Const(<>)};
+
+pub TopLevelDeclarationTopLevelStaticFinalDeclarations: TopLevelDeclarationTopLevelStaticFinalDeclarations = {<final_token_or_const_token:FinalTokenOrConstToken> <top_level_static_final_declarations:TopLevelStaticFinalDeclarations> <semicolon_token:SEMICOLON_TOKEN> => TopLevelDeclarationTopLevelStaticFinalDeclarations{<>}};
+
+pub TopLevelDeclarationLateToken: TopLevelDeclarationLateToken = {<late_token:LATE_TOKEN> <final_token:FINAL_TOKEN> <dart_type:(Type)?> <initialized_identifier_list:InitializedIdentifierList> <semicolon_token:SEMICOLON_TOKEN> => TopLevelDeclarationLateToken{<>}};
+
+pub TopLevelDeclarationVarOrType: TopLevelDeclarationVarOrType = {<late_token:(LATE_TOKEN)?> <var_or_type:VarOrType> <initialized_identifier_list:InitializedIdentifierList> <semicolon_token:SEMICOLON_TOKEN> => TopLevelDeclarationVarOrType{<>}};
+
+pub TopLevelDeclaration: TopLevelDeclaration = {ClassDeclaration => TopLevelDeclaration::ClassDeclaration(<>), MixinDeclaration => TopLevelDeclaration::MixinDeclaration(<>), ExtensionDeclaration => TopLevelDeclaration::ExtensionDeclaration(<>), EnumType => TopLevelDeclaration::EnumType(<>), TypeAlias => TopLevelDeclaration::TypeAlias(<>), ExternalFunctionSignature => TopLevelDeclaration::ExternalFunctionSignature(<>), ExternalGetterSignature => TopLevelDeclaration::ExternalGetterSignature(<>), ExternalSetterSignature => TopLevelDeclaration::ExternalSetterSignature(<>), TopLevelDeclarationFunctionSignature => TopLevelDeclaration::FunctionSignature(<>), TopLevelDeclarationGetterSignature => TopLevelDeclaration::GetterSignature(<>), TopLevelDeclarationSetterSignature => TopLevelDeclaration::SetterSignature(<>), TopLevelDeclarationTopLevelStaticFinalDeclarations => TopLevelDeclaration::TopLevelStaticFinalDeclarations(<>), TopLevelDeclarationLateToken => TopLevelDeclaration::Late(<>), TopLevelDeclarationVarOrType => TopLevelDeclaration::VarOrType(<>)};
+
+pub TypedStaticFinalDeclarations: TypedStaticFinalDeclarations = {<dart_type:Type> <static_final_declaration_list:StaticFinalDeclarationList> => TypedStaticFinalDeclarations{<>}};
+
+pub TopLevelStaticFinalDeclarations: TopLevelStaticFinalDeclarations = {StaticFinalDeclarationList => TopLevelStaticFinalDeclarations::StaticFinalDeclarationList(<>), TypedStaticFinalDeclarations => TopLevelStaticFinalDeclarations::TypedStaticFinalDeclarations(<>)};
+
+pub LibraryDeclarationMetadata: LibraryDeclarationMetadata = {<metadata:Metadata> <top_level_declaration:TopLevelDeclaration> => LibraryDeclarationMetadata{<>}};
+
+pub LibraryDeclaration: LibraryDeclaration = {<script_tag:(ScriptTag)?> <library_name:(LibraryName)?> <import_or_export:(ImportOrExport)*> <part_directive:(PartDirective)*> <metadata:(LibraryDeclarationMetadata)*> <eof:EOF> => LibraryDeclaration{<>}};
+
+pub ScriptTag: ScriptTag = {<hash_exclamation_token:HASH_EXCLAMATION_TOKEN> <script_tag_content:SCRIPT_TAG_CONTENT> <newline:NEWLINE> => ScriptTag{<>}};
+
+pub LibraryName: LibraryName = {<metadata:Metadata> <library_token:LIBRARY_TOKEN> <dotted_identifier_list:DottedIdentifierList> <semicolon_token:SEMICOLON_TOKEN> => LibraryName{<>}};
+
+pub ImportOrExport: ImportOrExport = {LibraryImport => ImportOrExport::LibraryImport(<>), LibraryExport => ImportOrExport::LibraryExport(<>)};
+
+pub IdentifierSelector: IdentifierSelector = {<period_token:PERIOD_TOKEN> <identifier:Identifier> => IdentifierSelector{<>}};
+
+pub DottedIdentifierList: DottedIdentifierList = {<identifier:Identifier> <identifier_selector:(IdentifierSelector)*> => DottedIdentifierList{<>}};
+
+pub LibraryImport: LibraryImport = {<metadata:Metadata> <import_specification:ImportSpecification> => LibraryImport{<>}};
+
+pub ImportSpecificationAsToken: ImportSpecificationAsToken = {<deferred_token:(DEFERRED_TOKEN)?> <as_token:AS_TOKEN> <identifier:Identifier> => ImportSpecificationAsToken{<>}};
+
+pub ImportSpecification: ImportSpecification = {<import_token:IMPORT_TOKEN> <configurable_uri:ConfigurableUri> <as_token:(ImportSpecificationAsToken)?> <combinator:(Combinator)*> <semicolon_token:SEMICOLON_TOKEN> => ImportSpecification{<>}};
+
+pub LibraryExport: LibraryExport = {<metadata:Metadata> <export_token:EXPORT_TOKEN> <configurable_uri:ConfigurableUri> <combinator:(Combinator)*> <semicolon_token:SEMICOLON_TOKEN> => LibraryExport{<>}};
+
+pub ShowCombinator: ShowCombinator = {<show_token:SHOW_TOKEN> <identifier_list:IdentifierList> => ShowCombinator{<>}};
+
+pub HideCombinator: HideCombinator = {<hide_token:HIDE_TOKEN> <identifier_list:IdentifierList> => HideCombinator{<>}};
+
+pub Combinator: Combinator = {ShowCombinator => Combinator::ShowCombinator(<>), HideCombinator => Combinator::HideCombinator(<>)};
+
+pub IdentifierItem: IdentifierItem = {<comma_token:COMMA_TOKEN> <identifier:Identifier> => IdentifierItem{<>}};
+
+pub IdentifierList: IdentifierList = {<identifier:Identifier> <identifier_item:(IdentifierItem)*> => IdentifierList{<>}};
+
+pub PartDirective: PartDirective = {<metadata:Metadata> <part_token:PART_TOKEN> <uri:Uri> <semicolon_token:SEMICOLON_TOKEN> => PartDirective{<>}};
+
+pub DottedIdentifierListOrUri: DottedIdentifierListOrUri = {DottedIdentifierList => DottedIdentifierListOrUri::DottedIdentifierList(<>), Uri => DottedIdentifierListOrUri::Uri(<>)};
+
+pub PartHeader: PartHeader = {<metadata:Metadata> <part_token:PART_TOKEN> <of_token:OF_TOKEN> <dotted_identifier_list_or_uri:DottedIdentifierListOrUri> <semicolon_token:SEMICOLON_TOKEN> => PartHeader{<>}};
+
+pub PartDeclarationMetadata: PartDeclarationMetadata = {<metadata:Metadata> <top_level_declaration:TopLevelDeclaration> => PartDeclarationMetadata{<>}};
+
+pub PartDeclaration: PartDeclaration = {<part_header:PartHeader> <metadata:(PartDeclarationMetadata)*> <eof:EOF> => PartDeclaration{<>}};
+
+pub Uri: Uri = {StringLiteral};
+
+pub ConfigurableUri: ConfigurableUri = {<uri:Uri> <configuration_uri:(ConfigurationUri)*> => ConfigurableUri{<>}};
+
+pub ConfigurationUri: ConfigurationUri = {<if_token:IF_TOKEN> <open_paren_token:OPEN_PAREN_TOKEN> <uri_test:UriTest> <close_paren_token:CLOSE_PAREN_TOKEN> <uri:Uri> => ConfigurationUri{<>}};
+
+pub StringLiteralDoubleEqual: StringLiteralDoubleEqual = {<double_equal_token:DOUBLE_EQUAL_TOKEN> <string_literal:StringLiteral> => StringLiteralDoubleEqual{<>}};
+
+pub UriTest: UriTest = {<dotted_identifier_list:DottedIdentifierList> <string_literal_double_equal:(StringLiteralDoubleEqual)?> => UriTest{<>}};
+
+pub TypeFunctionType: TypeFunctionType = {<function_type:FunctionType> <question_token:(QUESTION_TOKEN)?> => TypeFunctionType{<>}};
+
+pub Type: Type = {TypeFunctionType => Type::FunctionType(<>), TypeNotFunction => Type::TypeNotFunction(<>)};
+
+pub TypeNotVoidFunctionType: TypeNotVoidFunctionType = {<function_type:FunctionType> <question_token:(QUESTION_TOKEN)?> => TypeNotVoidFunctionType{<>}};
+
+pub TypeNotVoid: TypeNotVoid = {TypeNotVoidFunctionType => TypeNotVoid::FunctionType(<>), TypeNotVoidNotFunction => TypeNotVoid::TypeNotVoidNotFunction(<>)};
+
+pub TypeNotFunction: TypeNotFunction = {VOID_TOKEN => TypeNotFunction::Void(<>), TypeNotVoidNotFunction => TypeNotFunction::TypeNotVoidNotFunction(<>)};
+
+pub TypeNotVoidNotFunctionTypeName: TypeNotVoidNotFunctionTypeName = {<type_name:TypeName> <type_arguments:(TypeArguments)?> <question_token:(QUESTION_TOKEN)?> => TypeNotVoidNotFunctionTypeName{<>}};
+
+pub TypeNotVoidNotFunctionFunctionToken: TypeNotVoidNotFunctionFunctionToken = {<function_token:FUNCTION_TOKEN> <question_token:(QUESTION_TOKEN)?> => TypeNotVoidNotFunctionFunctionToken{<>}};
+
+pub TypeNotVoidNotFunction: TypeNotVoidNotFunction = {TypeNotVoidNotFunctionTypeName => TypeNotVoidNotFunction::TypeName(<>), TypeNotVoidNotFunctionFunctionToken => TypeNotVoidNotFunction::Function(<>)};
+
+pub TypeIdentifierSelector: TypeIdentifierSelector = {<period_token:PERIOD_TOKEN> <type_identifier:TypeIdentifier> => TypeIdentifierSelector{<>}};
+
+pub TypeName: TypeName = {<type_identifier:TypeIdentifier> <type_identifier_selector:(TypeIdentifierSelector)?> => TypeName{<>}};
+
+pub TypeArguments: TypeArguments = {<less_token:LESS_TOKEN> <type_list:TypeList> <more_token:MORE_TOKEN> => TypeArguments{<>}};
+
+pub TypeItem: TypeItem = {<comma_token:COMMA_TOKEN> <dart_type:Type> => TypeItem{<>}};
+
+pub TypeList: TypeList = {<dart_type:Type> <type_item:(TypeItem)*> => TypeList{<>}};
+
+pub TypeNotVoidNotFunctionItem: TypeNotVoidNotFunctionItem = {<comma_token:COMMA_TOKEN> <type_not_void_not_function:TypeNotVoidNotFunction> => TypeNotVoidNotFunctionItem{<>}};
+
+pub TypeNotVoidNotFunctionList: TypeNotVoidNotFunctionList = {<type_not_void_not_function:TypeNotVoidNotFunction> <type_not_void_not_function_item:(TypeNotVoidNotFunctionItem)*> => TypeNotVoidNotFunctionList{<>}};
+
+pub FunctionTypeTypeNotFunction: FunctionTypeTypeNotFunction = {<type_not_function:TypeNotFunction> <function_type_tails:FunctionTypeTails> => FunctionTypeTypeNotFunction{<>}};
+
+pub FunctionType: FunctionType = {FunctionTypeTails => FunctionType::FunctionTypeTails(<>), FunctionTypeTypeNotFunction => FunctionType::TypeNotFunction(<>)};
+
+pub FunctionTypeTailsMany: FunctionTypeTailsMany = {<function_type_tail:FunctionTypeTail> <question_token:(QUESTION_TOKEN)?> <function_type_tails:FunctionTypeTails> => FunctionTypeTailsMany{<>}};
+
+pub FunctionTypeTails: FunctionTypeTails = {FunctionTypeTailsMany => FunctionTypeTails::FunctionTypeTailsMany(<>), FunctionTypeTail => FunctionTypeTails::FunctionTypeTail(<>)};
+
+pub FunctionTypeTail: FunctionTypeTail = {<function_token:FUNCTION_TOKEN> <type_parameters:(TypeParameters)?> <parameter_type_list:ParameterTypeList> => FunctionTypeTail{<>}};
+
+pub EmptyParameters: EmptyParameters = {<open_paren_token:OPEN_PAREN_TOKEN> <close_paren_token:CLOSE_PAREN_TOKEN> => EmptyParameters{<>}};
+
+pub NormalWithOptionalParameters: NormalWithOptionalParameters = {<open_paren_token:OPEN_PAREN_TOKEN> <normal_parameter_types:NormalParameterTypes> <comma_token:COMMA_TOKEN> <optional_parameter_types:OptionalParameterTypes> <close_paren_token:CLOSE_PAREN_TOKEN> => NormalWithOptionalParameters{<>}};
+
+pub ParameterTypeListNormalParameterTypes: ParameterTypeListNormalParameterTypes = {<open_paren_token:OPEN_PAREN_TOKEN> <normal_parameter_types:NormalParameterTypes> <comma_token:(COMMA_TOKEN)?> <close_paren_token:CLOSE_PAREN_TOKEN> => ParameterTypeListNormalParameterTypes{<>}};
+
+pub ParameterTypeListOptionalParameterTypes: ParameterTypeListOptionalParameterTypes = {<open_paren_token:OPEN_PAREN_TOKEN> <optional_parameter_types:OptionalParameterTypes> <close_paren_token:CLOSE_PAREN_TOKEN> => ParameterTypeListOptionalParameterTypes{<>}};
+
+pub ParameterTypeList: ParameterTypeList = {EmptyParameters => ParameterTypeList::EmptyParameters(<>), NormalWithOptionalParameters => ParameterTypeList::NormalWithOptionalParameters(<>), ParameterTypeListNormalParameterTypes => ParameterTypeList::NormalParameterTypes(<>), ParameterTypeListOptionalParameterTypes => ParameterTypeList::OptionalParameterTypes(<>)};
+
+pub NormalParameterTypeItem: NormalParameterTypeItem = {<comma_token:COMMA_TOKEN> <normal_parameter_type:NormalParameterType> => NormalParameterTypeItem{<>}};
+
+pub NormalParameterTypes: NormalParameterTypes = {<normal_parameter_type:NormalParameterType> <normal_parameter_type_item:(NormalParameterTypeItem)*> => NormalParameterTypes{<>}};
+
+pub IdentifierParameterType: IdentifierParameterType = {<metadata:Metadata> <typed_identifier:TypedIdentifier> => IdentifierParameterType{<>}};
+
+pub TypeParameterType: TypeParameterType = {<metadata:Metadata> <dart_type:Type> => TypeParameterType{<>}};
+
+pub NormalParameterType: NormalParameterType = {IdentifierParameterType => NormalParameterType::IdentifierParameterType(<>), TypeParameterType => NormalParameterType::TypeParameterType(<>)};
+
+pub OptionalParameterTypes: OptionalParameterTypes = {OptionalPositionalParameterTypes => OptionalParameterTypes::OptionalPositionalParameterTypes(<>), NamedParameterTypes => OptionalParameterTypes::NamedParameterTypes(<>)};
+
+pub OptionalPositionalParameterTypes: OptionalPositionalParameterTypes = {<open_square_bracket_token:OPEN_SQUARE_BRACKET_TOKEN> <normal_parameter_types:NormalParameterTypes> <comma_token:(COMMA_TOKEN)?> <close_square_bracket_token:CLOSE_SQUARE_BRACKET_TOKEN> => OptionalPositionalParameterTypes{<>}};
+
+pub NamedParameterTypeItem: NamedParameterTypeItem = {<comma_token:COMMA_TOKEN> <named_parameter_type:NamedParameterType> => NamedParameterTypeItem{<>}};
+
+pub NamedParameterTypes: NamedParameterTypes = {<open_curly_bracket_token:OPEN_CURLY_BRACKET_TOKEN> <named_parameter_type:NamedParameterType> <named_parameter_type_item:(NamedParameterTypeItem)*> <comma_token:(COMMA_TOKEN)?> <close_curly_bracket_token:CLOSE_CURLY_BRACKET_TOKEN> => NamedParameterTypes{<>}};
+
+pub NamedParameterType: NamedParameterType = {<metadata:Metadata> <required_token:(REQUIRED_TOKEN)?> <typed_identifier:TypedIdentifier> => NamedParameterType{<>}};
+
+pub TypedIdentifier: TypedIdentifier = {<dart_type:Type> <identifier:Identifier> => TypedIdentifier{<>}};
+
+pub TypeAliasTypeIdentifier: TypeAliasTypeIdentifier = {<typedef_token:TYPEDEF_TOKEN> <type_identifier:TypeIdentifier> <type_parameters:(TypeParameters)?> <equal_token:EQUAL_TOKEN> <dart_type:Type> <semicolon_token:SEMICOLON_TOKEN> => TypeAliasTypeIdentifier{<>}};
+
+pub TypeAliasFunctionTypeAlias: TypeAliasFunctionTypeAlias = {<typedef_token:TYPEDEF_TOKEN> <function_type_alias:FunctionTypeAlias> => TypeAliasFunctionTypeAlias{<>}};
+
+pub TypeAlias: TypeAlias = {TypeAliasTypeIdentifier => TypeAlias::TypeIdentifier(<>), TypeAliasFunctionTypeAlias => TypeAlias::FunctionTypeAlias(<>)};
+
+pub FunctionTypeAlias: FunctionTypeAlias = {<function_prefix:FunctionPrefix> <formal_parameter_part:FormalParameterPart> <semicolon_token:SEMICOLON_TOKEN> => FunctionTypeAlias{<>}};
+
+pub FunctionPrefix: FunctionPrefix = {<dart_type:(Type)?> <identifier:Identifier> => FunctionPrefix{<>}};
+
+pub Comment: Comment = {SINGLE_LINE_COMMENT => Comment::SingleLineComment(<>), MULTI_LINE_COMMENT => Comment::MultiLineComment(<>)};
+
+pub NUMBER: null = {(DIGIT)+ (PERIOD_TOKEN (DIGIT)+)? (EXPONENT)?, PERIOD_TOKEN (DIGIT)+ (EXPONENT)?};
+
+pub EXPONENT: null = {EXPONENT_TOKEN, SCIENTIFIC_TOKEN (PLUS_TOKEN, MINUS_TOKEN)? (DIGIT)+};
+
+pub HEX_NUMBER: null = {HEX0X_TOKEN (HEX_DIGIT)+, HEX0_X_TOKEN (HEX_DIGIT)+};
+
+pub HEX_DIGIT: null = {r"[a-f]", r"[A-F]", DIGIT};
+
+pub RAW_SINGLE_LINE_STRING: null = {R_TOKEN QUOTE_TOKEN (!(QUOTE_TOKEN, R_ESCAPE_TOKEN, NEWLINE_TOKEN)* QUOTE_TOKEN, R_TOKEN DOUBLE_QUOTE_TOKEN (!(DOUBLE_QUOTE_TOKEN, R_ESCAPE_TOKEN, NEWLINE_TOKEN)* DOUBLE_QUOTE_TOKEN};
+
+pub STRING_CONTENT_COMMON: null = {!(BACK_TOKEN, QUOTE_TOKEN, DOUBLE_QUOTE_TOKEN, DOLLAR_TOKEN, R_ESCAPE_TOKEN, NEWLINE_TOKEN, ESCAPE_SEQUENCE, BACK_TOKEN !(N_TOKEN, R_TOKEN, B_TOKEN, T_TOKEN, V_TOKEN, X_TOKEN, U_TOKEN, R_ESCAPE_TOKEN, NEWLINE_TOKEN, SIMPLE_STRING_INTERPOLATION};
+
+pub STRING_CONTENT_SQ: null = {STRING_CONTENT_COMMON, DOUBLE_QUOTE_TOKEN};
+
+pub SINGLE_LINE_STRING_SQ_BEGIN_END: null = {QUOTE_TOKEN (STRING_CONTENT_SQ)* QUOTE_TOKEN};
+
+pub SINGLE_LINE_STRING_SQ_BEGIN_MID: null = {QUOTE_TOKEN (STRING_CONTENT_SQ)* INTERPOLATION_START_TOKEN};
+
+pub SINGLE_LINE_STRING_SQ_MID_MID: null = {CLOSE_CURLY_BRACKET_TOKEN (STRING_CONTENT_SQ)* INTERPOLATION_START_TOKEN};
+
+pub SINGLE_LINE_STRING_SQ_MID_END: null = {CLOSE_CURLY_BRACKET_TOKEN (STRING_CONTENT_SQ)* QUOTE_TOKEN};
+
+pub STRING_CONTENT_DQ: null = {STRING_CONTENT_COMMON, QUOTE_TOKEN};
+
+pub SINGLE_LINE_STRING_DQ_BEGIN_END: null = {DOUBLE_QUOTE_TOKEN (STRING_CONTENT_DQ)* DOUBLE_QUOTE_TOKEN};
+
+pub SINGLE_LINE_STRING_DQ_BEGIN_MID: null = {DOUBLE_QUOTE_TOKEN (STRING_CONTENT_DQ)* INTERPOLATION_START_TOKEN};
+
+pub SINGLE_LINE_STRING_DQ_MID_MID: null = {CLOSE_CURLY_BRACKET_TOKEN (STRING_CONTENT_DQ)* INTERPOLATION_START_TOKEN};
+
+pub SINGLE_LINE_STRING_DQ_MID_END: null = {CLOSE_CURLY_BRACKET_TOKEN (STRING_CONTENT_DQ)* DOUBLE_QUOTE_TOKEN};
+
+pub RAW_MULTI_LINE_STRING: null = {R_TOKEN TRIPLE_QUOTES_TOKEN ANY TRIPLE_QUOTES_TOKEN, R_TOKEN TRIPLE_DOUBLE_QUOTES_TOKEN ANY TRIPLE_DOUBLE_QUOTES_TOKEN};
+
+pub QUOTES_SQ: null = {QUOTE_TOKEN, TWO_QUOTES_TOKEN};
+
+pub STRING_CONTENT_TSQ: null = {(QUOTES_SQ)? STRING_CONTENT_COMMON, DOUBLE_QUOTE_TOKEN, R_ESCAPE_TOKEN, NEWLINE_TOKEN};
+
+pub MULTI_LINE_STRING_SQ_BEGIN_END: null = {TRIPLE_QUOTES_TOKEN (STRING_CONTENT_TSQ)* TRIPLE_QUOTES_TOKEN};
+
+pub MULTI_LINE_STRING_SQ_BEGIN_MID: null = {TRIPLE_QUOTES_TOKEN (STRING_CONTENT_TSQ)* (QUOTES_SQ)? INTERPOLATION_START_TOKEN};
+
+pub MULTI_LINE_STRING_SQ_MID_MID: null = {CLOSE_CURLY_BRACKET_TOKEN (STRING_CONTENT_TSQ)* (QUOTES_SQ)? INTERPOLATION_START_TOKEN};
+
+pub MULTI_LINE_STRING_SQ_MID_END: null = {CLOSE_CURLY_BRACKET_TOKEN (STRING_CONTENT_TSQ)* TRIPLE_QUOTES_TOKEN};
+
+pub QUOTES_DQ: null = {DOUBLE_QUOTE_TOKEN, TWO_DOUBLE_QUOTES_TOKEN};
+
+pub STRING_CONTENT_TDQ: null = {(QUOTES_DQ)? STRING_CONTENT_COMMON, QUOTE_TOKEN, R_ESCAPE_TOKEN, NEWLINE_TOKEN};
+
+pub MULTI_LINE_STRING_DQ_BEGIN_END: null = {TRIPLE_DOUBLE_QUOTES_TOKEN (STRING_CONTENT_TDQ)* TRIPLE_DOUBLE_QUOTES_TOKEN};
+
+pub MULTI_LINE_STRING_DQ_BEGIN_MID: null = {TRIPLE_DOUBLE_QUOTES_TOKEN (STRING_CONTENT_TDQ)* (QUOTES_DQ)? INTERPOLATION_START_TOKEN};
+
+pub MULTI_LINE_STRING_DQ_MID_MID: null = {CLOSE_CURLY_BRACKET_TOKEN (STRING_CONTENT_TDQ)* (QUOTES_DQ)? INTERPOLATION_START_TOKEN};
+
+pub MULTI_LINE_STRING_DQ_MID_END: null = {CLOSE_CURLY_BRACKET_TOKEN (STRING_CONTENT_TDQ)* TRIPLE_DOUBLE_QUOTES_TOKEN};
+
+pub ESCAPE_SEQUENCE: null = {NEWLINE_TOKEN, R_ESCAPE_TOKEN, F_ESCAPE_TOKEN, B_ESCAPE_TOKEN, T_ESCAPE_TOKEN, V_ESCAPE_TOKEN, X_ESCAPE_TOKEN HEX_DIGIT HEX_DIGIT, U_ESCAPE_TOKEN HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT, U_BRACKET_ESCAPE_TOKEN HEX_DIGIT_SEQUENCE CLOSE_CURLY_BRACKET_TOKEN};
+
+pub HEX_DIGIT_SEQUENCE: null = {HEX_DIGIT (HEX_DIGIT)? (HEX_DIGIT)? (HEX_DIGIT)? (HEX_DIGIT)? (HEX_DIGIT)?};
+
+pub NEWLINE: null = {NEWLINE_TOKEN, R_ESCAPE_TOKEN, RN_ESCAPE_TOKEN};
+
+pub SIMPLE_STRING_INTERPOLATION: null = {DOLLAR_TOKEN IDENTIFIER_NO_DOLLAR, BUILT_IN_IDENTIFIER, THIS_TOKEN};
+
+pub BUILT_IN_IDENTIFIER: null = {ABSTRACT_TOKEN, AS_TOKEN, COVARIANT_TOKEN, DEFERRED_TOKEN, DYNAMIC_TOKEN, EXPORT_TOKEN, EXTERNAL_TOKEN, EXTENSION_TOKEN, FACTORY_TOKEN, FUNCTION_TOKEN, GET_TOKEN, IMPLEMENTS_TOKEN, IMPORT_TOKEN, INTERFACE_TOKEN, LATE_TOKEN, LIBRARY_TOKEN, MIXIN_TOKEN, OPERATOR_TOKEN, PART_TOKEN, REQUIRED_TOKEN, SET_TOKEN, STATIC_TOKEN, TYPEDEF_TOKEN};
+
+pub OTHER_IDENTIFIER: null = {ASYNC_TOKEN, HIDE_TOKEN, OF_TOKEN, ON_TOKEN, SHOW_TOKEN, SYNC_TOKEN, AWAIT_TOKEN, YIELD_TOKEN};
+
+pub IDENTIFIER_NO_DOLLAR: null = {IDENTIFIER_START_NO_DOLLAR (IDENTIFIER_PART_NO_DOLLAR)*};
+
+pub IDENTIFIER_START_NO_DOLLAR: null = {LETTER, UNDERSCORE_TOKEN};
+
+pub IDENTIFIER_PART_NO_DOLLAR: null = {IDENTIFIER_START_NO_DOLLAR, DIGIT};
+
+pub IDENTIFIER: null = {IDENTIFIER_START (IDENTIFIER_PART)*};
+
+pub IDENTIFIER_START: null = {IDENTIFIER_START_NO_DOLLAR, DOLLAR_TOKEN};
+
+pub IDENTIFIER_PART: null = {IDENTIFIER_START, DIGIT};
+
+pub LETTER: null = {r"[a-z]", r"[A-Z]"};
+
+pub DIGIT: null = {r"[0-9]"};
+
+pub WHITESPACE: null = {(T_ESCAPE_TOKEN, SPACE_TOKEN, NEWLINE)+};
+
+pub SCRIPT_TAG_CONTENT: null = {(!(NEWLINE)*};
+
+pub RESERVED_WORD: null = {ASSERT_TOKEN, BREAK_TOKEN, CASE_TOKEN, CATCH_TOKEN, CLASS_TOKEN, CONST_TOKEN, CONTINUE_TOKEN, DEFAULT_TOKEN, DO_TOKEN, ELSE_TOKEN, ENUM_TOKEN, EXTENDS_TOKEN, FALSE_TOKEN, FINAL_TOKEN, FINALLY_TOKEN, FOR_TOKEN, IF_TOKEN, IN_TOKEN, IS_TOKEN, NEW_TOKEN, NULL_TOKEN, RETHROW_TOKEN, RETURN_TOKEN, SUPER_TOKEN, SWITCH_TOKEN, THIS_TOKEN, THROW_TOKEN, TRUE_TOKEN, TRY_TOKEN, VAR_TOKEN, VOID_TOKEN, WHILE_TOKEN, WITH_TOKEN};
+
+pub SINGLE_LINE_COMMENT: null = {COMMENT_TOKEN (!(NEWLINE)* (NEWLINE)?};
+
+pub MULTI_LINE_COMMENT: null = {COMMENT_MULTILINE_START_TOKEN (MULTI_LINE_COMMENT, !(COMMENT_MULTILINE_END_TOKEN)* COMMENT_MULTILINE_END_TOKEN};
+
+pub COMMENT: null = {SINGLE_LINE_COMMENT, MULTI_LINE_COMMENT};
+
+pub LET_TOKEN:Token = {<start:@L> <text:let> <end:@R> => Token(<>)};
+
+pub IN_TOKEN:Token = {<start:@L> <text:in> <end:@R> => Token(<>)};
+
+pub LATE_TOKEN:Token = {<start:@L> <text:late> <end:@R> => Token(<>)};
+
+pub FINAL_TOKEN:Token = {<start:@L> <text:final> <end:@R> => Token(<>)};
+
+pub CONST_TOKEN:Token = {<start:@L> <text:const> <end:@R> => Token(<>)};
+
+pub VAR_TOKEN:Token = {<start:@L> <text:var> <end:@R> => Token(<>)};
+
+pub EQUAL_TOKEN:Token = {<start:@L> <text:=> <end:@R> => Token(<>)};
+
+pub COMMA_TOKEN:Token = {<start:@L> <text:,> <end:@R> => Token(<>)};
+
+pub ASYNC_TOKEN:Token = {<start:@L> <text:async> <end:@R> => Token(<>)};
+
+pub ARROW_TOKEN:Token = {<start:@L> <text:=>> <end:@R> => Token(<>)};
+
+pub SEMICOLON_TOKEN:Token = {<start:@L> <text:;> <end:@R> => Token(<>)};
+
+pub ASTERISK_TOKEN:Token = {<start:@L> <text:*> <end:@R> => Token(<>)};
+
+pub SYNC_TOKEN:Token = {<start:@L> <text:sync> <end:@R> => Token(<>)};
+
+pub OPEN_CURLY_BRACKET_TOKEN:Token = {<start:@L> <text:{> <end:@R> => Token(<>)};
+
+pub CLOSE_CURLY_BRACKET_TOKEN:Token = {<start:@L> <text:}> <end:@R> => Token(<>)};
+
+pub OPEN_PAREN_TOKEN:Token = {<start:@L> <text:(> <end:@R> => Token(<>)};
+
+pub CLOSE_PAREN_TOKEN:Token = {<start:@L> <text:)> <end:@R> => Token(<>)};
+
+pub OPEN_SQUARE_BRACKET_TOKEN:Token = {<start:@L> <text:[> <end:@R> => Token(<>)};
+
+pub CLOSE_SQUARE_BRACKET_TOKEN:Token = {<start:@L> <text:]> <end:@R> => Token(<>)};
+
+pub COVARIANT_TOKEN:Token = {<start:@L> <text:covariant> <end:@R> => Token(<>)};
+
+pub QUESTION_TOKEN:Token = {<start:@L> <text:?> <end:@R> => Token(<>)};
+
+pub THIS_TOKEN:Token = {<start:@L> <text:this> <end:@R> => Token(<>)};
+
+pub PERIOD_TOKEN:Token = {<start:@L> <text:.> <end:@R> => Token(<>)};
+
+pub SUPER_TOKEN:Token = {<start:@L> <text:super> <end:@R> => Token(<>)};
+
+pub COLON_TOKEN:Token = {<start:@L> <text::> <end:@R> => Token(<>)};
+
+pub REQUIRED_TOKEN:Token = {<start:@L> <text:required> <end:@R> => Token(<>)};
+
+pub ABSTRACT_TOKEN:Token = {<start:@L> <text:abstract> <end:@R> => Token(<>)};
+
+pub CLASS_TOKEN:Token = {<start:@L> <text:class> <end:@R> => Token(<>)};
+
+pub STATIC_TOKEN:Token = {<start:@L> <text:static> <end:@R> => Token(<>)};
+
+pub EXTERNAL_TOKEN:Token = {<start:@L> <text:external> <end:@R> => Token(<>)};
+
+pub OPERATOR_TOKEN:Token = {<start:@L> <text:operator> <end:@R> => Token(<>)};
+
+pub TILDE_TOKEN:Token = {<start:@L> <text:~> <end:@R> => Token(<>)};
+
+pub SQUARE_BRACKETS_TOKEN:Token = {<start:@L> <text:[]> <end:@R> => Token(<>)};
+
+pub SQUARE_BRACKETS_EQ_TOKEN:Token = {<start:@L> <text:[]=> <end:@R> => Token(<>)};
+
+pub DOUBLE_EQUAL_TOKEN:Token = {<start:@L> <text:==> <end:@R> => Token(<>)};
+
+pub GET_TOKEN:Token = {<start:@L> <text:get> <end:@R> => Token(<>)};
+
+pub SET_TOKEN:Token = {<start:@L> <text:set> <end:@R> => Token(<>)};
+
+pub FACTORY_TOKEN:Token = {<start:@L> <text:factory> <end:@R> => Token(<>)};
+
+pub EXTENDS_TOKEN:Token = {<start:@L> <text:extends> <end:@R> => Token(<>)};
+
+pub WITH_TOKEN:Token = {<start:@L> <text:with> <end:@R> => Token(<>)};
+
+pub IMPLEMENTS_TOKEN:Token = {<start:@L> <text:implements> <end:@R> => Token(<>)};
+
+pub ON_TOKEN:Token = {<start:@L> <text:on> <end:@R> => Token(<>)};
+
+pub MIXIN_TOKEN:Token = {<start:@L> <text:mixin> <end:@R> => Token(<>)};
+
+pub EXTENSION_TOKEN:Token = {<start:@L> <text:extension> <end:@R> => Token(<>)};
+
+pub ENUM_TOKEN:Token = {<start:@L> <text:enum> <end:@R> => Token(<>)};
+
+pub LESS_TOKEN:Token = {<start:@L> <text:<> <end:@R> => Token(<>)};
+
+pub MORE_TOKEN:Token = {<start:@L> <text:>> <end:@R> => Token(<>)};
+
+pub AT_TOKEN:Token = {<start:@L> <text:@> <end:@R> => Token(<>)};
+
+pub NULL_TOKEN:Token = {<start:@L> <text:null> <end:@R> => Token(<>)};
+
+pub TRUE_TOKEN:Token = {<start:@L> <text:true> <end:@R> => Token(<>)};
+
+pub FALSE_TOKEN:Token = {<start:@L> <text:false> <end:@R> => Token(<>)};
+
+pub INTERPOLATION_START_TOKEN:Token = {<start:@L> <text:${> <end:@R> => Token(<>)};
+
+pub VOID_TOKEN:Token = {<start:@L> <text:void> <end:@R> => Token(<>)};
+
+pub HASH_TOKEN:Token = {<start:@L> <text:#> <end:@R> => Token(<>)};
+
+pub POINTS_EXPAND_TOKEN:Token = {<start:@L> <text:...> <end:@R> => Token(<>)};
+
+pub POINTS_EXPAND_QUESTION_TOKEN:Token = {<start:@L> <text:...?> <end:@R> => Token(<>)};
+
+pub ELSE_TOKEN:Token = {<start:@L> <text:else> <end:@R> => Token(<>)};
+
+pub IF_TOKEN:Token = {<start:@L> <text:if> <end:@R> => Token(<>)};
+
+pub AWAIT_TOKEN:Token = {<start:@L> <text:await> <end:@R> => Token(<>)};
+
+pub FOR_TOKEN:Token = {<start:@L> <text:for> <end:@R> => Token(<>)};
+
+pub NEW_TOKEN:Token = {<start:@L> <text:new> <end:@R> => Token(<>)};
+
+pub THROW_TOKEN:Token = {<start:@L> <text:throw> <end:@R> => Token(<>)};
+
+pub POINTS_ID_TOKEN:Token = {<start:@L> <text:..> <end:@R> => Token(<>)};
+
+pub POINTS_ID_QUESTION_TOKEN:Token = {<start:@L> <text:?..> <end:@R> => Token(<>)};
+
+pub TIMES_EQUAL_TOKEN:Token = {<start:@L> <text:*=> <end:@R> => Token(<>)};
+
+pub DIV_EQUAL_TOKEN:Token = {<start:@L> <text:/=> <end:@R> => Token(<>)};
+
+pub INTEGER_DIV_EQUAL_TOKEN:Token = {<start:@L> <text:~/=> <end:@R> => Token(<>)};
+
+pub MODULE_EQUAL_TOKEN:Token = {<start:@L> <text:%=> <end:@R> => Token(<>)};
+
+pub PLUS_EQUAL_TOKEN:Token = {<start:@L> <text:+=> <end:@R> => Token(<>)};
+
+pub MINUS_EQUAL_TOKEN:Token = {<start:@L> <text:-=> <end:@R> => Token(<>)};
+
+pub BIT_LEFT_EQUAL_TOKEN:Token = {<start:@L> <text:<<=> <end:@R> => Token(<>)};
+
+pub BIT_RIGHT0_EQUAL_TOKEN:Token = {<start:@L> <text:>>>=> <end:@R> => Token(<>)};
+
+pub BIT_RIGHT_EQUAL_TOKEN:Token = {<start:@L> <text:>>=> <end:@R> => Token(<>)};
+
+pub BIT_AND_EUQAL_TOKEN:Token = {<start:@L> <text:&=> <end:@R> => Token(<>)};
+
+pub BIT_NEG_EQUAL_TOKEN:Token = {<start:@L> <text:^=> <end:@R> => Token(<>)};
+
+pub BIT_XOR_EQUAL_TOKEN:Token = {<start:@L> <text:|=> <end:@R> => Token(<>)};
+
+pub QUESTION_QUESTION_EQUAL_TOKEN:Token = {<start:@L> <text:??=> <end:@R> => Token(<>)};
+
+pub QUESTION_QUESTION_TOKEN:Token = {<start:@L> <text:??> <end:@R> => Token(<>)};
+
+pub OR_TOKEN:Token = {<start:@L> <text:||> <end:@R> => Token(<>)};
+
+pub AND_TOKEN:Token = {<start:@L> <text:&&> <end:@R> => Token(<>)};
+
+pub NOT_EQUAL_TOKEN:Token = {<start:@L> <text:!=> <end:@R> => Token(<>)};
+
+pub MORE_OR_EQUAL_TOKEN:Token = {<start:@L> <text:>=> <end:@R> => Token(<>)};
+
+pub LESS_OR_EQUAL_TOKEN:Token = {<start:@L> <text:<=> <end:@R> => Token(<>)};
+
+pub BIT_XOR_TOKEN:Token = {<start:@L> <text:|> <end:@R> => Token(<>)};
+
+pub BIT_NEG_TOKEN:Token = {<start:@L> <text:^> <end:@R> => Token(<>)};
+
+pub BIT_AND_TOKEN:Token = {<start:@L> <text:&> <end:@R> => Token(<>)};
+
+pub BIT_LEFT_TOKEN:Token = {<start:@L> <text:<<> <end:@R> => Token(<>)};
+
+pub BIT_RIGHT0_TOKEN:Token = {<start:@L> <text:>>>> <end:@R> => Token(<>)};
+
+pub BIT_RIGHT_TOKEN:Token = {<start:@L> <text:>>> <end:@R> => Token(<>)};
+
+pub PLUS_TOKEN:Token = {<start:@L> <text:+> <end:@R> => Token(<>)};
+
+pub MINUS_TOKEN:Token = {<start:@L> <text:-> <end:@R> => Token(<>)};
+
+pub DIVIDE_TOKEN:Token = {<start:@L> <text:/> <end:@R> => Token(<>)};
+
+pub MODULUS_TOKEN:Token = {<start:@L> <text:%> <end:@R> => Token(<>)};
+
+pub INTEGER_DIV_TOKEN:Token = {<start:@L> <text:~/> <end:@R> => Token(<>)};
+
+pub EXCLAMATION_TOKEN:Token = {<start:@L> <text:!> <end:@R> => Token(<>)};
+
+pub PLUS_PLUS_TOKEN:Token = {<start:@L> <text:++> <end:@R> => Token(<>)};
+
+pub MINUS_MINUS_TOKEN:Token = {<start:@L> <text:--> <end:@R> => Token(<>)};
+
+pub QUESTION_ID_TOKEN:Token = {<start:@L> <text:?.> <end:@R> => Token(<>)};
+
+pub DYNAMIC_TOKEN:Token = {<start:@L> <text:dynamic> <end:@R> => Token(<>)};
+
+pub IS_TOKEN:Token = {<start:@L> <text:is> <end:@R> => Token(<>)};
+
+pub AS_TOKEN:Token = {<start:@L> <text:as> <end:@R> => Token(<>)};
+
+pub WHILE_TOKEN:Token = {<start:@L> <text:while> <end:@R> => Token(<>)};
+
+pub DO_TOKEN:Token = {<start:@L> <text:do> <end:@R> => Token(<>)};
+
+pub SWITCH_TOKEN:Token = {<start:@L> <text:switch> <end:@R> => Token(<>)};
+
+pub CASE_TOKEN:Token = {<start:@L> <text:case> <end:@R> => Token(<>)};
+
+pub DEFAULT_TOKEN:Token = {<start:@L> <text:default> <end:@R> => Token(<>)};
+
+pub RETHROW_TOKEN:Token = {<start:@L> <text:rethrow> <end:@R> => Token(<>)};
+
+pub TRY_TOKEN:Token = {<start:@L> <text:try> <end:@R> => Token(<>)};
+
+pub CATCH_TOKEN:Token = {<start:@L> <text:catch> <end:@R> => Token(<>)};
+
+pub FINALLY_TOKEN:Token = {<start:@L> <text:finally> <end:@R> => Token(<>)};
+
+pub RETURN_TOKEN:Token = {<start:@L> <text:return> <end:@R> => Token(<>)};
+
+pub BREAK_TOKEN:Token = {<start:@L> <text:break> <end:@R> => Token(<>)};
+
+pub CONTINUE_TOKEN:Token = {<start:@L> <text:continue> <end:@R> => Token(<>)};
+
+pub YIELD_TOKEN:Token = {<start:@L> <text:yield> <end:@R> => Token(<>)};
+
+pub ASSERT_TOKEN:Token = {<start:@L> <text:assert> <end:@R> => Token(<>)};
+
+pub HASH_EXCLAMATION_TOKEN:Token = {<start:@L> <text:#!> <end:@R> => Token(<>)};
+
+pub LIBRARY_TOKEN:Token = {<start:@L> <text:library> <end:@R> => Token(<>)};
+
+pub DEFERRED_TOKEN:Token = {<start:@L> <text:deferred> <end:@R> => Token(<>)};
+
+pub IMPORT_TOKEN:Token = {<start:@L> <text:import> <end:@R> => Token(<>)};
+
+pub EXPORT_TOKEN:Token = {<start:@L> <text:export> <end:@R> => Token(<>)};
+
+pub SHOW_TOKEN:Token = {<start:@L> <text:show> <end:@R> => Token(<>)};
+
+pub HIDE_TOKEN:Token = {<start:@L> <text:hide> <end:@R> => Token(<>)};
+
+pub PART_TOKEN:Token = {<start:@L> <text:part> <end:@R> => Token(<>)};
+
+pub OF_TOKEN:Token = {<start:@L> <text:of> <end:@R> => Token(<>)};
+
+pub FUNCTION_TOKEN:Token = {<start:@L> <text:Function> <end:@R> => Token(<>)};
+
+pub TYPEDEF_TOKEN:Token = {<start:@L> <text:typedef> <end:@R> => Token(<>)};
+
+pub EXPONENT_TOKEN:Token = {<start:@L> <text:e> <end:@R> => Token(<>)};
+
+pub SCIENTIFIC_TOKEN:Token = {<start:@L> <text:E> <end:@R> => Token(<>)};
+
+pub HEX0X_TOKEN:Token = {<start:@L> <text:0x> <end:@R> => Token(<>)};
+
+pub HEX0_X_TOKEN:Token = {<start:@L> <text:0X> <end:@R> => Token(<>)};
+
+pub R_TOKEN:Token = {<start:@L> <text:r> <end:@R> => Token(<>)};
+
+pub QUOTE_TOKEN:Token = {<start:@L> <text:\'> <end:@R> => Token(<>)};
+
+pub R_ESCAPE_TOKEN:Token = {<start:@L> <text:\r> <end:@R> => Token(<>)};
+
+pub NEWLINE_TOKEN:Token = {<start:@L> <text:\n> <end:@R> => Token(<>)};
+
+pub DOUBLE_QUOTE_TOKEN:Token = {<start:@L> <text:"> <end:@R> => Token(<>)};
+
+pub BACK_TOKEN:Token = {<start:@L> <text:\\> <end:@R> => Token(<>)};
+
+pub DOLLAR_TOKEN:Token = {<start:@L> <text:$> <end:@R> => Token(<>)};
+
+pub N_TOKEN:Token = {<start:@L> <text:n> <end:@R> => Token(<>)};
+
+pub B_TOKEN:Token = {<start:@L> <text:b> <end:@R> => Token(<>)};
+
+pub T_TOKEN:Token = {<start:@L> <text:t> <end:@R> => Token(<>)};
+
+pub V_TOKEN:Token = {<start:@L> <text:v> <end:@R> => Token(<>)};
+
+pub X_TOKEN:Token = {<start:@L> <text:x> <end:@R> => Token(<>)};
+
+pub U_TOKEN:Token = {<start:@L> <text:u> <end:@R> => Token(<>)};
+
+pub TRIPLE_QUOTES_TOKEN:Token = {<start:@L> <text:\'\'\'> <end:@R> => Token(<>)};
+
+pub TRIPLE_DOUBLE_QUOTES_TOKEN:Token = {<start:@L> <text:"""> <end:@R> => Token(<>)};
+
+pub TWO_QUOTES_TOKEN:Token = {<start:@L> <text:\'\'> <end:@R> => Token(<>)};
+
+pub TWO_DOUBLE_QUOTES_TOKEN:Token = {<start:@L> <text:""> <end:@R> => Token(<>)};
+
+pub F_ESCAPE_TOKEN:Token = {<start:@L> <text:\f> <end:@R> => Token(<>)};
+
+pub B_ESCAPE_TOKEN:Token = {<start:@L> <text:\b> <end:@R> => Token(<>)};
+
+pub T_ESCAPE_TOKEN:Token = {<start:@L> <text:\t> <end:@R> => Token(<>)};
+
+pub V_ESCAPE_TOKEN:Token = {<start:@L> <text:\v> <end:@R> => Token(<>)};
+
+pub X_ESCAPE_TOKEN:Token = {<start:@L> <text:\x> <end:@R> => Token(<>)};
+
+pub U_ESCAPE_TOKEN:Token = {<start:@L> <text:\u> <end:@R> => Token(<>)};
+
+pub U_BRACKET_ESCAPE_TOKEN:Token = {<start:@L> <text:\u{> <end:@R> => Token(<>)};
+
+pub RN_ESCAPE_TOKEN:Token = {<start:@L> <text:\r\n> <end:@R> => Token(<>)};
+
+pub INTERFACE_TOKEN:Token = {<start:@L> <text:interface> <end:@R> => Token(<>)};
+
+pub UNDERSCORE_TOKEN:Token = {<start:@L> <text:_> <end:@R> => Token(<>)};
+
+pub SPACE_TOKEN:Token = {<start:@L> <text: > <end:@R> => Token(<>)};
+
+pub COMMENT_TOKEN:Token = {<start:@L> <text://> <end:@R> => Token(<>)};
+
+pub COMMENT_MULTILINE_START_TOKEN:Token = {<start:@L> <text:/*> <end:@R> => Token(<>)};
+
+pub COMMENT_MULTILINE_END_TOKEN:Token = {<start:@L> <text:*/> <end:@R> => Token(<>)};

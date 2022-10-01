@@ -7301,41 +7301,39 @@ impl RuleModel for TopLevelDeclarationSetterSignature {
 /// Or( Raw(final), Raw(const), )
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub enum FinalOrConst {
+pub enum FinalTokenOrConstToken {
     Final(Token),
     Const(Token),
 }
-impl RuleModel for FinalOrConst {
+impl RuleModel for FinalTokenOrConstToken {
     fn rule() -> Rule {
-        Rule::FinalOrConst
+        Rule::FinalTokenOrConstToken
     }
     fn parse(ctx: &mut ParseCtx) -> Self {
         match ctx.next_rule() {
-            Rule::FINAL_TOKEN => FinalOrConst::Final(ctx.parse_token()),
-            Rule::CONST_TOKEN => FinalOrConst::Const(ctx.parse_token()),
+            Rule::FINAL_TOKEN => FinalTokenOrConstToken::Final(ctx.parse_token()),
+            Rule::CONST_TOKEN => FinalTokenOrConstToken::Const(ctx.parse_token()),
             _ => unreachable!(),
         }
     }
 }
 
-/// And(Or( Raw(final), Raw(const), ), Modified(?,Id(type)), Id(staticFinalDeclarationList), Raw(;))
+/// And(Or( Raw(final), Raw(const), ), Id(topLevelStaticFinalDeclarations), Raw(;))
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct TopLevelDeclarationSemicolonToken {
-    pub final_or_const: FinalOrConst,
-    pub dart_type: Option<Type>,
-    pub static_final_declaration_list: StaticFinalDeclarationList,
+pub struct TopLevelDeclarationTopLevelStaticFinalDeclarations {
+    pub final_token_or_const_token: FinalTokenOrConstToken,
+    pub top_level_static_final_declarations: TopLevelStaticFinalDeclarations,
     pub semicolon_token: Token,
 }
-impl RuleModel for TopLevelDeclarationSemicolonToken {
+impl RuleModel for TopLevelDeclarationTopLevelStaticFinalDeclarations {
     fn rule() -> Rule {
-        Rule::TopLevelDeclarationSemicolonToken
+        Rule::TopLevelDeclarationTopLevelStaticFinalDeclarations
     }
     fn parse(ctx: &mut ParseCtx) -> Self {
         Self {
-            final_or_const: ctx.parse_ast(),
-            dart_type: ctx.try_parse_ast(),
-            static_final_declaration_list: ctx.parse_ast(),
+            final_token_or_const_token: ctx.parse_ast(),
+            top_level_static_final_declarations: ctx.parse_ast(),
             semicolon_token: ctx.parse_token(),
         }
     }
@@ -7393,7 +7391,7 @@ impl RuleModel for TopLevelDeclarationVarOrType {
     }
 }
 
-/// Or( Id(classDeclaration), Id(mixinDeclaration), Id(extensionDeclaration), Id(enumType), Id(typeAlias), And(Raw(external), Id(functionSignature), Raw(;)), And(Raw(external), Id(getterSignature), Raw(;)), And(Raw(external), Id(setterSignature), Raw(;)), And(Id(functionSignature), Id(functionBody)), And(Id(getterSignature), Id(functionBody)), And(Id(setterSignature), Id(functionBody)), And(Or( Raw(final), Raw(const), ), Modified(?,Id(type)), Id(staticFinalDeclarationList), Raw(;)), And(Raw(late), Raw(final), Modified(?,Id(type)), Id(initializedIdentifierList), Raw(;)), And(Modified(?,Raw(late)), Id(varOrType), Id(initializedIdentifierList), Raw(;)), )
+/// Or( Id(classDeclaration), Id(mixinDeclaration), Id(extensionDeclaration), Id(enumType), Id(typeAlias), And(Raw(external), Id(functionSignature), Raw(;)), And(Raw(external), Id(getterSignature), Raw(;)), And(Raw(external), Id(setterSignature), Raw(;)), And(Id(functionSignature), Id(functionBody)), And(Id(getterSignature), Id(functionBody)), And(Id(setterSignature), Id(functionBody)), And(Or( Raw(final), Raw(const), ), Id(topLevelStaticFinalDeclarations), Raw(;)), And(Raw(late), Raw(final), Modified(?,Id(type)), Id(initializedIdentifierList), Raw(;)), And(Modified(?,Raw(late)), Id(varOrType), Id(initializedIdentifierList), Raw(;)), )
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum TopLevelDeclaration {
@@ -7408,7 +7406,7 @@ pub enum TopLevelDeclaration {
     FunctionSignature(TopLevelDeclarationFunctionSignature),
     GetterSignature(TopLevelDeclarationGetterSignature),
     SetterSignature(TopLevelDeclarationSetterSignature),
-    Semicolon(TopLevelDeclarationSemicolonToken),
+    TopLevelStaticFinalDeclarations(TopLevelDeclarationTopLevelStaticFinalDeclarations),
     Late(TopLevelDeclarationLateToken),
     VarOrType(TopLevelDeclarationVarOrType),
 }
@@ -7443,11 +7441,54 @@ impl RuleModel for TopLevelDeclaration {
             Rule::TopLevelDeclarationSetterSignature => {
                 TopLevelDeclaration::SetterSignature(ctx.parse_ast())
             }
-            Rule::TopLevelDeclarationSemicolonToken => {
-                TopLevelDeclaration::Semicolon(ctx.parse_ast())
+            Rule::TopLevelDeclarationTopLevelStaticFinalDeclarations => {
+                TopLevelDeclaration::TopLevelStaticFinalDeclarations(ctx.parse_ast())
             }
             Rule::TopLevelDeclarationLateToken => TopLevelDeclaration::Late(ctx.parse_ast()),
             Rule::TopLevelDeclarationVarOrType => TopLevelDeclaration::VarOrType(ctx.parse_ast()),
+            _ => unreachable!(),
+        }
+    }
+}
+
+/// And(Id(type), Id(staticFinalDeclarationList))
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TypedStaticFinalDeclarations {
+    pub dart_type: Type,
+    pub static_final_declaration_list: StaticFinalDeclarationList,
+}
+impl RuleModel for TypedStaticFinalDeclarations {
+    fn rule() -> Rule {
+        Rule::TypedStaticFinalDeclarations
+    }
+    fn parse(ctx: &mut ParseCtx) -> Self {
+        Self {
+            dart_type: ctx.parse_ast(),
+            static_final_declaration_list: ctx.parse_ast(),
+        }
+    }
+}
+
+/// Or( Id(staticFinalDeclarationList), And(Id(type), Id(staticFinalDeclarationList)), )
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum TopLevelStaticFinalDeclarations {
+    StaticFinalDeclarationList(StaticFinalDeclarationList),
+    TypedStaticFinalDeclarations(TypedStaticFinalDeclarations),
+}
+impl RuleModel for TopLevelStaticFinalDeclarations {
+    fn rule() -> Rule {
+        Rule::TopLevelStaticFinalDeclarations
+    }
+    fn parse(ctx: &mut ParseCtx) -> Self {
+        match ctx.next_rule() {
+            Rule::StaticFinalDeclarationList => {
+                TopLevelStaticFinalDeclarations::StaticFinalDeclarationList(ctx.parse_ast())
+            }
+            Rule::TypedStaticFinalDeclarations => {
+                TopLevelStaticFinalDeclarations::TypedStaticFinalDeclarations(ctx.parse_ast())
+            }
             _ => unreachable!(),
         }
     }

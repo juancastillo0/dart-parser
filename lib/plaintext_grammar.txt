@@ -73,7 +73,7 @@ defaultNamedParameter ::=
 classDeclaration ::=
   'abstract'? 'class' typeIdentifier typeParameters?
   superclass? interfaces?
-  '{' (<ClassDeclarationMembers>metadata classMemberDeclaration)* '}'
+  '{' (<ClassDeclarationMember>metadata classMemberDeclaration)* '}'
   | (<ClassDeclarationMixin>'abstract'? 'class' mixinApplicationClass)
 
 typeNotVoidList ::= typeNotVoid (',' typeNotVoid)*
@@ -704,9 +704,12 @@ topLevelDeclaration ::= classDeclaration
   | functionSignature functionBody
   | getterSignature functionBody
   | setterSignature functionBody
-  | (<FinalOrConst>'final' | 'const') type? staticFinalDeclarationList ';'
+  | ('final' | 'const') topLevelStaticFinalDeclarations ';'
   | 'late' 'final' type? initializedIdentifierList ';'
   | 'late'? varOrType initializedIdentifierList ';'
+
+topLevelStaticFinalDeclarations ::= (<UnTypedStaticFinalDeclarations>staticFinalDeclarationList) 
+  | (<TypedStaticFinalDeclarations>type staticFinalDeclarationList)
 
 libraryDeclaration ::=
   scriptTag? libraryName? importOrExport* partDirective*
