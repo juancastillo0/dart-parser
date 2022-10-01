@@ -16,9 +16,13 @@ InitializedIdentifierItem = {(COMMA_TOKEN ~ InitializedIdentifier)}
 
 InitializedVariableDeclaration = {(DeclaredIdentifier ~ (ExpressionEqual)? ~ (InitializedIdentifierItem)*)}
 
-InitializedIdentifier = {(Identifier ~ ((EQUAL_TOKEN ~ Expression))?)}
+ExpressionEqual = {(EQUAL_TOKEN ~ Expression)}
 
-InitializedIdentifierList = {(InitializedIdentifier ~ ((COMMA_TOKEN ~ InitializedIdentifier))*)}
+InitializedIdentifier = {(Identifier ~ (ExpressionEqual)?)}
+
+InitializedIdentifierItem = {(COMMA_TOKEN ~ InitializedIdentifier)}
+
+InitializedIdentifierList = {(InitializedIdentifier ~ (InitializedIdentifierItem)*)}
 
 FunctionSignature = {((Type)? ~ Identifier ~ FormalParameterPart)}
 
@@ -82,7 +86,9 @@ SuperFormalParameterFormalParameterPart = {(FormalParameterPart ~ (QUESTION_TOKE
 
 SuperFormalParameter = {((FinalConstVarOrType)? ~ SUPER_TOKEN ~ PERIOD_TOKEN ~ Identifier ~ (SuperFormalParameterFormalParameterPart)?)}
 
-DefaultFormalParameter = {(NormalFormalParameter ~ ((EQUAL_TOKEN ~ Expression))?)}
+ExpressionEqual = {(EQUAL_TOKEN ~ Expression)}
+
+DefaultFormalParameter = {(NormalFormalParameter ~ (ExpressionEqual)?)}
 
 EqualTokenOrColonToken = {(EQUAL_TOKEN | COLON_TOKEN)}
 
@@ -90,9 +96,9 @@ DefaultNamedParameterAssignment = {(EqualTokenOrColonToken ~ Expression)}
 
 DefaultNamedParameter = {(Metadata ~ (REQUIRED_TOKEN)? ~ NormalFormalParameterNoMetadata ~ (DefaultNamedParameterAssignment)?)}
 
-ClassDeclarationMembers = {(Metadata ~ ClassMemberDeclaration)}
+ClassDeclarationMember = {(Metadata ~ ClassMemberDeclaration)}
 
-ClassDeclarationClassToken = {((ABSTRACT_TOKEN)? ~ CLASS_TOKEN ~ TypeIdentifier ~ (TypeParameters)? ~ (Superclass)? ~ (Interfaces)? ~ OPEN_CURLY_BRACKET_TOKEN ~ (ClassDeclarationMembers)* ~ CLOSE_CURLY_BRACKET_TOKEN)}
+ClassDeclarationClassToken = {((ABSTRACT_TOKEN)? ~ CLASS_TOKEN ~ TypeIdentifier ~ (TypeParameters)? ~ (Superclass)? ~ (Interfaces)? ~ OPEN_CURLY_BRACKET_TOKEN ~ (ClassDeclarationMember)* ~ CLOSE_CURLY_BRACKET_TOKEN)}
 
 ClassDeclarationMixin = {((ABSTRACT_TOKEN)? ~ CLASS_TOKEN ~ MixinApplicationClass)}
 
@@ -128,9 +134,13 @@ ExternalMaybeStatic = {(EXTERNAL_TOKEN ~ (STATIC_TOKEN)?)}
 
 DeclarationGetterSignature = {((ExternalMaybeStatic)? ~ GetterSignature)}
 
-DeclarationSetterSignature = {(((EXTERNAL_TOKEN ~ (STATIC_TOKEN)?))? ~ SetterSignature)}
+ExternalMaybeStatic = {(EXTERNAL_TOKEN ~ (STATIC_TOKEN)?)}
 
-DeclarationFunctionSignature = {(((EXTERNAL_TOKEN ~ (STATIC_TOKEN)?))? ~ FunctionSignature)}
+DeclarationSetterSignature = {((ExternalMaybeStatic)? ~ SetterSignature)}
+
+ExternalMaybeStatic = {(EXTERNAL_TOKEN ~ (STATIC_TOKEN)?)}
+
+DeclarationFunctionSignature = {((ExternalMaybeStatic)? ~ FunctionSignature)}
 
 DeclarationOperatorSignature = {((EXTERNAL_TOKEN)? ~ OperatorSignature)}
 
@@ -154,7 +164,9 @@ RedirectionOrInitializers = {(Redirection | Initializers)}
 
 DeclarationConstantConstructorSignature = {(ConstantConstructorSignature ~ (RedirectionOrInitializers)?)}
 
-DeclarationConstructorSignature = {(ConstructorSignature ~ ((Redirection | Initializers))?)}
+RedirectionOrInitializers = {(Redirection | Initializers)}
+
+DeclarationConstructorSignature = {(ConstructorSignature ~ (RedirectionOrInitializers)?)}
 
 Declaration = {(DeclarationFactoryConstructorSignature | ExternalConstantConstructorSignature | ExternalConstructorSignature | DeclarationGetterSignature | DeclarationSetterSignature | DeclarationFunctionSignature | DeclarationOperatorSignature | StaticConst | StaticFinal | StaticLateFinal | StaticVarOrType | CovariantLateFinal | CovariantVarOrType | DeclarationFinalToken | DeclarationVarOrType | RedirectingFactoryConstructorSignature | DeclarationConstantConstructorSignature | DeclarationConstructorSignature)}
 
@@ -180,7 +192,9 @@ IdentifierOrNewSelector = {(PERIOD_TOKEN ~ IdentifierOrNew)}
 
 ConstructorName = {(TypeIdentifier ~ (IdentifierOrNewSelector)?)}
 
-Redirection = {(COLON_TOKEN ~ THIS_TOKEN ~ ((PERIOD_TOKEN ~ IdentifierOrNew))? ~ Arguments)}
+IdentifierOrNewSelector = {(PERIOD_TOKEN ~ IdentifierOrNew)}
+
+Redirection = {(COLON_TOKEN ~ THIS_TOKEN ~ (IdentifierOrNewSelector)? ~ Arguments)}
 
 InitializerListEntryItem = {(COMMA_TOKEN ~ InitializerListEntry)}
 
@@ -202,7 +216,9 @@ FactoryConstructorSignature = {((CONST_TOKEN)? ~ FACTORY_TOKEN ~ ConstructorName
 
 RedirectingFactoryConstructorSignature = {((CONST_TOKEN)? ~ FACTORY_TOKEN ~ ConstructorName ~ FormalParameterList ~ EQUAL_TOKEN ~ ConstructorDesignation)}
 
-ConstructorDesignationTypeName = {(TypeName ~ TypeArguments ~ ((PERIOD_TOKEN ~ IdentifierOrNew))?)}
+IdentifierOrNewSelector = {(PERIOD_TOKEN ~ IdentifierOrNew)}
+
+ConstructorDesignationTypeName = {(TypeName ~ TypeArguments ~ (IdentifierOrNewSelector)?)}
 
 ConstructorDesignation = {(TypeIdentifier | QualifiedName | ConstructorDesignationTypeName)}
 
@@ -452,7 +468,9 @@ BitwiseXorExpressionBitXor = {(BIT_XOR_TOKEN ~ BitwiseXorExpression)}
 
 BitwiseOrExpressionBitwiseXorExpression = {(BitwiseXorExpression ~ (BitwiseXorExpressionBitXor)*)}
 
-BitwiseOrExpressionSuperToken = {(SUPER_TOKEN ~ ((BIT_XOR_TOKEN ~ BitwiseXorExpression))+)}
+BitwiseXorExpressionBitXor = {(BIT_XOR_TOKEN ~ BitwiseXorExpression)}
+
+BitwiseOrExpressionSuperToken = {(SUPER_TOKEN ~ (BitwiseXorExpressionBitXor)+)}
 
 BitwiseOrExpression = {(BitwiseOrExpressionBitwiseXorExpression | BitwiseOrExpressionSuperToken)}
 
@@ -460,7 +478,9 @@ BitwiseAndExpressionBitNeg = {(BIT_NEG_TOKEN ~ BitwiseAndExpression)}
 
 BitwiseXorExpressionBitwiseAndExpression = {(BitwiseAndExpression ~ (BitwiseAndExpressionBitNeg)*)}
 
-BitwiseXorExpressionSuperToken = {(SUPER_TOKEN ~ ((BIT_NEG_TOKEN ~ BitwiseAndExpression))+)}
+BitwiseAndExpressionBitNeg = {(BIT_NEG_TOKEN ~ BitwiseAndExpression)}
+
+BitwiseXorExpressionSuperToken = {(SUPER_TOKEN ~ (BitwiseAndExpressionBitNeg)+)}
 
 BitwiseXorExpression = {(BitwiseXorExpressionBitwiseAndExpression | BitwiseXorExpressionSuperToken)}
 
@@ -468,7 +488,9 @@ ShiftExpressionBitAnd = {(BIT_AND_TOKEN ~ ShiftExpression)}
 
 BitwiseAndExpressionShiftExpression = {(ShiftExpression ~ (ShiftExpressionBitAnd)*)}
 
-BitwiseAndExpressionSuperToken = {(SUPER_TOKEN ~ ((BIT_AND_TOKEN ~ ShiftExpression))+)}
+ShiftExpressionBitAnd = {(BIT_AND_TOKEN ~ ShiftExpression)}
+
+BitwiseAndExpressionSuperToken = {(SUPER_TOKEN ~ (ShiftExpressionBitAnd)+)}
 
 BitwiseAndExpression = {(BitwiseAndExpressionShiftExpression | BitwiseAndExpressionSuperToken)}
 
@@ -478,7 +500,9 @@ ShiftExpressionInner = {(ShiftOperator ~ AdditiveExpression)}
 
 ShiftExpressionAdditiveExpression = {(AdditiveExpression ~ (ShiftExpressionInner)*)}
 
-ShiftExpressionSuperToken = {(SUPER_TOKEN ~ ((ShiftOperator ~ AdditiveExpression))+)}
+ShiftExpressionInner = {(ShiftOperator ~ AdditiveExpression)}
+
+ShiftExpressionSuperToken = {(SUPER_TOKEN ~ (ShiftExpressionInner)+)}
 
 ShiftExpression = {(ShiftExpressionAdditiveExpression | ShiftExpressionSuperToken)}
 
@@ -488,7 +512,9 @@ AdditiveExpressionInner = {(AdditiveOperator ~ MultiplicativeExpression)}
 
 AdditiveExpressionMultiplicativeExpression = {(MultiplicativeExpression ~ (AdditiveExpressionInner)*)}
 
-AdditiveExpressionSuperToken = {(SUPER_TOKEN ~ ((AdditiveOperator ~ MultiplicativeExpression))+)}
+AdditiveExpressionInner = {(AdditiveOperator ~ MultiplicativeExpression)}
+
+AdditiveExpressionSuperToken = {(SUPER_TOKEN ~ (AdditiveExpressionInner)+)}
 
 AdditiveExpression = {(AdditiveExpressionMultiplicativeExpression | AdditiveExpressionSuperToken)}
 
@@ -498,7 +524,9 @@ MultiplicativeExpressionInner = {(MultiplicativeOperator ~ UnaryExpression)}
 
 MultiplicativeExpressionUnaryExpression = {(UnaryExpression ~ (MultiplicativeExpressionInner)*)}
 
-MultiplicativeExpressionSuperToken = {(SUPER_TOKEN ~ ((MultiplicativeOperator ~ UnaryExpression))+)}
+MultiplicativeExpressionInner = {(MultiplicativeOperator ~ UnaryExpression)}
+
+MultiplicativeExpressionSuperToken = {(SUPER_TOKEN ~ (MultiplicativeExpressionInner)+)}
 
 MultiplicativeExpression = {(MultiplicativeExpressionUnaryExpression | MultiplicativeExpressionSuperToken)}
 
@@ -658,7 +686,9 @@ YieldEachStatement = {(YIELD_TOKEN ~ ASTERISK_TOKEN ~ Expression ~ SEMICOLON_TOK
 
 AssertStatement = {(Assertion ~ SEMICOLON_TOKEN)}
 
-Assertion = {(ASSERT_TOKEN ~ OPEN_PAREN_TOKEN ~ Expression ~ ((COMMA_TOKEN ~ Expression))? ~ (COMMA_TOKEN)? ~ CLOSE_PAREN_TOKEN)}
+ExpressionItem = {(COMMA_TOKEN ~ Expression)}
+
+Assertion = {(ASSERT_TOKEN ~ OPEN_PAREN_TOKEN ~ Expression ~ (ExpressionItem)? ~ (COMMA_TOKEN)? ~ CLOSE_PAREN_TOKEN)}
 
 ExternalFunctionSignature = {(EXTERNAL_TOKEN ~ FunctionSignature ~ SEMICOLON_TOKEN)}
 
@@ -714,7 +744,9 @@ HideCombinator = {(HIDE_TOKEN ~ IdentifierList)}
 
 Combinator = {(ShowCombinator | HideCombinator)}
 
-IdentifierList = {(Identifier ~ ((COMMA_TOKEN ~ Identifier))*)}
+IdentifierItem = {(COMMA_TOKEN ~ Identifier)}
+
+IdentifierList = {(Identifier ~ (IdentifierItem)*)}
 
 PartDirective = {(Metadata ~ PART_TOKEN ~ Uri ~ SEMICOLON_TOKEN)}
 
@@ -776,13 +808,15 @@ FunctionTypeTails = {(FunctionTypeTailsMany | FunctionTypeTail)}
 
 FunctionTypeTail = {(FUNCTION_TOKEN ~ (TypeParameters)? ~ ParameterTypeList)}
 
+EmptyParameters = {(OPEN_PAREN_TOKEN ~ CLOSE_PAREN_TOKEN)}
+
 NormalWithOptionalParameters = {(OPEN_PAREN_TOKEN ~ NormalParameterTypes ~ COMMA_TOKEN ~ OptionalParameterTypes ~ CLOSE_PAREN_TOKEN)}
 
 ParameterTypeListNormalParameterTypes = {(OPEN_PAREN_TOKEN ~ NormalParameterTypes ~ (COMMA_TOKEN)? ~ CLOSE_PAREN_TOKEN)}
 
 ParameterTypeListOptionalParameterTypes = {(OPEN_PAREN_TOKEN ~ OptionalParameterTypes ~ CLOSE_PAREN_TOKEN)}
 
-ParameterTypeList = {((OPEN_PAREN_TOKEN ~ CLOSE_PAREN_TOKEN) | NormalWithOptionalParameters | ParameterTypeListNormalParameterTypes | ParameterTypeListOptionalParameterTypes)}
+ParameterTypeList = {(EmptyParameters | NormalWithOptionalParameters | ParameterTypeListNormalParameterTypes | ParameterTypeListOptionalParameterTypes)}
 
 NormalParameterTypeItem = {(COMMA_TOKEN ~ NormalParameterType)}
 

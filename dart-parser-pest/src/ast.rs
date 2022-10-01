@@ -192,6 +192,25 @@ impl RuleModel for InitializedVariableDeclaration {
     }
 }
 
+/// And(Raw(=), Id(expression))
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ExpressionEqual {
+    pub equal_token: Token,
+    pub expression: Expression,
+}
+impl RuleModel for ExpressionEqual {
+    fn rule() -> Rule {
+        Rule::ExpressionEqual
+    }
+    fn parse(ctx: &mut ParseCtx) -> Self {
+        Self {
+            equal_token: ctx.parse_token(),
+            expression: ctx.parse_ast(),
+        }
+    }
+}
+
 /// And(Id(identifier), Modified(?,And(Raw(=), Id(expression))))
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -207,6 +226,25 @@ impl RuleModel for InitializedIdentifier {
         Self {
             identifier: ctx.parse_ast(),
             expression_equal: ctx.try_parse_ast(),
+        }
+    }
+}
+
+/// And(Raw(,), Id(initializedIdentifier))
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct InitializedIdentifierItem {
+    pub comma_token: Token,
+    pub initialized_identifier: InitializedIdentifier,
+}
+impl RuleModel for InitializedIdentifierItem {
+    fn rule() -> Rule {
+        Rule::InitializedIdentifierItem
+    }
+    fn parse(ctx: &mut ParseCtx) -> Self {
+        Self {
+            comma_token: ctx.parse_token(),
+            initialized_identifier: ctx.parse_ast(),
         }
     }
 }
@@ -951,6 +989,25 @@ impl RuleModel for SuperFormalParameter {
     }
 }
 
+/// And(Raw(=), Id(expression))
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ExpressionEqual {
+    pub equal_token: Token,
+    pub expression: Expression,
+}
+impl RuleModel for ExpressionEqual {
+    fn rule() -> Rule {
+        Rule::ExpressionEqual
+    }
+    fn parse(ctx: &mut ParseCtx) -> Self {
+        Self {
+            equal_token: ctx.parse_token(),
+            expression: ctx.parse_ast(),
+        }
+    }
+}
+
 /// And(Id(normalFormalParameter), Modified(?,And(Raw(=), Id(expression))))
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -1039,13 +1096,13 @@ impl RuleModel for DefaultNamedParameter {
 /// And(Id(metadata), Id(classMemberDeclaration))
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ClassDeclarationMembers {
+pub struct ClassDeclarationMember {
     pub metadata: Metadata,
     pub class_member_declaration: ClassMemberDeclaration,
 }
-impl RuleModel for ClassDeclarationMembers {
+impl RuleModel for ClassDeclarationMember {
     fn rule() -> Rule {
-        Rule::ClassDeclarationMembers
+        Rule::ClassDeclarationMember
     }
     fn parse(ctx: &mut ParseCtx) -> Self {
         Self {
@@ -1066,7 +1123,7 @@ pub struct ClassDeclarationClassToken {
     pub superclass: Option<Superclass>,
     pub interfaces: Option<Interfaces>,
     pub open_curly_bracket_token: Token,
-    pub class_declaration_members: Vec<ClassDeclarationMembers>,
+    pub class_declaration_member: Vec<ClassDeclarationMember>,
     pub close_curly_bracket_token: Token,
 }
 impl RuleModel for ClassDeclarationClassToken {
@@ -1086,7 +1143,7 @@ impl RuleModel for ClassDeclarationClassToken {
             superclass: ctx.try_parse_ast(),
             interfaces: ctx.try_parse_ast(),
             open_curly_bracket_token: ctx.parse_token(),
-            class_declaration_members: ctx.parse_list(),
+            class_declaration_member: ctx.parse_list(),
             close_curly_bracket_token: ctx.parse_token(),
         }
     }
@@ -1462,6 +1519,29 @@ impl RuleModel for DeclarationGetterSignature {
     }
 }
 
+/// And(Raw(external), Modified(?,Raw(static)))
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ExternalMaybeStatic {
+    pub external_token: Token,
+    pub static_token: Option<Token>,
+}
+impl RuleModel for ExternalMaybeStatic {
+    fn rule() -> Rule {
+        Rule::ExternalMaybeStatic
+    }
+    fn parse(ctx: &mut ParseCtx) -> Self {
+        Self {
+            external_token: ctx.parse_token(),
+            static_token: if ctx.is_rule_next(Rule::STATIC_TOKEN) {
+                Some(ctx.parse_token())
+            } else {
+                None
+            },
+        }
+    }
+}
+
 /// And(Modified(?,And(Raw(external), Modified(?,Raw(static)))), Id(setterSignature))
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -1477,6 +1557,29 @@ impl RuleModel for DeclarationSetterSignature {
         Self {
             external_maybe_static: ctx.try_parse_ast(),
             setter_signature: ctx.parse_ast(),
+        }
+    }
+}
+
+/// And(Raw(external), Modified(?,Raw(static)))
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ExternalMaybeStatic {
+    pub external_token: Token,
+    pub static_token: Option<Token>,
+}
+impl RuleModel for ExternalMaybeStatic {
+    fn rule() -> Rule {
+        Rule::ExternalMaybeStatic
+    }
+    fn parse(ctx: &mut ParseCtx) -> Self {
+        Self {
+            external_token: ctx.parse_token(),
+            static_token: if ctx.is_rule_next(Rule::STATIC_TOKEN) {
+                Some(ctx.parse_token())
+            } else {
+                None
+            },
         }
     }
 }
@@ -1760,6 +1863,26 @@ impl RuleModel for DeclarationConstantConstructorSignature {
         Self {
             constant_constructor_signature: ctx.parse_ast(),
             redirection_or_initializers: ctx.try_parse_ast(),
+        }
+    }
+}
+
+/// Or( Id(redirection), Id(initializers), )
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum RedirectionOrInitializers {
+    Redirection(Redirection),
+    Initializers(Initializers),
+}
+impl RuleModel for RedirectionOrInitializers {
+    fn rule() -> Rule {
+        Rule::RedirectionOrInitializers
+    }
+    fn parse(ctx: &mut ParseCtx) -> Self {
+        match ctx.next_rule() {
+            Rule::Redirection => RedirectionOrInitializers::Redirection(ctx.parse_ast()),
+            Rule::Initializers => RedirectionOrInitializers::Initializers(ctx.parse_ast()),
+            _ => unreachable!(),
         }
     }
 }
@@ -2082,6 +2205,25 @@ impl RuleModel for ConstructorName {
     }
 }
 
+/// And(Raw(.), Id(identifierOrNew))
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IdentifierOrNewSelector {
+    pub period_token: Token,
+    pub identifier_or_new: IdentifierOrNew,
+}
+impl RuleModel for IdentifierOrNewSelector {
+    fn rule() -> Rule {
+        Rule::IdentifierOrNewSelector
+    }
+    fn parse(ctx: &mut ParseCtx) -> Self {
+        Self {
+            period_token: ctx.parse_token(),
+            identifier_or_new: ctx.parse_ast(),
+        }
+    }
+}
+
 /// And(Raw(:), Raw(this), Modified(?,And(Raw(.), Id(identifierOrNew))), Id(arguments))
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -2329,6 +2471,25 @@ impl RuleModel for RedirectingFactoryConstructorSignature {
             formal_parameter_list: ctx.parse_ast(),
             equal_token: ctx.parse_token(),
             constructor_designation: ctx.parse_ast(),
+        }
+    }
+}
+
+/// And(Raw(.), Id(identifierOrNew))
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IdentifierOrNewSelector {
+    pub period_token: Token,
+    pub identifier_or_new: IdentifierOrNew,
+}
+impl RuleModel for IdentifierOrNewSelector {
+    fn rule() -> Rule {
+        Rule::IdentifierOrNewSelector
+    }
+    fn parse(ctx: &mut ParseCtx) -> Self {
+        Self {
+            period_token: ctx.parse_token(),
+            identifier_or_new: ctx.parse_ast(),
         }
     }
 }
@@ -5021,6 +5182,25 @@ impl RuleModel for BitwiseOrExpressionBitwiseXorExpression {
     }
 }
 
+/// And(Raw(|), Id(bitwiseXorExpression))
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BitwiseXorExpressionBitXor {
+    pub bit_xor_token: Token,
+    pub bitwise_xor_expression: BitwiseXorExpression,
+}
+impl RuleModel for BitwiseXorExpressionBitXor {
+    fn rule() -> Rule {
+        Rule::BitwiseXorExpressionBitXor
+    }
+    fn parse(ctx: &mut ParseCtx) -> Self {
+        Self {
+            bit_xor_token: ctx.parse_token(),
+            bitwise_xor_expression: ctx.parse_ast(),
+        }
+    }
+}
+
 /// And(Raw(super), Modified(+,And(Raw(|), Id(bitwiseXorExpression))))
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -5100,6 +5280,25 @@ impl RuleModel for BitwiseXorExpressionBitwiseAndExpression {
     }
 }
 
+/// And(Raw(^), Id(bitwiseAndExpression))
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BitwiseAndExpressionBitNeg {
+    pub bit_neg_token: Token,
+    pub bitwise_and_expression: BitwiseAndExpression,
+}
+impl RuleModel for BitwiseAndExpressionBitNeg {
+    fn rule() -> Rule {
+        Rule::BitwiseAndExpressionBitNeg
+    }
+    fn parse(ctx: &mut ParseCtx) -> Self {
+        Self {
+            bit_neg_token: ctx.parse_token(),
+            bitwise_and_expression: ctx.parse_ast(),
+        }
+    }
+}
+
 /// And(Raw(super), Modified(+,And(Raw(^), Id(bitwiseAndExpression))))
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -5175,6 +5374,25 @@ impl RuleModel for BitwiseAndExpressionShiftExpression {
         Self {
             shift_expression: ctx.parse_ast(),
             shift_expression_bit_and: ctx.parse_list(),
+        }
+    }
+}
+
+/// And(Raw(&), Id(shiftExpression))
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ShiftExpressionBitAnd {
+    pub bit_and_token: Token,
+    pub shift_expression: ShiftExpression,
+}
+impl RuleModel for ShiftExpressionBitAnd {
+    fn rule() -> Rule {
+        Rule::ShiftExpressionBitAnd
+    }
+    fn parse(ctx: &mut ParseCtx) -> Self {
+        Self {
+            bit_and_token: ctx.parse_token(),
+            shift_expression: ctx.parse_ast(),
         }
     }
 }
@@ -5280,6 +5498,25 @@ impl RuleModel for ShiftExpressionAdditiveExpression {
     }
 }
 
+/// And(Id(shiftOperator), Id(additiveExpression))
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ShiftExpressionInner {
+    pub shift_operator: ShiftOperator,
+    pub additive_expression: AdditiveExpression,
+}
+impl RuleModel for ShiftExpressionInner {
+    fn rule() -> Rule {
+        Rule::ShiftExpressionInner
+    }
+    fn parse(ctx: &mut ParseCtx) -> Self {
+        Self {
+            shift_operator: ctx.parse_ast(),
+            additive_expression: ctx.parse_ast(),
+        }
+    }
+}
+
 /// And(Raw(super), Modified(+,And(Id(shiftOperator), Id(additiveExpression))))
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -5381,6 +5618,25 @@ impl RuleModel for AdditiveExpressionMultiplicativeExpression {
     }
 }
 
+/// And(Id(additiveOperator), Id(multiplicativeExpression))
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AdditiveExpressionInner {
+    pub additive_operator: AdditiveOperator,
+    pub multiplicative_expression: MultiplicativeExpression,
+}
+impl RuleModel for AdditiveExpressionInner {
+    fn rule() -> Rule {
+        Rule::AdditiveExpressionInner
+    }
+    fn parse(ctx: &mut ParseCtx) -> Self {
+        Self {
+            additive_operator: ctx.parse_ast(),
+            multiplicative_expression: ctx.parse_ast(),
+        }
+    }
+}
+
 /// And(Raw(super), Modified(+,And(Id(additiveOperator), Id(multiplicativeExpression))))
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -5476,6 +5732,25 @@ impl RuleModel for MultiplicativeExpressionUnaryExpression {
         Self {
             unary_expression: ctx.parse_ast(),
             multiplicative_expression_inner: ctx.parse_list(),
+        }
+    }
+}
+
+/// And(Id(multiplicativeOperator), Id(unaryExpression))
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MultiplicativeExpressionInner {
+    pub multiplicative_operator: MultiplicativeOperator,
+    pub unary_expression: UnaryExpression,
+}
+impl RuleModel for MultiplicativeExpressionInner {
+    fn rule() -> Rule {
+        Rule::MultiplicativeExpressionInner
+    }
+    fn parse(ctx: &mut ParseCtx) -> Self {
+        Self {
+            multiplicative_operator: ctx.parse_ast(),
+            unary_expression: ctx.parse_ast(),
         }
     }
 }
@@ -7147,6 +7422,25 @@ impl RuleModel for AssertStatement {
     }
 }
 
+/// And(Raw(,), Id(expression))
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ExpressionItem {
+    pub comma_token: Token,
+    pub expression: Expression,
+}
+impl RuleModel for ExpressionItem {
+    fn rule() -> Rule {
+        Rule::ExpressionItem
+    }
+    fn parse(ctx: &mut ParseCtx) -> Self {
+        Self {
+            comma_token: ctx.parse_token(),
+            expression: ctx.parse_ast(),
+        }
+    }
+}
+
 /// And(Raw(assert), Raw((), Id(expression), Modified(?,And(Raw(,), Id(expression))), Modified(?,Raw(,)), Raw()))
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -7794,6 +8088,25 @@ impl RuleModel for Combinator {
     }
 }
 
+/// And(Raw(,), Id(identifier))
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IdentifierItem {
+    pub comma_token: Token,
+    pub identifier: Identifier,
+}
+impl RuleModel for IdentifierItem {
+    fn rule() -> Rule {
+        Rule::IdentifierItem
+    }
+    fn parse(ctx: &mut ParseCtx) -> Self {
+        Self {
+            comma_token: ctx.parse_token(),
+            identifier: ctx.parse_ast(),
+        }
+    }
+}
+
 /// And(Id(identifier), Modified(*,And(Raw(,), Id(identifier))))
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -8430,6 +8743,25 @@ impl RuleModel for FunctionTypeTail {
             function_token: ctx.parse_token(),
             type_parameters: ctx.try_parse_ast(),
             parameter_type_list: ctx.parse_ast(),
+        }
+    }
+}
+
+/// And(Raw((), Raw()))
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EmptyParameters {
+    pub open_paren_token: Token,
+    pub close_paren_token: Token,
+}
+impl RuleModel for EmptyParameters {
+    fn rule() -> Rule {
+        Rule::EmptyParameters
+    }
+    fn parse(ctx: &mut ParseCtx) -> Self {
+        Self {
+            open_paren_token: ctx.parse_token(),
+            close_paren_token: ctx.parse_token(),
         }
     }
 }
