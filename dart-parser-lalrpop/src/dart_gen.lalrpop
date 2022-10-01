@@ -3,6 +3,14 @@ use parser::Token;
 
 grammar;
 
+match {
+    r"[^\n\r]"
+} else {
+    r"[^nrbtvxu\r\n]",
+    r#"[^\\"\r\n]*"#,
+    _
+}
+
 pub LetExpression: LetExpression = {<let_token:LET_TOKEN> <static_final_declaration_list:StaticFinalDeclarationList> <in_token:IN_TOKEN> <expression:Expression> => LetExpression{<>}};
 
 pub FinalConstVarOrTypeFinalToken: FinalConstVarOrTypeFinalToken = {<late_token:(LATE_TOKEN)?> <final_token:FINAL_TOKEN> <dart_type:(Type)?> => FinalConstVarOrTypeFinalToken{<>}};
@@ -21,11 +29,7 @@ pub InitializedIdentifierItem: InitializedIdentifierItem = {<comma_token:COMMA_T
 
 pub InitializedVariableDeclaration: InitializedVariableDeclaration = {<declared_identifier:DeclaredIdentifier> <expression_equal:(ExpressionEqual)?> <initialized_identifier_item:(InitializedIdentifierItem)*> => InitializedVariableDeclaration{<>}};
 
-pub ExpressionEqual: ExpressionEqual = {<equal_token:EQUAL_TOKEN> <expression:Expression> => ExpressionEqual{<>}};
-
 pub InitializedIdentifier: InitializedIdentifier = {<identifier:Identifier> <expression_equal:(ExpressionEqual)?> => InitializedIdentifier{<>}};
-
-pub InitializedIdentifierItem: InitializedIdentifierItem = {<comma_token:COMMA_TOKEN> <initialized_identifier:InitializedIdentifier> => InitializedIdentifierItem{<>}};
 
 pub InitializedIdentifierList: InitializedIdentifierList = {<initialized_identifier:InitializedIdentifier> <initialized_identifier_item:(InitializedIdentifierItem)*> => InitializedIdentifierList{<>}};
 
@@ -73,7 +77,7 @@ pub NamedFormalParameters: NamedFormalParameters = {<open_curly_bracket_token:OP
 
 pub NormalFormalParameter: NormalFormalParameter = {<metadata:Metadata> <normal_formal_parameter_no_metadata:NormalFormalParameterNoMetadata> => NormalFormalParameter{<>}};
 
-pub NormalFormalParameterNoMetadata: NormalFormalParameterNoMetadata = {FunctionFormalParameter => NormalFormalParameterNoMetadata::FunctionFormalParameter(<>), FieldFormalParameter => NormalFormalParameterNoMetadata::FieldFormalParameter(<>), SimpleFormalParameter => NormalFormalParameterNoMetadata::SimpleFormalParameter(<>), SuperFormalParameter => NormalFormalParameterNoMetadata::SuperFormalParameter(<>)};
+pub NormalFormalParameterNoMetadata: NormalFormalParameterNoMetadata = {FunctionFormalParameter => NormalFormalParameterNoMetadata::FunctionFormalParameter(<>), FieldFormalParameter => NormalFormalParameterNoMetadata::FieldFormalParameter(<>), SimpleFormalParameter => NormalFormalParameterNoMetadata::SimpleFormalParameter(<>)};
 
 pub FunctionFormalParameter: FunctionFormalParameter = {<covariant_token:(COVARIANT_TOKEN)?> <dart_type:(Type)?> <identifier:Identifier> <formal_parameter_part:FormalParameterPart> <question_token:(QUESTION_TOKEN)?> => FunctionFormalParameter{<>}};
 
@@ -83,15 +87,11 @@ pub SimpleFormalParameter: SimpleFormalParameter = {DeclaredIdentifier => Simple
 
 pub DeclaredIdentifier: DeclaredIdentifier = {<covariant_token:(COVARIANT_TOKEN)?> <final_const_var_or_type:FinalConstVarOrType> <identifier:Identifier> => DeclaredIdentifier{<>}};
 
+pub ThisTokenOrSuperToken: ThisTokenOrSuperToken = {THIS_TOKEN => ThisTokenOrSuperToken::This(<>), SUPER_TOKEN => ThisTokenOrSuperToken::Super(<>)};
+
 pub FieldFormalParameterFormalParameterPart: FieldFormalParameterFormalParameterPart = {<formal_parameter_part:FormalParameterPart> <question_token:(QUESTION_TOKEN)?> => FieldFormalParameterFormalParameterPart{<>}};
 
-pub FieldFormalParameter: FieldFormalParameter = {<final_const_var_or_type:(FinalConstVarOrType)?> <this_token:THIS_TOKEN> <period_token:PERIOD_TOKEN> <identifier:Identifier> <formal_parameter_part:(FieldFormalParameterFormalParameterPart)?> => FieldFormalParameter{<>}};
-
-pub SuperFormalParameterFormalParameterPart: SuperFormalParameterFormalParameterPart = {<formal_parameter_part:FormalParameterPart> <question_token:(QUESTION_TOKEN)?> => SuperFormalParameterFormalParameterPart{<>}};
-
-pub SuperFormalParameter: SuperFormalParameter = {<final_const_var_or_type:(FinalConstVarOrType)?> <super_token:SUPER_TOKEN> <period_token:PERIOD_TOKEN> <identifier:Identifier> <formal_parameter_part:(SuperFormalParameterFormalParameterPart)?> => SuperFormalParameter{<>}};
-
-pub ExpressionEqual: ExpressionEqual = {<equal_token:EQUAL_TOKEN> <expression:Expression> => ExpressionEqual{<>}};
+pub FieldFormalParameter: FieldFormalParameter = {<final_const_var_or_type:(FinalConstVarOrType)?> <this_token_or_super_token:ThisTokenOrSuperToken> <period_token:PERIOD_TOKEN> <identifier:Identifier> <formal_parameter_part:(FieldFormalParameterFormalParameterPart)?> => FieldFormalParameter{<>}};
 
 pub DefaultFormalParameter: DefaultFormalParameter = {<normal_formal_parameter:NormalFormalParameter> <expression_equal:(ExpressionEqual)?> => DefaultFormalParameter{<>}};
 
@@ -101,9 +101,9 @@ pub DefaultNamedParameterAssignment: DefaultNamedParameterAssignment = {<equal_t
 
 pub DefaultNamedParameter: DefaultNamedParameter = {<metadata:Metadata> <required_token:(REQUIRED_TOKEN)?> <normal_formal_parameter_no_metadata:NormalFormalParameterNoMetadata> <default_named_parameter_assignment:(DefaultNamedParameterAssignment)?> => DefaultNamedParameter{<>}};
 
-pub ClassDeclarationMembers: ClassDeclarationMembers = {<metadata:Metadata> <class_member_declaration:ClassMemberDeclaration> => ClassDeclarationMembers{<>}};
+pub ClassDeclarationMember: ClassDeclarationMember = {<metadata:Metadata> <class_member_declaration:ClassMemberDeclaration> => ClassDeclarationMember{<>}};
 
-pub ClassDeclarationClassToken: ClassDeclarationClassToken = {<abstract_token:(ABSTRACT_TOKEN)?> <class_token:CLASS_TOKEN> <type_identifier:TypeIdentifier> <type_parameters:(TypeParameters)?> <superclass:(Superclass)?> <interfaces:(Interfaces)?> <open_curly_bracket_token:OPEN_CURLY_BRACKET_TOKEN> <class_declaration_members:(ClassDeclarationMembers)*> <close_curly_bracket_token:CLOSE_CURLY_BRACKET_TOKEN> => ClassDeclarationClassToken{<>}};
+pub ClassDeclarationClassToken: ClassDeclarationClassToken = {<abstract_token:(ABSTRACT_TOKEN)?> <class_token:CLASS_TOKEN> <type_identifier:TypeIdentifier> <type_parameters:(TypeParameters)?> <superclass:(Superclass)?> <interfaces:(Interfaces)?> <open_curly_bracket_token:OPEN_CURLY_BRACKET_TOKEN> <class_declaration_member:(ClassDeclarationMember)*> <close_curly_bracket_token:CLOSE_CURLY_BRACKET_TOKEN> => ClassDeclarationClassToken{<>}};
 
 pub ClassDeclarationMixin: ClassDeclarationMixin = {<abstract_token:(ABSTRACT_TOKEN)?> <class_token:CLASS_TOKEN> <mixin_application_class:MixinApplicationClass> => ClassDeclarationMixin{<>}};
 
@@ -139,11 +139,7 @@ pub ExternalMaybeStatic: ExternalMaybeStatic = {<external_token:EXTERNAL_TOKEN> 
 
 pub DeclarationGetterSignature: DeclarationGetterSignature = {<external_maybe_static:(ExternalMaybeStatic)?> <getter_signature:GetterSignature> => DeclarationGetterSignature{<>}};
 
-pub ExternalMaybeStatic: ExternalMaybeStatic = {<external_token:EXTERNAL_TOKEN> <static_token:(STATIC_TOKEN)?> => ExternalMaybeStatic{<>}};
-
 pub DeclarationSetterSignature: DeclarationSetterSignature = {<external_maybe_static:(ExternalMaybeStatic)?> <setter_signature:SetterSignature> => DeclarationSetterSignature{<>}};
-
-pub ExternalMaybeStatic: ExternalMaybeStatic = {<external_token:EXTERNAL_TOKEN> <static_token:(STATIC_TOKEN)?> => ExternalMaybeStatic{<>}};
 
 pub DeclarationFunctionSignature: DeclarationFunctionSignature = {<external_maybe_static:(ExternalMaybeStatic)?> <function_signature:FunctionSignature> => DeclarationFunctionSignature{<>}};
 
@@ -168,8 +164,6 @@ pub DeclarationVarOrType: DeclarationVarOrType = {<late_token:(LATE_TOKEN)?> <va
 pub RedirectionOrInitializers: RedirectionOrInitializers = {Redirection => RedirectionOrInitializers::Redirection(<>), Initializers => RedirectionOrInitializers::Initializers(<>)};
 
 pub DeclarationConstantConstructorSignature: DeclarationConstantConstructorSignature = {<constant_constructor_signature:ConstantConstructorSignature> <redirection_or_initializers:(RedirectionOrInitializers)?> => DeclarationConstantConstructorSignature{<>}};
-
-pub RedirectionOrInitializers: RedirectionOrInitializers = {Redirection => RedirectionOrInitializers::Redirection(<>), Initializers => RedirectionOrInitializers::Initializers(<>)};
 
 pub DeclarationConstructorSignature: DeclarationConstructorSignature = {<constructor_signature:ConstructorSignature> <redirection_or_initializers:(RedirectionOrInitializers)?> => DeclarationConstructorSignature{<>}};
 
@@ -197,8 +191,6 @@ pub IdentifierOrNewSelector: IdentifierOrNewSelector = {<period_token:PERIOD_TOK
 
 pub ConstructorName: ConstructorName = {<type_identifier:TypeIdentifier> <identifier_or_new_selector:(IdentifierOrNewSelector)?> => ConstructorName{<>}};
 
-pub IdentifierOrNewSelector: IdentifierOrNewSelector = {<period_token:PERIOD_TOKEN> <identifier_or_new:IdentifierOrNew> => IdentifierOrNewSelector{<>}};
-
 pub Redirection: Redirection = {<colon_token:COLON_TOKEN> <this_token:THIS_TOKEN> <identifier_or_new_selector:(IdentifierOrNewSelector)?> <arguments:Arguments> => Redirection{<>}};
 
 pub InitializerListEntryItem: InitializerListEntryItem = {<comma_token:COMMA_TOKEN> <initializer_list_entry:InitializerListEntry> => InitializerListEntryItem{<>}};
@@ -220,8 +212,6 @@ pub InitializerExpression: InitializerExpression = {ConditionalExpression => Ini
 pub FactoryConstructorSignature: FactoryConstructorSignature = {<const_token:(CONST_TOKEN)?> <factory_token:FACTORY_TOKEN> <constructor_name:ConstructorName> <formal_parameter_list:FormalParameterList> => FactoryConstructorSignature{<>}};
 
 pub RedirectingFactoryConstructorSignature: RedirectingFactoryConstructorSignature = {<const_token:(CONST_TOKEN)?> <factory_token:FACTORY_TOKEN> <constructor_name:ConstructorName> <formal_parameter_list:FormalParameterList> <equal_token:EQUAL_TOKEN> <constructor_designation:ConstructorDesignation> => RedirectingFactoryConstructorSignature{<>}};
-
-pub IdentifierOrNewSelector: IdentifierOrNewSelector = {<period_token:PERIOD_TOKEN> <identifier_or_new:IdentifierOrNew> => IdentifierOrNewSelector{<>}};
 
 pub ConstructorDesignationTypeName: ConstructorDesignationTypeName = {<type_name:TypeName> <type_arguments:TypeArguments> <identifier_or_new_selector:(IdentifierOrNewSelector)?> => ConstructorDesignationTypeName{<>}};
 
@@ -307,6 +297,28 @@ pub NullLiteral: NullLiteral = {NULL_TOKEN};
 
 pub NumericLiteral: NumericLiteral = {NUMBER => NumericLiteral::Number(<>), HEX_NUMBER => NumericLiteral::HexNumber(<>)};
 
+pub NUMBER_GENERATED_1_GENERATED_2: &'input str = {"." (DIGIT)+};
+
+pub NUMBER_GENERATED_1: &'input str = {(DIGIT)+ (NUMBER_GENERATED_1_GENERATED_2)? (EXPONENT)?};
+
+pub NUMBER_GENERATED_3: &'input str = {"." (DIGIT)+ (EXPONENT)?};
+
+pub NUMBER = {NUMBER_GENERATED_1, NUMBER_GENERATED_3};
+
+pub EXPONENT_GENERATED_4: &'input str = {"e", "E"};
+
+pub EXPONENT_GENERATED_5: &'input str = {"+", "-"};
+
+pub EXPONENT = {EXPONENT_GENERATED_4 (EXPONENT_GENERATED_5)? (DIGIT)+};
+
+pub HEX_NUMBER_GENERATED_6: &'input str = {"0x" (HEX_DIGIT)+};
+
+pub HEX_NUMBER_GENERATED_7: &'input str = {"0X" (HEX_DIGIT)+};
+
+pub HEX_NUMBER = {HEX_NUMBER_GENERATED_6, HEX_NUMBER_GENERATED_7};
+
+pub HEX_DIGIT = {r"[a-f]", r"[A-F]", DIGIT};
+
 pub BooleanLiteral: BooleanLiteral = {TRUE_TOKEN => BooleanLiteral::True(<>), FALSE_TOKEN => BooleanLiteral::False(<>)};
 
 pub StringLiteralItem: StringLiteralItem = {MultilineString => StringLiteralItem::MultilineString(<>), SingleLineString => StringLiteralItem::SingleLineString(<>)};
@@ -323,6 +335,36 @@ pub SingleLineStringSingleLineStringDqBeginMid: SingleLineStringSingleLineString
 
 pub SingleLineString: SingleLineString = {RAW_SINGLE_LINE_STRING => SingleLineString::RawSingleLineString(<>), SINGLE_LINE_STRING_SQ_BEGIN_END => SingleLineString::SingleLineStringSqBeginEnd(<>), SingleLineStringSingleLineStringSqBeginMid => SingleLineString::SingleLineStringSqBeginMid(<>), SINGLE_LINE_STRING_DQ_BEGIN_END => SingleLineString::SingleLineStringDqBeginEnd(<>), SingleLineStringSingleLineStringDqBeginMid => SingleLineString::SingleLineStringDqBeginMid(<>)};
 
+pub RAW_SINGLE_LINE_STRING_GENERATED_8: &'input str = {"r" "'" r"[^'\r\n]*" "'"};
+
+pub RAW_SINGLE_LINE_STRING_GENERATED_9: &'input str = {"r" "\"" r#"[^\\"\r\n]*"# "\""};
+
+pub RAW_SINGLE_LINE_STRING = {RAW_SINGLE_LINE_STRING_GENERATED_8, RAW_SINGLE_LINE_STRING_GENERATED_9};
+
+pub STRING_CONTENT_COMMON_GENERATED_10: &'input str = {"\\" r"[^nrbtvxu\r\n]"};
+
+pub STRING_CONTENT_COMMON = {r#"[^\\'\\"$\r\n]"#, ESCAPE_SEQUENCE, STRING_CONTENT_COMMON_GENERATED_10, SIMPLE_STRING_INTERPOLATION};
+
+pub STRING_CONTENT_SQ = {STRING_CONTENT_COMMON, "\""};
+
+pub SINGLE_LINE_STRING_SQ_BEGIN_END = {"'" (STRING_CONTENT_SQ)* "'"};
+
+pub SINGLE_LINE_STRING_SQ_BEGIN_MID = {"'" (STRING_CONTENT_SQ)* "${"};
+
+pub SINGLE_LINE_STRING_SQ_MID_MID = {"}" (STRING_CONTENT_SQ)* "${"};
+
+pub SINGLE_LINE_STRING_SQ_MID_END = {"}" (STRING_CONTENT_SQ)* "'"};
+
+pub STRING_CONTENT_DQ = {STRING_CONTENT_COMMON, "'"};
+
+pub SINGLE_LINE_STRING_DQ_BEGIN_END = {"\"" (STRING_CONTENT_DQ)* "\""};
+
+pub SINGLE_LINE_STRING_DQ_BEGIN_MID = {"\"" (STRING_CONTENT_DQ)* "${"};
+
+pub SINGLE_LINE_STRING_DQ_MID_MID = {"}" (STRING_CONTENT_DQ)* "${"};
+
+pub SINGLE_LINE_STRING_DQ_MID_END = {"}" (STRING_CONTENT_DQ)* "\""};
+
 pub ExpressionMultiLineStringSqMidMid: ExpressionMultiLineStringSqMidMid = {<multi_line_string_sq_mid_mid:MULTI_LINE_STRING_SQ_MID_MID> <expression:Expression> => ExpressionMultiLineStringSqMidMid{<>}};
 
 pub MultilineStringMultiLineStringSqBeginMid: MultilineStringMultiLineStringSqBeginMid = {<multi_line_string_sq_begin_mid:MULTI_LINE_STRING_SQ_BEGIN_MID> <expression:Expression> <expression_multi_line_string_sq_mid_mid:(ExpressionMultiLineStringSqMidMid)*> <multi_line_string_sq_mid_end:MULTI_LINE_STRING_SQ_MID_END> => MultilineStringMultiLineStringSqBeginMid{<>}};
@@ -333,9 +375,59 @@ pub MultilineStringMultiLineStringDqBeginMid: MultilineStringMultiLineStringDqBe
 
 pub MultilineString: MultilineString = {RAW_MULTI_LINE_STRING => MultilineString::RawMultiLineString(<>), MULTI_LINE_STRING_SQ_BEGIN_END => MultilineString::MultiLineStringSqBeginEnd(<>), MultilineStringMultiLineStringSqBeginMid => MultilineString::MultiLineStringSqBeginMid(<>), MULTI_LINE_STRING_DQ_BEGIN_END => MultilineString::MultiLineStringDqBeginEnd(<>), MultilineStringMultiLineStringDqBeginMid => MultilineString::MultiLineStringDqBeginMid(<>)};
 
+pub RAW_MULTI_LINE_STRING_GENERATED_11: &'input str = {"r" "'''" r"[^']"* "'''"};
+
+pub RAW_MULTI_LINE_STRING_GENERATED_12: &'input str = {"r" "\"\"\"" r#"[^\\"]"#* "\"\"\""};
+
+pub RAW_MULTI_LINE_STRING = {RAW_MULTI_LINE_STRING_GENERATED_11, RAW_MULTI_LINE_STRING_GENERATED_12};
+
+pub QUOTES_SQ = {"'", "''"};
+
+pub STRING_CONTENT_TSQ_GENERATED_13: &'input str = {STRING_CONTENT_COMMON, "\"", "\r", "\n"};
+
+pub STRING_CONTENT_TSQ = {(QUOTES_SQ)? STRING_CONTENT_TSQ_GENERATED_13};
+
+pub MULTI_LINE_STRING_SQ_BEGIN_END = {"'''" (STRING_CONTENT_TSQ)* "'''"};
+
+pub MULTI_LINE_STRING_SQ_BEGIN_MID = {"'''" (STRING_CONTENT_TSQ)* (QUOTES_SQ)? "${"};
+
+pub MULTI_LINE_STRING_SQ_MID_MID = {"}" (STRING_CONTENT_TSQ)* (QUOTES_SQ)? "${"};
+
+pub MULTI_LINE_STRING_SQ_MID_END = {"}" (STRING_CONTENT_TSQ)* "'''"};
+
+pub QUOTES_DQ = {"\"", "\"\""};
+
+pub STRING_CONTENT_TDQ_GENERATED_14: &'input str = {STRING_CONTENT_COMMON, "'", "\r", "\n"};
+
+pub STRING_CONTENT_TDQ = {(QUOTES_DQ)? STRING_CONTENT_TDQ_GENERATED_14};
+
+pub MULTI_LINE_STRING_DQ_BEGIN_END = {"\"\"\"" (STRING_CONTENT_TDQ)* "\"\"\""};
+
+pub MULTI_LINE_STRING_DQ_BEGIN_MID = {"\"\"\"" (STRING_CONTENT_TDQ)* (QUOTES_DQ)? "${"};
+
+pub MULTI_LINE_STRING_DQ_MID_MID = {"}" (STRING_CONTENT_TDQ)* (QUOTES_DQ)? "${"};
+
+pub MULTI_LINE_STRING_DQ_MID_END = {"}" (STRING_CONTENT_TDQ)* "\"\"\""};
+
+pub ESCAPE_SEQUENCE_GENERATED_15: &'input str = {"\\x" HEX_DIGIT HEX_DIGIT};
+
+pub ESCAPE_SEQUENCE_GENERATED_16: &'input str = {"\\u" HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT};
+
+pub ESCAPE_SEQUENCE_GENERATED_17: &'input str = {"\\u{" HEX_DIGIT_SEQUENCE "}"};
+
+pub ESCAPE_SEQUENCE: &'input str = {"\n", "\r", "\\f", "\\b", "\t", "\\v", ESCAPE_SEQUENCE_GENERATED_15, ESCAPE_SEQUENCE_GENERATED_16, ESCAPE_SEQUENCE_GENERATED_17};
+
+pub HEX_DIGIT_SEQUENCE = {HEX_DIGIT (HEX_DIGIT)? (HEX_DIGIT)? (HEX_DIGIT)? (HEX_DIGIT)? (HEX_DIGIT)?};
+
+pub NEWLINE = {"\n", "\r", "\r\n"};
+
 pub StringInterpolationExpression: StringInterpolationExpression = {<interpolation_start_token:INTERPOLATION_START_TOKEN> <expression:Expression> <close_curly_bracket_token:CLOSE_CURLY_BRACKET_TOKEN> => StringInterpolationExpression{<>}};
 
 pub StringInterpolation: StringInterpolation = {SIMPLE_STRING_INTERPOLATION => StringInterpolation::SimpleStringInterpolation(<>), StringInterpolationExpression => StringInterpolation::Expression(<>)};
+
+pub SIMPLE_STRING_INTERPOLATION_GENERATED_18: &'input str = {IDENTIFIER_NO_DOLLAR, BUILT_IN_IDENTIFIER, "this"};
+
+pub SIMPLE_STRING_INTERPOLATION: &'input str = {"$" SIMPLE_STRING_INTERPOLATION_GENERATED_18};
 
 pub SymbolLiteralOtherIdentifiers: SymbolLiteralOtherIdentifiers = {<period_token:PERIOD_TOKEN> <identifier:Identifier> => SymbolLiteralOtherIdentifiers{<>}};
 
@@ -473,8 +565,6 @@ pub BitwiseXorExpressionBitXor: BitwiseXorExpressionBitXor = {<bit_xor_token:BIT
 
 pub BitwiseOrExpressionBitwiseXorExpression: BitwiseOrExpressionBitwiseXorExpression = {<bitwise_xor_expression:BitwiseXorExpression> <bitwise_xor_expression_bit_xor:(BitwiseXorExpressionBitXor)*> => BitwiseOrExpressionBitwiseXorExpression{<>}};
 
-pub BitwiseXorExpressionBitXor: BitwiseXorExpressionBitXor = {<bit_xor_token:BIT_XOR_TOKEN> <bitwise_xor_expression:BitwiseXorExpression> => BitwiseXorExpressionBitXor{<>}};
-
 pub BitwiseOrExpressionSuperToken: BitwiseOrExpressionSuperToken = {<super_token:SUPER_TOKEN> <bitwise_xor_expression_bit_xor:(BitwiseXorExpressionBitXor)+> => BitwiseOrExpressionSuperToken{<>}};
 
 pub BitwiseOrExpression: BitwiseOrExpression = {BitwiseOrExpressionBitwiseXorExpression => BitwiseOrExpression::BitwiseXorExpression(<>), BitwiseOrExpressionSuperToken => BitwiseOrExpression::Super(<>)};
@@ -483,8 +573,6 @@ pub BitwiseAndExpressionBitNeg: BitwiseAndExpressionBitNeg = {<bit_neg_token:BIT
 
 pub BitwiseXorExpressionBitwiseAndExpression: BitwiseXorExpressionBitwiseAndExpression = {<bitwise_and_expression:BitwiseAndExpression> <bitwise_and_expression_bit_neg:(BitwiseAndExpressionBitNeg)*> => BitwiseXorExpressionBitwiseAndExpression{<>}};
 
-pub BitwiseAndExpressionBitNeg: BitwiseAndExpressionBitNeg = {<bit_neg_token:BIT_NEG_TOKEN> <bitwise_and_expression:BitwiseAndExpression> => BitwiseAndExpressionBitNeg{<>}};
-
 pub BitwiseXorExpressionSuperToken: BitwiseXorExpressionSuperToken = {<super_token:SUPER_TOKEN> <bitwise_and_expression_bit_neg:(BitwiseAndExpressionBitNeg)+> => BitwiseXorExpressionSuperToken{<>}};
 
 pub BitwiseXorExpression: BitwiseXorExpression = {BitwiseXorExpressionBitwiseAndExpression => BitwiseXorExpression::BitwiseAndExpression(<>), BitwiseXorExpressionSuperToken => BitwiseXorExpression::Super(<>)};
@@ -492,8 +580,6 @@ pub BitwiseXorExpression: BitwiseXorExpression = {BitwiseXorExpressionBitwiseAnd
 pub ShiftExpressionBitAnd: ShiftExpressionBitAnd = {<bit_and_token:BIT_AND_TOKEN> <shift_expression:ShiftExpression> => ShiftExpressionBitAnd{<>}};
 
 pub BitwiseAndExpressionShiftExpression: BitwiseAndExpressionShiftExpression = {<shift_expression:ShiftExpression> <shift_expression_bit_and:(ShiftExpressionBitAnd)*> => BitwiseAndExpressionShiftExpression{<>}};
-
-pub ShiftExpressionBitAnd: ShiftExpressionBitAnd = {<bit_and_token:BIT_AND_TOKEN> <shift_expression:ShiftExpression> => ShiftExpressionBitAnd{<>}};
 
 pub BitwiseAndExpressionSuperToken: BitwiseAndExpressionSuperToken = {<super_token:SUPER_TOKEN> <shift_expression_bit_and:(ShiftExpressionBitAnd)+> => BitwiseAndExpressionSuperToken{<>}};
 
@@ -505,8 +591,6 @@ pub ShiftExpressionInner: ShiftExpressionInner = {<shift_operator:ShiftOperator>
 
 pub ShiftExpressionAdditiveExpression: ShiftExpressionAdditiveExpression = {<additive_expression:AdditiveExpression> <shift_expression_inner:(ShiftExpressionInner)*> => ShiftExpressionAdditiveExpression{<>}};
 
-pub ShiftExpressionInner: ShiftExpressionInner = {<shift_operator:ShiftOperator> <additive_expression:AdditiveExpression> => ShiftExpressionInner{<>}};
-
 pub ShiftExpressionSuperToken: ShiftExpressionSuperToken = {<super_token:SUPER_TOKEN> <shift_expression_inner:(ShiftExpressionInner)+> => ShiftExpressionSuperToken{<>}};
 
 pub ShiftExpression: ShiftExpression = {ShiftExpressionAdditiveExpression => ShiftExpression::AdditiveExpression(<>), ShiftExpressionSuperToken => ShiftExpression::Super(<>)};
@@ -517,8 +601,6 @@ pub AdditiveExpressionInner: AdditiveExpressionInner = {<additive_operator:Addit
 
 pub AdditiveExpressionMultiplicativeExpression: AdditiveExpressionMultiplicativeExpression = {<multiplicative_expression:MultiplicativeExpression> <additive_expression_inner:(AdditiveExpressionInner)*> => AdditiveExpressionMultiplicativeExpression{<>}};
 
-pub AdditiveExpressionInner: AdditiveExpressionInner = {<additive_operator:AdditiveOperator> <multiplicative_expression:MultiplicativeExpression> => AdditiveExpressionInner{<>}};
-
 pub AdditiveExpressionSuperToken: AdditiveExpressionSuperToken = {<super_token:SUPER_TOKEN> <additive_expression_inner:(AdditiveExpressionInner)+> => AdditiveExpressionSuperToken{<>}};
 
 pub AdditiveExpression: AdditiveExpression = {AdditiveExpressionMultiplicativeExpression => AdditiveExpression::MultiplicativeExpression(<>), AdditiveExpressionSuperToken => AdditiveExpression::Super(<>)};
@@ -528,8 +610,6 @@ pub AdditiveOperator: AdditiveOperator = {PLUS_TOKEN => AdditiveOperator::Plus(<
 pub MultiplicativeExpressionInner: MultiplicativeExpressionInner = {<multiplicative_operator:MultiplicativeOperator> <unary_expression:UnaryExpression> => MultiplicativeExpressionInner{<>}};
 
 pub MultiplicativeExpressionUnaryExpression: MultiplicativeExpressionUnaryExpression = {<unary_expression:UnaryExpression> <multiplicative_expression_inner:(MultiplicativeExpressionInner)*> => MultiplicativeExpressionUnaryExpression{<>}};
-
-pub MultiplicativeExpressionInner: MultiplicativeExpressionInner = {<multiplicative_operator:MultiplicativeOperator> <unary_expression:UnaryExpression> => MultiplicativeExpressionInner{<>}};
 
 pub MultiplicativeExpressionSuperToken: MultiplicativeExpressionSuperToken = {<super_token:SUPER_TOKEN> <multiplicative_expression_inner:(MultiplicativeExpressionInner)+> => MultiplicativeExpressionSuperToken{<>}};
 
@@ -608,6 +688,30 @@ pub QualifiedNameSingle: QualifiedNameSingle = {<type_identifier:TypeIdentifier>
 pub QualifiedNameDouble: QualifiedNameDouble = {<type_identifier:TypeIdentifier> <period_token:PERIOD_TOKEN> <type_identifier2:TypeIdentifier> <period_token2:PERIOD_TOKEN> <identifier_or_new:IdentifierOrNew> => QualifiedNameDouble{<>}};
 
 pub QualifiedName: QualifiedName = {QualifiedNameSingle => QualifiedName::QualifiedNameSingle(<>), QualifiedNameDouble => QualifiedName::QualifiedNameDouble(<>)};
+
+pub BUILT_IN_IDENTIFIER = {"abstract", "as", "covariant", "deferred", "dynamic", "export", "external", "extension", "factory", "Function", "get", "implements", "import", "interface", "late", "library", "mixin", "operator", "part", "required", "set", "static", "typedef"};
+
+pub OTHER_IDENTIFIER = {"async", "hide", "of", "on", "show", "sync", "await", "yield"};
+
+pub IDENTIFIER_NO_DOLLAR = {IDENTIFIER_START_NO_DOLLAR (IDENTIFIER_PART_NO_DOLLAR)*};
+
+pub IDENTIFIER_START_NO_DOLLAR = {LETTER, "_"};
+
+pub IDENTIFIER_PART_NO_DOLLAR = {IDENTIFIER_START_NO_DOLLAR, DIGIT};
+
+pub IDENTIFIER = {IDENTIFIER_START (IDENTIFIER_PART)*};
+
+pub IDENTIFIER_START = {IDENTIFIER_START_NO_DOLLAR, "$"};
+
+pub IDENTIFIER_PART = {IDENTIFIER_START, DIGIT};
+
+pub LETTER = {r"[a-z]", r"[A-Z]"};
+
+pub Digit: Digit = {r"[0-9]"};
+
+pub WHITESPACEItem: WHITESPACEItem = {T_ESCAPE_TOKEN => WHITESPACEItem::TEscape(<>), SPACE_TOKEN => WHITESPACEItem::Space(<>), NEWLINE => WHITESPACEItem::Newline(<>)};
+
+pub Whitespace: Whitespace = {(WHITESPACEItem)+ => Whitespace(<>)};
 
 pub TypeTest: TypeTest = {<is_operator:IsOperator> <type_not_void:TypeNotVoid> => TypeTest{<>}};
 
@@ -691,8 +795,6 @@ pub YieldEachStatement: YieldEachStatement = {<yield_token:YIELD_TOKEN> <asteris
 
 pub AssertStatement: AssertStatement = {<assertion:Assertion> <semicolon_token:SEMICOLON_TOKEN> => AssertStatement{<>}};
 
-pub ExpressionItem: ExpressionItem = {<comma_token:COMMA_TOKEN> <expression:Expression> => ExpressionItem{<>}};
-
 pub Assertion: Assertion = {<assert_token:ASSERT_TOKEN> <open_paren_token:OPEN_PAREN_TOKEN> <expression:Expression> <expression_item:(ExpressionItem)?> <comma_token:(COMMA_TOKEN)?> <close_paren_token:CLOSE_PAREN_TOKEN> => Assertion{<>}};
 
 pub ExternalFunctionSignature: ExternalFunctionSignature = {<external_token:EXTERNAL_TOKEN> <function_signature:FunctionSignature> <semicolon_token:SEMICOLON_TOKEN> => ExternalFunctionSignature{<>}};
@@ -723,9 +825,11 @@ pub TopLevelStaticFinalDeclarations: TopLevelStaticFinalDeclarations = {StaticFi
 
 pub LibraryDeclarationMetadata: LibraryDeclarationMetadata = {<metadata:Metadata> <top_level_declaration:TopLevelDeclaration> => LibraryDeclarationMetadata{<>}};
 
-pub LibraryDeclaration: LibraryDeclaration = {<script_tag:(ScriptTag)?> <library_name:(LibraryName)?> <import_or_export:(ImportOrExport)*> <part_directive:(PartDirective)*> <metadata:(LibraryDeclarationMetadata)*> <eof:EOF> => LibraryDeclaration{<>}};
+pub LibraryDeclaration: LibraryDeclaration = {<script_tag:(ScriptTag)?> <library_name:(LibraryName)?> <import_or_export:(ImportOrExport)*> <part_directive:(PartDirective)*> <metadata:(LibraryDeclarationMetadata)*> => LibraryDeclaration{<>}};
 
 pub ScriptTag: ScriptTag = {<hash_exclamation_token:HASH_EXCLAMATION_TOKEN> <script_tag_content:SCRIPT_TAG_CONTENT> <newline:NEWLINE> => ScriptTag{<>}};
+
+pub ScriptTagContent: ScriptTagContent = {(r"[^\n\r\r\n]")* => ScriptTagContent(<>)};
 
 pub LibraryName: LibraryName = {<metadata:Metadata> <library_token:LIBRARY_TOKEN> <dotted_identifier_list:DottedIdentifierList> <semicolon_token:SEMICOLON_TOKEN> => LibraryName{<>}};
 
@@ -749,8 +853,6 @@ pub HideCombinator: HideCombinator = {<hide_token:HIDE_TOKEN> <identifier_list:I
 
 pub Combinator: Combinator = {ShowCombinator => Combinator::ShowCombinator(<>), HideCombinator => Combinator::HideCombinator(<>)};
 
-pub IdentifierItem: IdentifierItem = {<comma_token:COMMA_TOKEN> <identifier:Identifier> => IdentifierItem{<>}};
-
 pub IdentifierList: IdentifierList = {<identifier:Identifier> <identifier_item:(IdentifierItem)*> => IdentifierList{<>}};
 
 pub PartDirective: PartDirective = {<metadata:Metadata> <part_token:PART_TOKEN> <uri:Uri> <semicolon_token:SEMICOLON_TOKEN> => PartDirective{<>}};
@@ -761,7 +863,7 @@ pub PartHeader: PartHeader = {<metadata:Metadata> <part_token:PART_TOKEN> <of_to
 
 pub PartDeclarationMetadata: PartDeclarationMetadata = {<metadata:Metadata> <top_level_declaration:TopLevelDeclaration> => PartDeclarationMetadata{<>}};
 
-pub PartDeclaration: PartDeclaration = {<part_header:PartHeader> <metadata:(PartDeclarationMetadata)*> <eof:EOF> => PartDeclaration{<>}};
+pub PartDeclaration: PartDeclaration = {<part_header:PartHeader> <metadata:(PartDeclarationMetadata)*> => PartDeclaration{<>}};
 
 pub Uri: Uri = {StringLiteral};
 
@@ -813,8 +915,6 @@ pub FunctionTypeTails: FunctionTypeTails = {FunctionTypeTailsMany => FunctionTyp
 
 pub FunctionTypeTail: FunctionTypeTail = {<function_token:FUNCTION_TOKEN> <type_parameters:(TypeParameters)?> <parameter_type_list:ParameterTypeList> => FunctionTypeTail{<>}};
 
-pub EmptyParameters: EmptyParameters = {<open_paren_token:OPEN_PAREN_TOKEN> <close_paren_token:CLOSE_PAREN_TOKEN> => EmptyParameters{<>}};
-
 pub NormalWithOptionalParameters: NormalWithOptionalParameters = {<open_paren_token:OPEN_PAREN_TOKEN> <normal_parameter_types:NormalParameterTypes> <comma_token:COMMA_TOKEN> <optional_parameter_types:OptionalParameterTypes> <close_paren_token:CLOSE_PAREN_TOKEN> => NormalWithOptionalParameters{<>}};
 
 pub ParameterTypeListNormalParameterTypes: ParameterTypeListNormalParameterTypes = {<open_paren_token:OPEN_PAREN_TOKEN> <normal_parameter_types:NormalParameterTypes> <comma_token:(COMMA_TOKEN)?> <close_paren_token:CLOSE_PAREN_TOKEN> => ParameterTypeListNormalParameterTypes{<>}};
@@ -855,424 +955,276 @@ pub FunctionTypeAlias: FunctionTypeAlias = {<function_prefix:FunctionPrefix> <fo
 
 pub FunctionPrefix: FunctionPrefix = {<dart_type:(Type)?> <identifier:Identifier> => FunctionPrefix{<>}};
 
+pub RESERVED_WORD = {"assert", "break", "case", "catch", "class", "const", "continue", "default", "do", "else", "enum", "extends", "false", "final", "finally", "for", "if", "in", "is", "new", "null", "rethrow", "return", "super", "switch", "this", "throw", "true", "try", "var", "void", "while", "with"};
+
+pub SINGLE_LINE_COMMENT = {"//" (r"[^\n\r]")* (NEWLINE)?};
+
+pub MULTI_LINE_COMMENT_GENERATED_19: &'input str = {MULTI_LINE_COMMENT, r"[^*/]"};
+
+pub MULTI_LINE_COMMENT = {"/*" (MULTI_LINE_COMMENT_GENERATED_19)* "*/"};
+
 pub Comment: Comment = {SINGLE_LINE_COMMENT => Comment::SingleLineComment(<>), MULTI_LINE_COMMENT => Comment::MultiLineComment(<>)};
 
-pub NUMBER: null = {(DIGIT)+ (PERIOD_TOKEN (DIGIT)+)? (EXPONENT)?, PERIOD_TOKEN (DIGIT)+ (EXPONENT)?};
+pub DIGIT = {r"[0-9]"};
 
-pub EXPONENT: null = {EXPONENT_TOKEN, SCIENTIFIC_TOKEN (PLUS_TOKEN, MINUS_TOKEN)? (DIGIT)+};
+pub WHITESPACE: Whitespace = {(WHITESPACEItem)+};
 
-pub HEX_NUMBER: null = {HEX0X_TOKEN (HEX_DIGIT)+, HEX0_X_TOKEN (HEX_DIGIT)+};
-
-pub HEX_DIGIT: null = {r"[a-f]", r"[A-F]", DIGIT};
-
-pub RAW_SINGLE_LINE_STRING: null = {R_TOKEN QUOTE_TOKEN (!(QUOTE_TOKEN, R_ESCAPE_TOKEN, NEWLINE_TOKEN)* QUOTE_TOKEN, R_TOKEN DOUBLE_QUOTE_TOKEN (!(DOUBLE_QUOTE_TOKEN, R_ESCAPE_TOKEN, NEWLINE_TOKEN)* DOUBLE_QUOTE_TOKEN};
-
-pub STRING_CONTENT_COMMON: null = {!(BACK_TOKEN, QUOTE_TOKEN, DOUBLE_QUOTE_TOKEN, DOLLAR_TOKEN, R_ESCAPE_TOKEN, NEWLINE_TOKEN, ESCAPE_SEQUENCE, BACK_TOKEN !(N_TOKEN, R_TOKEN, B_TOKEN, T_TOKEN, V_TOKEN, X_TOKEN, U_TOKEN, R_ESCAPE_TOKEN, NEWLINE_TOKEN, SIMPLE_STRING_INTERPOLATION};
-
-pub STRING_CONTENT_SQ: null = {STRING_CONTENT_COMMON, DOUBLE_QUOTE_TOKEN};
-
-pub SINGLE_LINE_STRING_SQ_BEGIN_END: null = {QUOTE_TOKEN (STRING_CONTENT_SQ)* QUOTE_TOKEN};
-
-pub SINGLE_LINE_STRING_SQ_BEGIN_MID: null = {QUOTE_TOKEN (STRING_CONTENT_SQ)* INTERPOLATION_START_TOKEN};
-
-pub SINGLE_LINE_STRING_SQ_MID_MID: null = {CLOSE_CURLY_BRACKET_TOKEN (STRING_CONTENT_SQ)* INTERPOLATION_START_TOKEN};
-
-pub SINGLE_LINE_STRING_SQ_MID_END: null = {CLOSE_CURLY_BRACKET_TOKEN (STRING_CONTENT_SQ)* QUOTE_TOKEN};
-
-pub STRING_CONTENT_DQ: null = {STRING_CONTENT_COMMON, QUOTE_TOKEN};
-
-pub SINGLE_LINE_STRING_DQ_BEGIN_END: null = {DOUBLE_QUOTE_TOKEN (STRING_CONTENT_DQ)* DOUBLE_QUOTE_TOKEN};
-
-pub SINGLE_LINE_STRING_DQ_BEGIN_MID: null = {DOUBLE_QUOTE_TOKEN (STRING_CONTENT_DQ)* INTERPOLATION_START_TOKEN};
-
-pub SINGLE_LINE_STRING_DQ_MID_MID: null = {CLOSE_CURLY_BRACKET_TOKEN (STRING_CONTENT_DQ)* INTERPOLATION_START_TOKEN};
-
-pub SINGLE_LINE_STRING_DQ_MID_END: null = {CLOSE_CURLY_BRACKET_TOKEN (STRING_CONTENT_DQ)* DOUBLE_QUOTE_TOKEN};
-
-pub RAW_MULTI_LINE_STRING: null = {R_TOKEN TRIPLE_QUOTES_TOKEN ANY TRIPLE_QUOTES_TOKEN, R_TOKEN TRIPLE_DOUBLE_QUOTES_TOKEN ANY TRIPLE_DOUBLE_QUOTES_TOKEN};
-
-pub QUOTES_SQ: null = {QUOTE_TOKEN, TWO_QUOTES_TOKEN};
-
-pub STRING_CONTENT_TSQ: null = {(QUOTES_SQ)? STRING_CONTENT_COMMON, DOUBLE_QUOTE_TOKEN, R_ESCAPE_TOKEN, NEWLINE_TOKEN};
-
-pub MULTI_LINE_STRING_SQ_BEGIN_END: null = {TRIPLE_QUOTES_TOKEN (STRING_CONTENT_TSQ)* TRIPLE_QUOTES_TOKEN};
-
-pub MULTI_LINE_STRING_SQ_BEGIN_MID: null = {TRIPLE_QUOTES_TOKEN (STRING_CONTENT_TSQ)* (QUOTES_SQ)? INTERPOLATION_START_TOKEN};
-
-pub MULTI_LINE_STRING_SQ_MID_MID: null = {CLOSE_CURLY_BRACKET_TOKEN (STRING_CONTENT_TSQ)* (QUOTES_SQ)? INTERPOLATION_START_TOKEN};
-
-pub MULTI_LINE_STRING_SQ_MID_END: null = {CLOSE_CURLY_BRACKET_TOKEN (STRING_CONTENT_TSQ)* TRIPLE_QUOTES_TOKEN};
-
-pub QUOTES_DQ: null = {DOUBLE_QUOTE_TOKEN, TWO_DOUBLE_QUOTES_TOKEN};
-
-pub STRING_CONTENT_TDQ: null = {(QUOTES_DQ)? STRING_CONTENT_COMMON, QUOTE_TOKEN, R_ESCAPE_TOKEN, NEWLINE_TOKEN};
-
-pub MULTI_LINE_STRING_DQ_BEGIN_END: null = {TRIPLE_DOUBLE_QUOTES_TOKEN (STRING_CONTENT_TDQ)* TRIPLE_DOUBLE_QUOTES_TOKEN};
-
-pub MULTI_LINE_STRING_DQ_BEGIN_MID: null = {TRIPLE_DOUBLE_QUOTES_TOKEN (STRING_CONTENT_TDQ)* (QUOTES_DQ)? INTERPOLATION_START_TOKEN};
-
-pub MULTI_LINE_STRING_DQ_MID_MID: null = {CLOSE_CURLY_BRACKET_TOKEN (STRING_CONTENT_TDQ)* (QUOTES_DQ)? INTERPOLATION_START_TOKEN};
-
-pub MULTI_LINE_STRING_DQ_MID_END: null = {CLOSE_CURLY_BRACKET_TOKEN (STRING_CONTENT_TDQ)* TRIPLE_DOUBLE_QUOTES_TOKEN};
-
-pub ESCAPE_SEQUENCE: null = {NEWLINE_TOKEN, R_ESCAPE_TOKEN, F_ESCAPE_TOKEN, B_ESCAPE_TOKEN, T_ESCAPE_TOKEN, V_ESCAPE_TOKEN, X_ESCAPE_TOKEN HEX_DIGIT HEX_DIGIT, U_ESCAPE_TOKEN HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT, U_BRACKET_ESCAPE_TOKEN HEX_DIGIT_SEQUENCE CLOSE_CURLY_BRACKET_TOKEN};
-
-pub HEX_DIGIT_SEQUENCE: null = {HEX_DIGIT (HEX_DIGIT)? (HEX_DIGIT)? (HEX_DIGIT)? (HEX_DIGIT)? (HEX_DIGIT)?};
-
-pub NEWLINE: null = {NEWLINE_TOKEN, R_ESCAPE_TOKEN, RN_ESCAPE_TOKEN};
-
-pub SIMPLE_STRING_INTERPOLATION: null = {DOLLAR_TOKEN IDENTIFIER_NO_DOLLAR, BUILT_IN_IDENTIFIER, THIS_TOKEN};
-
-pub BUILT_IN_IDENTIFIER: null = {ABSTRACT_TOKEN, AS_TOKEN, COVARIANT_TOKEN, DEFERRED_TOKEN, DYNAMIC_TOKEN, EXPORT_TOKEN, EXTERNAL_TOKEN, EXTENSION_TOKEN, FACTORY_TOKEN, FUNCTION_TOKEN, GET_TOKEN, IMPLEMENTS_TOKEN, IMPORT_TOKEN, INTERFACE_TOKEN, LATE_TOKEN, LIBRARY_TOKEN, MIXIN_TOKEN, OPERATOR_TOKEN, PART_TOKEN, REQUIRED_TOKEN, SET_TOKEN, STATIC_TOKEN, TYPEDEF_TOKEN};
-
-pub OTHER_IDENTIFIER: null = {ASYNC_TOKEN, HIDE_TOKEN, OF_TOKEN, ON_TOKEN, SHOW_TOKEN, SYNC_TOKEN, AWAIT_TOKEN, YIELD_TOKEN};
-
-pub IDENTIFIER_NO_DOLLAR: null = {IDENTIFIER_START_NO_DOLLAR (IDENTIFIER_PART_NO_DOLLAR)*};
-
-pub IDENTIFIER_START_NO_DOLLAR: null = {LETTER, UNDERSCORE_TOKEN};
-
-pub IDENTIFIER_PART_NO_DOLLAR: null = {IDENTIFIER_START_NO_DOLLAR, DIGIT};
-
-pub IDENTIFIER: null = {IDENTIFIER_START (IDENTIFIER_PART)*};
-
-pub IDENTIFIER_START: null = {IDENTIFIER_START_NO_DOLLAR, DOLLAR_TOKEN};
-
-pub IDENTIFIER_PART: null = {IDENTIFIER_START, DIGIT};
-
-pub LETTER: null = {r"[a-z]", r"[A-Z]"};
-
-pub DIGIT: null = {r"[0-9]"};
-
-pub WHITESPACE: null = {(T_ESCAPE_TOKEN, SPACE_TOKEN, NEWLINE)+};
-
-pub SCRIPT_TAG_CONTENT: null = {(!(NEWLINE)*};
-
-pub RESERVED_WORD: null = {ASSERT_TOKEN, BREAK_TOKEN, CASE_TOKEN, CATCH_TOKEN, CLASS_TOKEN, CONST_TOKEN, CONTINUE_TOKEN, DEFAULT_TOKEN, DO_TOKEN, ELSE_TOKEN, ENUM_TOKEN, EXTENDS_TOKEN, FALSE_TOKEN, FINAL_TOKEN, FINALLY_TOKEN, FOR_TOKEN, IF_TOKEN, IN_TOKEN, IS_TOKEN, NEW_TOKEN, NULL_TOKEN, RETHROW_TOKEN, RETURN_TOKEN, SUPER_TOKEN, SWITCH_TOKEN, THIS_TOKEN, THROW_TOKEN, TRUE_TOKEN, TRY_TOKEN, VAR_TOKEN, VOID_TOKEN, WHILE_TOKEN, WITH_TOKEN};
-
-pub SINGLE_LINE_COMMENT: null = {COMMENT_TOKEN (!(NEWLINE)* (NEWLINE)?};
-
-pub MULTI_LINE_COMMENT: null = {COMMENT_MULTILINE_START_TOKEN (MULTI_LINE_COMMENT, !(COMMENT_MULTILINE_END_TOKEN)* COMMENT_MULTILINE_END_TOKEN};
+pub SCRIPT_TAG_CONTENT: ScriptTagContent = {(r"[^\n\r\r\n]")*};
 
 pub COMMENT: null = {SINGLE_LINE_COMMENT, MULTI_LINE_COMMENT};
 
-pub LET_TOKEN:Token = {<start:@L> <text:let> <end:@R> => Token(<>)};
+pub LET_TOKEN:Token = {<start:@L> <text:"let"> <end:@R> => Token{<>}};
 
-pub IN_TOKEN:Token = {<start:@L> <text:in> <end:@R> => Token(<>)};
+pub IN_TOKEN:Token = {<start:@L> <text:"in"> <end:@R> => Token{<>}};
 
-pub LATE_TOKEN:Token = {<start:@L> <text:late> <end:@R> => Token(<>)};
+pub LATE_TOKEN:Token = {<start:@L> <text:"late"> <end:@R> => Token{<>}};
 
-pub FINAL_TOKEN:Token = {<start:@L> <text:final> <end:@R> => Token(<>)};
+pub FINAL_TOKEN:Token = {<start:@L> <text:"final"> <end:@R> => Token{<>}};
 
-pub CONST_TOKEN:Token = {<start:@L> <text:const> <end:@R> => Token(<>)};
+pub CONST_TOKEN:Token = {<start:@L> <text:"const"> <end:@R> => Token{<>}};
 
-pub VAR_TOKEN:Token = {<start:@L> <text:var> <end:@R> => Token(<>)};
+pub VAR_TOKEN:Token = {<start:@L> <text:"var"> <end:@R> => Token{<>}};
 
-pub EQUAL_TOKEN:Token = {<start:@L> <text:=> <end:@R> => Token(<>)};
+pub EQUAL_TOKEN:Token = {<start:@L> <text:"="> <end:@R> => Token{<>}};
 
-pub COMMA_TOKEN:Token = {<start:@L> <text:,> <end:@R> => Token(<>)};
+pub COMMA_TOKEN:Token = {<start:@L> <text:","> <end:@R> => Token{<>}};
 
-pub ASYNC_TOKEN:Token = {<start:@L> <text:async> <end:@R> => Token(<>)};
+pub ASYNC_TOKEN:Token = {<start:@L> <text:"async"> <end:@R> => Token{<>}};
 
-pub ARROW_TOKEN:Token = {<start:@L> <text:=>> <end:@R> => Token(<>)};
+pub ARROW_TOKEN:Token = {<start:@L> <text:"=>"> <end:@R> => Token{<>}};
 
-pub SEMICOLON_TOKEN:Token = {<start:@L> <text:;> <end:@R> => Token(<>)};
+pub SEMICOLON_TOKEN:Token = {<start:@L> <text:";"> <end:@R> => Token{<>}};
 
-pub ASTERISK_TOKEN:Token = {<start:@L> <text:*> <end:@R> => Token(<>)};
+pub ASTERISK_TOKEN:Token = {<start:@L> <text:"*"> <end:@R> => Token{<>}};
 
-pub SYNC_TOKEN:Token = {<start:@L> <text:sync> <end:@R> => Token(<>)};
+pub SYNC_TOKEN:Token = {<start:@L> <text:"sync"> <end:@R> => Token{<>}};
 
-pub OPEN_CURLY_BRACKET_TOKEN:Token = {<start:@L> <text:{> <end:@R> => Token(<>)};
+pub OPEN_CURLY_BRACKET_TOKEN:Token = {<start:@L> <text:"{"> <end:@R> => Token{<>}};
 
-pub CLOSE_CURLY_BRACKET_TOKEN:Token = {<start:@L> <text:}> <end:@R> => Token(<>)};
+pub CLOSE_CURLY_BRACKET_TOKEN:Token = {<start:@L> <text:"}"> <end:@R> => Token{<>}};
 
-pub OPEN_PAREN_TOKEN:Token = {<start:@L> <text:(> <end:@R> => Token(<>)};
+pub OPEN_PAREN_TOKEN:Token = {<start:@L> <text:"("> <end:@R> => Token{<>}};
 
-pub CLOSE_PAREN_TOKEN:Token = {<start:@L> <text:)> <end:@R> => Token(<>)};
+pub CLOSE_PAREN_TOKEN:Token = {<start:@L> <text:")"> <end:@R> => Token{<>}};
 
-pub OPEN_SQUARE_BRACKET_TOKEN:Token = {<start:@L> <text:[> <end:@R> => Token(<>)};
+pub OPEN_SQUARE_BRACKET_TOKEN:Token = {<start:@L> <text:"["> <end:@R> => Token{<>}};
 
-pub CLOSE_SQUARE_BRACKET_TOKEN:Token = {<start:@L> <text:]> <end:@R> => Token(<>)};
+pub CLOSE_SQUARE_BRACKET_TOKEN:Token = {<start:@L> <text:"]"> <end:@R> => Token{<>}};
 
-pub COVARIANT_TOKEN:Token = {<start:@L> <text:covariant> <end:@R> => Token(<>)};
+pub COVARIANT_TOKEN:Token = {<start:@L> <text:"covariant"> <end:@R> => Token{<>}};
 
-pub QUESTION_TOKEN:Token = {<start:@L> <text:?> <end:@R> => Token(<>)};
+pub QUESTION_TOKEN:Token = {<start:@L> <text:"?"> <end:@R> => Token{<>}};
 
-pub THIS_TOKEN:Token = {<start:@L> <text:this> <end:@R> => Token(<>)};
+pub THIS_TOKEN:Token = {<start:@L> <text:"this"> <end:@R> => Token{<>}};
 
-pub PERIOD_TOKEN:Token = {<start:@L> <text:.> <end:@R> => Token(<>)};
+pub SUPER_TOKEN:Token = {<start:@L> <text:"super"> <end:@R> => Token{<>}};
 
-pub SUPER_TOKEN:Token = {<start:@L> <text:super> <end:@R> => Token(<>)};
+pub PERIOD_TOKEN:Token = {<start:@L> <text:"."> <end:@R> => Token{<>}};
 
-pub COLON_TOKEN:Token = {<start:@L> <text::> <end:@R> => Token(<>)};
+pub COLON_TOKEN:Token = {<start:@L> <text:":"> <end:@R> => Token{<>}};
 
-pub REQUIRED_TOKEN:Token = {<start:@L> <text:required> <end:@R> => Token(<>)};
+pub REQUIRED_TOKEN:Token = {<start:@L> <text:"required"> <end:@R> => Token{<>}};
 
-pub ABSTRACT_TOKEN:Token = {<start:@L> <text:abstract> <end:@R> => Token(<>)};
+pub ABSTRACT_TOKEN:Token = {<start:@L> <text:"abstract"> <end:@R> => Token{<>}};
 
-pub CLASS_TOKEN:Token = {<start:@L> <text:class> <end:@R> => Token(<>)};
+pub CLASS_TOKEN:Token = {<start:@L> <text:"class"> <end:@R> => Token{<>}};
 
-pub STATIC_TOKEN:Token = {<start:@L> <text:static> <end:@R> => Token(<>)};
+pub STATIC_TOKEN:Token = {<start:@L> <text:"static"> <end:@R> => Token{<>}};
 
-pub EXTERNAL_TOKEN:Token = {<start:@L> <text:external> <end:@R> => Token(<>)};
+pub EXTERNAL_TOKEN:Token = {<start:@L> <text:"external"> <end:@R> => Token{<>}};
 
-pub OPERATOR_TOKEN:Token = {<start:@L> <text:operator> <end:@R> => Token(<>)};
+pub OPERATOR_TOKEN:Token = {<start:@L> <text:"operator"> <end:@R> => Token{<>}};
 
-pub TILDE_TOKEN:Token = {<start:@L> <text:~> <end:@R> => Token(<>)};
+pub TILDE_TOKEN:Token = {<start:@L> <text:"~"> <end:@R> => Token{<>}};
 
-pub SQUARE_BRACKETS_TOKEN:Token = {<start:@L> <text:[]> <end:@R> => Token(<>)};
+pub SQUARE_BRACKETS_TOKEN:Token = {<start:@L> <text:"[]"> <end:@R> => Token{<>}};
 
-pub SQUARE_BRACKETS_EQ_TOKEN:Token = {<start:@L> <text:[]=> <end:@R> => Token(<>)};
+pub SQUARE_BRACKETS_EQ_TOKEN:Token = {<start:@L> <text:"[]="> <end:@R> => Token{<>}};
 
-pub DOUBLE_EQUAL_TOKEN:Token = {<start:@L> <text:==> <end:@R> => Token(<>)};
+pub DOUBLE_EQUAL_TOKEN:Token = {<start:@L> <text:"=="> <end:@R> => Token{<>}};
 
-pub GET_TOKEN:Token = {<start:@L> <text:get> <end:@R> => Token(<>)};
+pub GET_TOKEN:Token = {<start:@L> <text:"get"> <end:@R> => Token{<>}};
 
-pub SET_TOKEN:Token = {<start:@L> <text:set> <end:@R> => Token(<>)};
+pub SET_TOKEN:Token = {<start:@L> <text:"set"> <end:@R> => Token{<>}};
 
-pub FACTORY_TOKEN:Token = {<start:@L> <text:factory> <end:@R> => Token(<>)};
+pub FACTORY_TOKEN:Token = {<start:@L> <text:"factory"> <end:@R> => Token{<>}};
 
-pub EXTENDS_TOKEN:Token = {<start:@L> <text:extends> <end:@R> => Token(<>)};
+pub EXTENDS_TOKEN:Token = {<start:@L> <text:"extends"> <end:@R> => Token{<>}};
 
-pub WITH_TOKEN:Token = {<start:@L> <text:with> <end:@R> => Token(<>)};
+pub WITH_TOKEN:Token = {<start:@L> <text:"with"> <end:@R> => Token{<>}};
 
-pub IMPLEMENTS_TOKEN:Token = {<start:@L> <text:implements> <end:@R> => Token(<>)};
+pub IMPLEMENTS_TOKEN:Token = {<start:@L> <text:"implements"> <end:@R> => Token{<>}};
 
-pub ON_TOKEN:Token = {<start:@L> <text:on> <end:@R> => Token(<>)};
+pub ON_TOKEN:Token = {<start:@L> <text:"on"> <end:@R> => Token{<>}};
 
-pub MIXIN_TOKEN:Token = {<start:@L> <text:mixin> <end:@R> => Token(<>)};
+pub MIXIN_TOKEN:Token = {<start:@L> <text:"mixin"> <end:@R> => Token{<>}};
 
-pub EXTENSION_TOKEN:Token = {<start:@L> <text:extension> <end:@R> => Token(<>)};
+pub EXTENSION_TOKEN:Token = {<start:@L> <text:"extension"> <end:@R> => Token{<>}};
 
-pub ENUM_TOKEN:Token = {<start:@L> <text:enum> <end:@R> => Token(<>)};
+pub ENUM_TOKEN:Token = {<start:@L> <text:"enum"> <end:@R> => Token{<>}};
 
-pub LESS_TOKEN:Token = {<start:@L> <text:<> <end:@R> => Token(<>)};
+pub LESS_TOKEN:Token = {<start:@L> <text:"<"> <end:@R> => Token{<>}};
 
-pub MORE_TOKEN:Token = {<start:@L> <text:>> <end:@R> => Token(<>)};
+pub MORE_TOKEN:Token = {<start:@L> <text:">"> <end:@R> => Token{<>}};
 
-pub AT_TOKEN:Token = {<start:@L> <text:@> <end:@R> => Token(<>)};
+pub AT_TOKEN:Token = {<start:@L> <text:"@"> <end:@R> => Token{<>}};
 
-pub NULL_TOKEN:Token = {<start:@L> <text:null> <end:@R> => Token(<>)};
+pub NULL_TOKEN:Token = {<start:@L> <text:"null"> <end:@R> => Token{<>}};
 
-pub TRUE_TOKEN:Token = {<start:@L> <text:true> <end:@R> => Token(<>)};
+pub TRUE_TOKEN:Token = {<start:@L> <text:"true"> <end:@R> => Token{<>}};
 
-pub FALSE_TOKEN:Token = {<start:@L> <text:false> <end:@R> => Token(<>)};
+pub FALSE_TOKEN:Token = {<start:@L> <text:"false"> <end:@R> => Token{<>}};
 
-pub INTERPOLATION_START_TOKEN:Token = {<start:@L> <text:${> <end:@R> => Token(<>)};
+pub INTERPOLATION_START_TOKEN:Token = {<start:@L> <text:"${"> <end:@R> => Token{<>}};
 
-pub VOID_TOKEN:Token = {<start:@L> <text:void> <end:@R> => Token(<>)};
+pub VOID_TOKEN:Token = {<start:@L> <text:"void"> <end:@R> => Token{<>}};
 
-pub HASH_TOKEN:Token = {<start:@L> <text:#> <end:@R> => Token(<>)};
+pub HASH_TOKEN:Token = {<start:@L> <text:"HASH"> <end:@R> => Token{<>}};
 
-pub POINTS_EXPAND_TOKEN:Token = {<start:@L> <text:...> <end:@R> => Token(<>)};
+pub POINTS_EXPAND_TOKEN:Token = {<start:@L> <text:"..."> <end:@R> => Token{<>}};
 
-pub POINTS_EXPAND_QUESTION_TOKEN:Token = {<start:@L> <text:...?> <end:@R> => Token(<>)};
+pub POINTS_EXPAND_QUESTION_TOKEN:Token = {<start:@L> <text:"...?"> <end:@R> => Token{<>}};
 
-pub ELSE_TOKEN:Token = {<start:@L> <text:else> <end:@R> => Token(<>)};
+pub ELSE_TOKEN:Token = {<start:@L> <text:"else"> <end:@R> => Token{<>}};
 
-pub IF_TOKEN:Token = {<start:@L> <text:if> <end:@R> => Token(<>)};
+pub IF_TOKEN:Token = {<start:@L> <text:"if"> <end:@R> => Token{<>}};
 
-pub AWAIT_TOKEN:Token = {<start:@L> <text:await> <end:@R> => Token(<>)};
+pub AWAIT_TOKEN:Token = {<start:@L> <text:"await"> <end:@R> => Token{<>}};
 
-pub FOR_TOKEN:Token = {<start:@L> <text:for> <end:@R> => Token(<>)};
+pub FOR_TOKEN:Token = {<start:@L> <text:"for"> <end:@R> => Token{<>}};
 
-pub NEW_TOKEN:Token = {<start:@L> <text:new> <end:@R> => Token(<>)};
+pub NEW_TOKEN:Token = {<start:@L> <text:"new"> <end:@R> => Token{<>}};
 
-pub THROW_TOKEN:Token = {<start:@L> <text:throw> <end:@R> => Token(<>)};
+pub THROW_TOKEN:Token = {<start:@L> <text:"throw"> <end:@R> => Token{<>}};
 
-pub POINTS_ID_TOKEN:Token = {<start:@L> <text:..> <end:@R> => Token(<>)};
+pub POINTS_ID_TOKEN:Token = {<start:@L> <text:".."> <end:@R> => Token{<>}};
 
-pub POINTS_ID_QUESTION_TOKEN:Token = {<start:@L> <text:?..> <end:@R> => Token(<>)};
+pub POINTS_ID_QUESTION_TOKEN:Token = {<start:@L> <text:"?.."> <end:@R> => Token{<>}};
 
-pub TIMES_EQUAL_TOKEN:Token = {<start:@L> <text:*=> <end:@R> => Token(<>)};
+pub TIMES_EQUAL_TOKEN:Token = {<start:@L> <text:"*="> <end:@R> => Token{<>}};
 
-pub DIV_EQUAL_TOKEN:Token = {<start:@L> <text:/=> <end:@R> => Token(<>)};
+pub DIV_EQUAL_TOKEN:Token = {<start:@L> <text:"/="> <end:@R> => Token{<>}};
 
-pub INTEGER_DIV_EQUAL_TOKEN:Token = {<start:@L> <text:~/=> <end:@R> => Token(<>)};
+pub INTEGER_DIV_EQUAL_TOKEN:Token = {<start:@L> <text:"~/="> <end:@R> => Token{<>}};
 
-pub MODULE_EQUAL_TOKEN:Token = {<start:@L> <text:%=> <end:@R> => Token(<>)};
+pub MODULE_EQUAL_TOKEN:Token = {<start:@L> <text:"%="> <end:@R> => Token{<>}};
 
-pub PLUS_EQUAL_TOKEN:Token = {<start:@L> <text:+=> <end:@R> => Token(<>)};
+pub PLUS_EQUAL_TOKEN:Token = {<start:@L> <text:"+="> <end:@R> => Token{<>}};
 
-pub MINUS_EQUAL_TOKEN:Token = {<start:@L> <text:-=> <end:@R> => Token(<>)};
+pub MINUS_EQUAL_TOKEN:Token = {<start:@L> <text:"-="> <end:@R> => Token{<>}};
 
-pub BIT_LEFT_EQUAL_TOKEN:Token = {<start:@L> <text:<<=> <end:@R> => Token(<>)};
+pub BIT_LEFT_EQUAL_TOKEN:Token = {<start:@L> <text:"<<="> <end:@R> => Token{<>}};
 
-pub BIT_RIGHT0_EQUAL_TOKEN:Token = {<start:@L> <text:>>>=> <end:@R> => Token(<>)};
+pub BIT_RIGHT0_EQUAL_TOKEN:Token = {<start:@L> <text:">>>="> <end:@R> => Token{<>}};
 
-pub BIT_RIGHT_EQUAL_TOKEN:Token = {<start:@L> <text:>>=> <end:@R> => Token(<>)};
+pub BIT_RIGHT_EQUAL_TOKEN:Token = {<start:@L> <text:">>="> <end:@R> => Token{<>}};
 
-pub BIT_AND_EUQAL_TOKEN:Token = {<start:@L> <text:&=> <end:@R> => Token(<>)};
+pub BIT_AND_EUQAL_TOKEN:Token = {<start:@L> <text:"&="> <end:@R> => Token{<>}};
 
-pub BIT_NEG_EQUAL_TOKEN:Token = {<start:@L> <text:^=> <end:@R> => Token(<>)};
+pub BIT_NEG_EQUAL_TOKEN:Token = {<start:@L> <text:"^="> <end:@R> => Token{<>}};
 
-pub BIT_XOR_EQUAL_TOKEN:Token = {<start:@L> <text:|=> <end:@R> => Token(<>)};
+pub BIT_XOR_EQUAL_TOKEN:Token = {<start:@L> <text:"|="> <end:@R> => Token{<>}};
 
-pub QUESTION_QUESTION_EQUAL_TOKEN:Token = {<start:@L> <text:??=> <end:@R> => Token(<>)};
+pub QUESTION_QUESTION_EQUAL_TOKEN:Token = {<start:@L> <text:"??="> <end:@R> => Token{<>}};
 
-pub QUESTION_QUESTION_TOKEN:Token = {<start:@L> <text:??> <end:@R> => Token(<>)};
+pub QUESTION_QUESTION_TOKEN:Token = {<start:@L> <text:"??"> <end:@R> => Token{<>}};
 
-pub OR_TOKEN:Token = {<start:@L> <text:||> <end:@R> => Token(<>)};
+pub OR_TOKEN:Token = {<start:@L> <text:"||"> <end:@R> => Token{<>}};
 
-pub AND_TOKEN:Token = {<start:@L> <text:&&> <end:@R> => Token(<>)};
+pub AND_TOKEN:Token = {<start:@L> <text:"&&"> <end:@R> => Token{<>}};
 
-pub NOT_EQUAL_TOKEN:Token = {<start:@L> <text:!=> <end:@R> => Token(<>)};
+pub NOT_EQUAL_TOKEN:Token = {<start:@L> <text:"!="> <end:@R> => Token{<>}};
 
-pub MORE_OR_EQUAL_TOKEN:Token = {<start:@L> <text:>=> <end:@R> => Token(<>)};
+pub MORE_OR_EQUAL_TOKEN:Token = {<start:@L> <text:">="> <end:@R> => Token{<>}};
 
-pub LESS_OR_EQUAL_TOKEN:Token = {<start:@L> <text:<=> <end:@R> => Token(<>)};
+pub LESS_OR_EQUAL_TOKEN:Token = {<start:@L> <text:"<="> <end:@R> => Token{<>}};
 
-pub BIT_XOR_TOKEN:Token = {<start:@L> <text:|> <end:@R> => Token(<>)};
+pub BIT_XOR_TOKEN:Token = {<start:@L> <text:"|"> <end:@R> => Token{<>}};
 
-pub BIT_NEG_TOKEN:Token = {<start:@L> <text:^> <end:@R> => Token(<>)};
+pub BIT_NEG_TOKEN:Token = {<start:@L> <text:"^"> <end:@R> => Token{<>}};
 
-pub BIT_AND_TOKEN:Token = {<start:@L> <text:&> <end:@R> => Token(<>)};
+pub BIT_AND_TOKEN:Token = {<start:@L> <text:"&"> <end:@R> => Token{<>}};
 
-pub BIT_LEFT_TOKEN:Token = {<start:@L> <text:<<> <end:@R> => Token(<>)};
+pub BIT_LEFT_TOKEN:Token = {<start:@L> <text:"<<"> <end:@R> => Token{<>}};
 
-pub BIT_RIGHT0_TOKEN:Token = {<start:@L> <text:>>>> <end:@R> => Token(<>)};
+pub BIT_RIGHT0_TOKEN:Token = {<start:@L> <text:">>>"> <end:@R> => Token{<>}};
 
-pub BIT_RIGHT_TOKEN:Token = {<start:@L> <text:>>> <end:@R> => Token(<>)};
+pub BIT_RIGHT_TOKEN:Token = {<start:@L> <text:">>"> <end:@R> => Token{<>}};
 
-pub PLUS_TOKEN:Token = {<start:@L> <text:+> <end:@R> => Token(<>)};
+pub PLUS_TOKEN:Token = {<start:@L> <text:"+"> <end:@R> => Token{<>}};
 
-pub MINUS_TOKEN:Token = {<start:@L> <text:-> <end:@R> => Token(<>)};
+pub MINUS_TOKEN:Token = {<start:@L> <text:"-"> <end:@R> => Token{<>}};
 
-pub DIVIDE_TOKEN:Token = {<start:@L> <text:/> <end:@R> => Token(<>)};
+pub DIVIDE_TOKEN:Token = {<start:@L> <text:"/"> <end:@R> => Token{<>}};
 
-pub MODULUS_TOKEN:Token = {<start:@L> <text:%> <end:@R> => Token(<>)};
+pub MODULUS_TOKEN:Token = {<start:@L> <text:"%"> <end:@R> => Token{<>}};
 
-pub INTEGER_DIV_TOKEN:Token = {<start:@L> <text:~/> <end:@R> => Token(<>)};
+pub INTEGER_DIV_TOKEN:Token = {<start:@L> <text:"~/"> <end:@R> => Token{<>}};
 
-pub EXCLAMATION_TOKEN:Token = {<start:@L> <text:!> <end:@R> => Token(<>)};
+pub EXCLAMATION_TOKEN:Token = {<start:@L> <text:"!"> <end:@R> => Token{<>}};
 
-pub PLUS_PLUS_TOKEN:Token = {<start:@L> <text:++> <end:@R> => Token(<>)};
+pub PLUS_PLUS_TOKEN:Token = {<start:@L> <text:"++"> <end:@R> => Token{<>}};
 
-pub MINUS_MINUS_TOKEN:Token = {<start:@L> <text:--> <end:@R> => Token(<>)};
+pub MINUS_MINUS_TOKEN:Token = {<start:@L> <text:"--"> <end:@R> => Token{<>}};
 
-pub QUESTION_ID_TOKEN:Token = {<start:@L> <text:?.> <end:@R> => Token(<>)};
+pub QUESTION_ID_TOKEN:Token = {<start:@L> <text:"?."> <end:@R> => Token{<>}};
 
-pub DYNAMIC_TOKEN:Token = {<start:@L> <text:dynamic> <end:@R> => Token(<>)};
+pub DYNAMIC_TOKEN:Token = {<start:@L> <text:"dynamic"> <end:@R> => Token{<>}};
 
-pub IS_TOKEN:Token = {<start:@L> <text:is> <end:@R> => Token(<>)};
+pub T_ESCAPE_TOKEN:Token = {<start:@L> <text:"\t"> <end:@R> => Token{<>}};
 
-pub AS_TOKEN:Token = {<start:@L> <text:as> <end:@R> => Token(<>)};
+pub SPACE_TOKEN:Token = {<start:@L> <text:" "> <end:@R> => Token{<>}};
 
-pub WHILE_TOKEN:Token = {<start:@L> <text:while> <end:@R> => Token(<>)};
+pub IS_TOKEN:Token = {<start:@L> <text:"is"> <end:@R> => Token{<>}};
 
-pub DO_TOKEN:Token = {<start:@L> <text:do> <end:@R> => Token(<>)};
+pub AS_TOKEN:Token = {<start:@L> <text:"as"> <end:@R> => Token{<>}};
 
-pub SWITCH_TOKEN:Token = {<start:@L> <text:switch> <end:@R> => Token(<>)};
+pub WHILE_TOKEN:Token = {<start:@L> <text:"while"> <end:@R> => Token{<>}};
 
-pub CASE_TOKEN:Token = {<start:@L> <text:case> <end:@R> => Token(<>)};
+pub DO_TOKEN:Token = {<start:@L> <text:"do"> <end:@R> => Token{<>}};
 
-pub DEFAULT_TOKEN:Token = {<start:@L> <text:default> <end:@R> => Token(<>)};
+pub SWITCH_TOKEN:Token = {<start:@L> <text:"switch"> <end:@R> => Token{<>}};
 
-pub RETHROW_TOKEN:Token = {<start:@L> <text:rethrow> <end:@R> => Token(<>)};
+pub CASE_TOKEN:Token = {<start:@L> <text:"case"> <end:@R> => Token{<>}};
 
-pub TRY_TOKEN:Token = {<start:@L> <text:try> <end:@R> => Token(<>)};
+pub DEFAULT_TOKEN:Token = {<start:@L> <text:"default"> <end:@R> => Token{<>}};
 
-pub CATCH_TOKEN:Token = {<start:@L> <text:catch> <end:@R> => Token(<>)};
+pub RETHROW_TOKEN:Token = {<start:@L> <text:"rethrow"> <end:@R> => Token{<>}};
 
-pub FINALLY_TOKEN:Token = {<start:@L> <text:finally> <end:@R> => Token(<>)};
+pub TRY_TOKEN:Token = {<start:@L> <text:"try"> <end:@R> => Token{<>}};
 
-pub RETURN_TOKEN:Token = {<start:@L> <text:return> <end:@R> => Token(<>)};
+pub CATCH_TOKEN:Token = {<start:@L> <text:"catch"> <end:@R> => Token{<>}};
 
-pub BREAK_TOKEN:Token = {<start:@L> <text:break> <end:@R> => Token(<>)};
+pub FINALLY_TOKEN:Token = {<start:@L> <text:"finally"> <end:@R> => Token{<>}};
 
-pub CONTINUE_TOKEN:Token = {<start:@L> <text:continue> <end:@R> => Token(<>)};
+pub RETURN_TOKEN:Token = {<start:@L> <text:"return"> <end:@R> => Token{<>}};
 
-pub YIELD_TOKEN:Token = {<start:@L> <text:yield> <end:@R> => Token(<>)};
+pub BREAK_TOKEN:Token = {<start:@L> <text:"break"> <end:@R> => Token{<>}};
 
-pub ASSERT_TOKEN:Token = {<start:@L> <text:assert> <end:@R> => Token(<>)};
+pub CONTINUE_TOKEN:Token = {<start:@L> <text:"continue"> <end:@R> => Token{<>}};
 
-pub HASH_EXCLAMATION_TOKEN:Token = {<start:@L> <text:#!> <end:@R> => Token(<>)};
+pub YIELD_TOKEN:Token = {<start:@L> <text:"yield"> <end:@R> => Token{<>}};
 
-pub LIBRARY_TOKEN:Token = {<start:@L> <text:library> <end:@R> => Token(<>)};
+pub ASSERT_TOKEN:Token = {<start:@L> <text:"assert"> <end:@R> => Token{<>}};
 
-pub DEFERRED_TOKEN:Token = {<start:@L> <text:deferred> <end:@R> => Token(<>)};
+pub HASH_EXCLAMATION_TOKEN:Token = {<start:@L> <text:"HASH!"> <end:@R> => Token{<>}};
 
-pub IMPORT_TOKEN:Token = {<start:@L> <text:import> <end:@R> => Token(<>)};
+pub LIBRARY_TOKEN:Token = {<start:@L> <text:"library"> <end:@R> => Token{<>}};
 
-pub EXPORT_TOKEN:Token = {<start:@L> <text:export> <end:@R> => Token(<>)};
+pub DEFERRED_TOKEN:Token = {<start:@L> <text:"deferred"> <end:@R> => Token{<>}};
 
-pub SHOW_TOKEN:Token = {<start:@L> <text:show> <end:@R> => Token(<>)};
+pub IMPORT_TOKEN:Token = {<start:@L> <text:"import"> <end:@R> => Token{<>}};
 
-pub HIDE_TOKEN:Token = {<start:@L> <text:hide> <end:@R> => Token(<>)};
+pub EXPORT_TOKEN:Token = {<start:@L> <text:"export"> <end:@R> => Token{<>}};
 
-pub PART_TOKEN:Token = {<start:@L> <text:part> <end:@R> => Token(<>)};
+pub SHOW_TOKEN:Token = {<start:@L> <text:"show"> <end:@R> => Token{<>}};
 
-pub OF_TOKEN:Token = {<start:@L> <text:of> <end:@R> => Token(<>)};
+pub HIDE_TOKEN:Token = {<start:@L> <text:"hide"> <end:@R> => Token{<>}};
 
-pub FUNCTION_TOKEN:Token = {<start:@L> <text:Function> <end:@R> => Token(<>)};
+pub PART_TOKEN:Token = {<start:@L> <text:"part"> <end:@R> => Token{<>}};
 
-pub TYPEDEF_TOKEN:Token = {<start:@L> <text:typedef> <end:@R> => Token(<>)};
+pub OF_TOKEN:Token = {<start:@L> <text:"of"> <end:@R> => Token{<>}};
 
-pub EXPONENT_TOKEN:Token = {<start:@L> <text:e> <end:@R> => Token(<>)};
+pub FUNCTION_TOKEN:Token = {<start:@L> <text:"Function"> <end:@R> => Token{<>}};
 
-pub SCIENTIFIC_TOKEN:Token = {<start:@L> <text:E> <end:@R> => Token(<>)};
-
-pub HEX0X_TOKEN:Token = {<start:@L> <text:0x> <end:@R> => Token(<>)};
-
-pub HEX0_X_TOKEN:Token = {<start:@L> <text:0X> <end:@R> => Token(<>)};
-
-pub R_TOKEN:Token = {<start:@L> <text:r> <end:@R> => Token(<>)};
-
-pub QUOTE_TOKEN:Token = {<start:@L> <text:\'> <end:@R> => Token(<>)};
-
-pub R_ESCAPE_TOKEN:Token = {<start:@L> <text:\r> <end:@R> => Token(<>)};
-
-pub NEWLINE_TOKEN:Token = {<start:@L> <text:\n> <end:@R> => Token(<>)};
-
-pub DOUBLE_QUOTE_TOKEN:Token = {<start:@L> <text:"> <end:@R> => Token(<>)};
-
-pub BACK_TOKEN:Token = {<start:@L> <text:\\> <end:@R> => Token(<>)};
-
-pub DOLLAR_TOKEN:Token = {<start:@L> <text:$> <end:@R> => Token(<>)};
-
-pub N_TOKEN:Token = {<start:@L> <text:n> <end:@R> => Token(<>)};
-
-pub B_TOKEN:Token = {<start:@L> <text:b> <end:@R> => Token(<>)};
-
-pub T_TOKEN:Token = {<start:@L> <text:t> <end:@R> => Token(<>)};
-
-pub V_TOKEN:Token = {<start:@L> <text:v> <end:@R> => Token(<>)};
-
-pub X_TOKEN:Token = {<start:@L> <text:x> <end:@R> => Token(<>)};
-
-pub U_TOKEN:Token = {<start:@L> <text:u> <end:@R> => Token(<>)};
-
-pub TRIPLE_QUOTES_TOKEN:Token = {<start:@L> <text:\'\'\'> <end:@R> => Token(<>)};
-
-pub TRIPLE_DOUBLE_QUOTES_TOKEN:Token = {<start:@L> <text:"""> <end:@R> => Token(<>)};
-
-pub TWO_QUOTES_TOKEN:Token = {<start:@L> <text:\'\'> <end:@R> => Token(<>)};
-
-pub TWO_DOUBLE_QUOTES_TOKEN:Token = {<start:@L> <text:""> <end:@R> => Token(<>)};
-
-pub F_ESCAPE_TOKEN:Token = {<start:@L> <text:\f> <end:@R> => Token(<>)};
-
-pub B_ESCAPE_TOKEN:Token = {<start:@L> <text:\b> <end:@R> => Token(<>)};
-
-pub T_ESCAPE_TOKEN:Token = {<start:@L> <text:\t> <end:@R> => Token(<>)};
-
-pub V_ESCAPE_TOKEN:Token = {<start:@L> <text:\v> <end:@R> => Token(<>)};
-
-pub X_ESCAPE_TOKEN:Token = {<start:@L> <text:\x> <end:@R> => Token(<>)};
-
-pub U_ESCAPE_TOKEN:Token = {<start:@L> <text:\u> <end:@R> => Token(<>)};
-
-pub U_BRACKET_ESCAPE_TOKEN:Token = {<start:@L> <text:\u{> <end:@R> => Token(<>)};
-
-pub RN_ESCAPE_TOKEN:Token = {<start:@L> <text:\r\n> <end:@R> => Token(<>)};
-
-pub INTERFACE_TOKEN:Token = {<start:@L> <text:interface> <end:@R> => Token(<>)};
-
-pub UNDERSCORE_TOKEN:Token = {<start:@L> <text:_> <end:@R> => Token(<>)};
-
-pub SPACE_TOKEN:Token = {<start:@L> <text: > <end:@R> => Token(<>)};
-
-pub COMMENT_TOKEN:Token = {<start:@L> <text://> <end:@R> => Token(<>)};
-
-pub COMMENT_MULTILINE_START_TOKEN:Token = {<start:@L> <text:/*> <end:@R> => Token(<>)};
-
-pub COMMENT_MULTILINE_END_TOKEN:Token = {<start:@L> <text:*/> <end:@R> => Token(<>)};
+pub TYPEDEF_TOKEN:Token = {<start:@L> <text:"typedef"> <end:@R> => Token{<>}};
