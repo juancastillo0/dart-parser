@@ -1,4 +1,5 @@
-import 'package:dart_fixer_test/test-file.dart';
+import 'dart:io';
+
 import 'package:dart_fixer_test/wasm/dart_parser_wasm.dart';
 import 'package:petitparser/petitparser.dart';
 import 'package:petitparser/reflection.dart';
@@ -28,5 +29,13 @@ class ModelC {
   int get length => a.length;
 }
 """));
+  });
+
+  test('greet from wasm', () async {
+    final moduleBinary =
+        await File('./lib/wasm/dart_parser_wasm.wasm').readAsBytes();
+    final parser = await DartParser.compile(moduleBinary);
+
+    parser.greet(); // this should print "alert Hello, dart-parser-wasm!"
   });
 }
